@@ -197,6 +197,34 @@ class GEP_Shortcodes {
 		$attempts = (new GEP_Result())->get_user_results( $user_id );
 		$notifications = GEP_Notifications::get_for_user( $user_id );
 
+		// Subject-keyword derived groupings for the dashboard's Paper 1 / Sanskrit / Full Test
+		// sections. Derived from category names (not hardcoded IDs) so these stay correct
+		// across environments/seed data — see GEP_Dashboard::get_tests_by_subject_keywords().
+		$paper1_keywords   = array( 'paper 1', 'paper1', 'paper-1', 'paper i' );
+		$sanskrit_keywords = array( 'sanskrit', 'संस्कृत' );
+
+		$paper1_single_tests   = $dashboard->get_tests_by_subject_keywords( $paper1_keywords, 'single', 12 );
+		$sanskrit_single_tests = $dashboard->get_tests_by_subject_keywords( $sanskrit_keywords, 'single', 12 );
+		$combined_tests        = $dashboard->get_available_items( 'test', 12, 0, 'combined' );
+		$full_length_tests     = $dashboard->get_available_items( 'test', 24, 0, 'multiple' );
+		$paper1_full_tests     = $dashboard->get_tests_by_subject_keywords( $paper1_keywords, 'multiple', 12 );
+		$sanskrit_full_tests   = $dashboard->get_tests_by_subject_keywords( $sanskrit_keywords, 'multiple', 12 );
+
+		// "Today's Special Tests": no dedicated scheduling field exists in the current schema
+		// (TRAP #14/#15 — no fragile hardcoded IDs). As the safest available signal, feature the
+		// most recently published test from each of the three buckets below.
+		$special_paper1   = ! empty( $paper1_single_tests ) ? $paper1_single_tests[0] : null;
+		$special_sanskrit = ! empty( $sanskrit_single_tests ) ? $sanskrit_single_tests[0] : null;
+		$special_combined = ! empty( $combined_tests ) ? $combined_tests[0] : null;
+
+		// "Create Your Own Test": reuses the EXISTING random/custom-test engine (type = 'random',
+		// which already powers the subject/topic picker in templates/exam/instructions.php) —
+		// no new test-building logic is introduced here.
+		$paper1_random_test   = $dashboard->get_tests_by_subject_keywords( $paper1_keywords, 'random', 1 );
+		$sanskrit_random_test = $dashboard->get_tests_by_subject_keywords( $sanskrit_keywords, 'random', 1 );
+		$paper1_random_test   = ! empty( $paper1_random_test ) ? $paper1_random_test[0] : null;
+		$sanskrit_random_test = ! empty( $sanskrit_random_test ) ? $sanskrit_random_test[0] : null;
+
 		// Set variables for sub-templates
 		$tests = $available_tests;
 		// Only list categories that have active tests
@@ -256,7 +284,12 @@ class GEP_Shortcodes {
 			'support'        => 'support.php',
 			'get-pass'       => 'get-pass.php',
 			'typing-test'    => 'typing-test.php',
+			'about'          => 'about.php',
 		);
+
+		// Optional initial type filter for the Test Series hub (e.g. "Create Your Own Test"
+		// dashboard cards deep-link here with type=self_test to pre-select that tab).
+		$initial_type_filter = isset( $_GET['type'] ) ? sanitize_text_field( $_GET['type'] ) : 'all';
 
 		$file = isset( $template_map[$view] ) ? $template_map[$view] : 'main.php';
 		include GEP_PLUGIN_DIR . 'templates/dashboard/' . $file;
@@ -331,11 +364,18 @@ class GEP_Shortcodes {
 			
 			// Initialize session if not already started
 			if ( ! session_id() ) session_start();
-			
+
+			// Fixed-language ("Sanskrit paper") tests always use the default content slot —
+			// never let a stale session/user preference switch them to a translated language.
+			$is_lang_locked = gep_test_requires_fixed_language( $test );
+			if ( $is_lang_locked ) {
+				$_SESSION['gep_lang'] = 'en';
+			}
+
 			$current_lang = (isset($_SESSION['gep_lang']) ? $_SESSION['gep_lang'] : (get_user_meta(get_current_user_id(), 'gep_preferred_lang', true) ?: 'en'));
 			$instructions = $test->instructions;
-			
-			if ( $current_lang === 'hi' && ! empty( $test->translated_data ) ) {
+
+			if ( ! $is_lang_locked && $current_lang === 'hi' && ! empty( $test->translated_data ) ) {
 				$trans = gep_safe_json_decode( $test->translated_data, true );
 				$instructions = isset($trans['instructions']) ? $trans['instructions'] : $instructions;
 			}
@@ -555,6 +595,14 @@ class GEP_Shortcodes {
 		$elapsed_seconds  = time() - $start_time;
 		$remaining_seconds = max( 0, $duration_seconds - $elapsed_seconds );
 
+		// Fixed-language ("Sanskrit paper") tests always render in the default content slot —
+		// never let a stale session/sessionStorage value switch them to a translated language.
+		if ( ! session_id() ) session_start();
+		$is_lang_locked = gep_test_requires_fixed_language( $test );
+		if ( $is_lang_locked ) {
+			$_SESSION['gep_lang'] = 'en';
+		}
+
 		wp_enqueue_style( 'gep-exam-css' );
 		wp_enqueue_script( 'gep-exam-js' );
 		wp_enqueue_script( 'gep-secure-js' );
@@ -569,6 +617,7 @@ class GEP_Shortcodes {
 			'elapsed_seconds'   => $elapsed_seconds,
 			'startTime'         => time(),
 			'lang'              => isset( $_SESSION['gep_lang'] ) ? $_SESSION['gep_lang'] : 'en',
+			'lang_locked'       => $is_lang_locked,
 			'saved_answers'     => $saved_answers,
 			'sections_data'     => isset( $trans['sections'] ) ? $trans['sections'] : array(),
 			'dashboard_url'     => gep_get_url('dashboard')

@@ -270,6 +270,11 @@ $ui_strings = array(
     )
 );
 $_gep_lang = (isset($_SESSION['gep_lang']) ? $_SESSION['gep_lang'] : (get_user_meta(get_current_user_id(), 'gep_preferred_lang', true) ?: 'en'));
+// Fixed-language ("Sanskrit paper") tests: always review in the default content slot,
+// regardless of session/user language preference — matches the exam-time lock.
+if ( gep_test_requires_fixed_language( $test ) ) {
+    $_gep_lang = 'en';
+}
 $strings   = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_strings['en'];
 
 // ─── MULTI-ANSWER HELPER ─────────────────────────────────────────────────────
@@ -653,8 +658,8 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 /* Explanation */
 .gep-explanation-box {
     margin-top: 20px;
-    background: linear-gradient(135deg, rgba(99,102,241,0.04), rgba(139,92,246,0.04));
-    border: 1px solid rgba(99,102,241,0.15);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 14px;
     padding: 20px 24px;
 }
@@ -665,6 +670,19 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     margin-bottom: 10px;
 }
 .gep-exp-body { font-size: 14px; color: #475569; line-height: 1.7; }
+
+/* Question Source: shown below the Explanation, in its own simple block */
+.gep-source-box {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
+}
+.gep-source-header {
+    font-size: 12px; font-weight: 800; color: #64748b;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin-bottom: 6px;
+}
+.gep-source-body { font-size: 13px; color: #475569; font-weight: 600; }
 
 /* Grade Badge */
 .gep-grade-badge {
@@ -1102,7 +1120,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
         </div>
 
         <?php
-        $current_lang = isset($_SESSION['gep_lang']) ? $_SESSION['gep_lang'] : 'en';
+        $current_lang = $_gep_lang; // honors the fixed-language lock computed above
         $review_current_cat = null;
         foreach ( $questions as $index => $q ) :
             $q_cat = strval($q->category_id);
@@ -1197,9 +1215,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                     <?php if ( count( $correct_parts ) > 1 ) : ?>
                         <span class="gep-qr-type-pill" style="background:rgba(99,102,241,0.08);color:#6366f1;">Multi-Select</span>
                     <?php endif; ?>
-                    <?php if ( ! empty( $q->source ) ) : ?>
-                        <span class="gep-qr-type-pill" style="background:rgba(99,102,241,0.08);color:#6366f1;font-weight:700;">Source: <?php echo esc_html( $q->source ); ?></span>
-                    <?php endif; ?>
+                    <!-- Question Source is shown once, below the Explanation (see gep-source-box below) — not duplicated here. -->
                 </div>
                 <span class="gep-qr-status <?php echo $status_key; ?>"><?php echo esc_html( $status_labels[$status_key] ); ?></span>
             </div>
@@ -1363,13 +1379,22 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                     </div>
                 <?php endif; ?>
 
-                <!-- Explanation -->
-                <?php if ( ! empty( $q->explanation ) ) : ?>
+                <!-- Explanation / Solution, followed by Question Source (per required order) -->
+                <?php if ( ! empty( $q->explanation ) || ! empty( $q->source ) ) : ?>
                 <div class="gep-explanation-box">
+                    <?php if ( ! empty( $q->explanation ) ) : ?>
                     <div class="gep-exp-header">
                         <span>💡</span> <?php echo esc_html( $strings['explanation'] ); ?>
                     </div>
-                    <div class="gep-exp-body"><?php echo gep_clean_wpautop_tables( wp_kses_post( $q->explanation ) ); ?></div>
+                    <div class="gep-exp-body"><?php echo gep_clean_wpautop_tables( wpautop( wp_kses_post( $q->explanation ) ) ); ?></div>
+                    <?php endif; ?>
+
+                    <?php if ( ! empty( $q->source ) ) : ?>
+                    <div class="gep-source-box">
+                        <div class="gep-source-header">Question Source</div>
+                        <div class="gep-source-body"><?php echo esc_html( $q->source ); ?></div>
+                    </div>
+                    <?php endif; ?>
                 </div>
                 <?php endif; ?>
 

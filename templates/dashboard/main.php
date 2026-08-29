@@ -182,6 +182,185 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
         </div>
     </div>
 
+    <?php
+    // ── Required dashboard sections (per client sketch/PDF): Today's Special Tests,
+    //    Create Your Own Test, Paper 1 (Single), Sanskrit (Single), Set of Test Series,
+    //    Full Test. All derived from existing test/category data — no hardcoded IDs.
+    $gep_hcard_render = function( $t, $is_series_override = null ) {
+        $is_series = ( $is_series_override !== null ) ? $is_series_override : ( $t->type === 'series' || $t->type === 'bundle' );
+        $link = esc_url( add_query_arg( 'id', $t->id, (string) gep_get_url('exam') ) );
+        ob_start();
+        ?>
+        <a href="<?php echo $link; ?>" class="gep-hcard">
+            <div class="gep-hcard-thumb">
+                <?php if ( ! empty( $t->thumbnail ) ) : ?>
+                    <img src="<?php echo esc_url( $t->thumbnail ); ?>" alt="<?php echo esc_attr( $t->title ); ?>" loading="lazy">
+                <?php else : ?>
+                    <span class="gep-hcard-thumb-icon"><?php echo $is_series ? '📁' : '📝'; ?></span>
+                <?php endif; ?>
+                <?php if ( ! empty( $t->is_free ) ) : ?><span class="gep-hcard-badge">FREE</span><?php endif; ?>
+            </div>
+            <div class="gep-hcard-body">
+                <h4><?php echo esc_html( $t->title ); ?></h4>
+                <div class="gep-hcard-meta">
+                    <span><?php echo (int) $t->duration_minutes; ?> Mins</span>
+                    <?php if ( ! $is_series && isset( $t->total_marks ) ) : ?><span>•</span><span><?php echo (int) $t->total_marks; ?> Marks</span><?php endif; ?>
+                </div>
+            </div>
+        </a>
+        <?php
+        return ob_get_clean();
+    };
+
+    $gep_hscroll_section = function( $title, $tests, $see_more_url = '' ) use ( $gep_hcard_render ) {
+        if ( empty( $tests ) ) return;
+        ?>
+        <section class="gep-curated-section">
+            <div class="section-header-sovereign">
+                <div class="header-content"><h3><?php echo esc_html( $title ); ?></h3><div class="header-line"></div></div>
+                <?php if ( $see_more_url ) : ?>
+                    <a href="<?php echo esc_url( $see_more_url ); ?>" class="view-all-link">See More
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                <?php endif; ?>
+            </div>
+            <div class="gep-hscroll-row">
+                <?php foreach ( $tests as $t ) { echo $gep_hcard_render( $t ); } ?>
+            </div>
+        </section>
+        <?php
+    };
+
+    $dash_url = (string) gep_get_url('dashboard');
+    ?>
+    <style>
+    .gep-hscroll-row {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 4px 4px 14px;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+    .gep-hcard {
+        scroll-snap-align: start;
+        flex: 0 0 220px;
+        background: #18181b;
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 20px;
+        overflow: hidden;
+        text-decoration: none !important;
+        transition: all 0.25s ease;
+        display: block;
+    }
+    .gep-hcard:hover {
+        transform: translateY(-4px);
+        border-color: rgba(99,102,241,0.35);
+        box-shadow: 0 14px 30px rgba(99,102,241,0.15);
+    }
+    .gep-hcard-thumb {
+        position: relative;
+        height: 110px;
+        background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #9333ea 100%);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .gep-hcard-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .gep-hcard-thumb-icon { font-size: 30px; }
+    .gep-hcard-badge {
+        position: absolute; top: 8px; right: 8px;
+        background: #10b981; color: #fff; font-size: 9px; font-weight: 900;
+        padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px;
+    }
+    .gep-hcard-body { padding: 14px 16px; }
+    .gep-hcard-body h4 {
+        margin: 0 0 8px; font-size: 13.5px; font-weight: 800; color: #fff;
+        line-height: 1.35;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .gep-hcard-meta { font-size: 11px; font-weight: 700; color: #a1a1aa; display: flex; gap: 6px; }
+
+    .gep-cyo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 700px) { .gep-cyo-grid { grid-template-columns: 1fr; } }
+    .gep-cyo-card {
+        display: block; text-decoration: none !important;
+        background: #18181b; border: 1px solid rgba(255,255,255,0.05); border-radius: 20px;
+        padding: 22px 20px; transition: all 0.25s ease;
+    }
+    .gep-cyo-card:hover { transform: translateY(-4px); border-color: rgba(99,102,241,0.35); box-shadow: 0 14px 30px rgba(99,102,241,0.15); }
+    .gep-cyo-card .icon { font-size: 26px; margin-bottom: 10px; }
+    .gep-cyo-card h4 { margin: 0 0 6px; font-size: 15px; font-weight: 800; color: #fff; }
+    .gep-cyo-card p { margin: 0; font-size: 12.5px; color: #a1a1aa; line-height: 1.5; }
+
+    @media (max-width: 480px) {
+        .gep-hcard { flex-basis: 168px; }
+        .gep-hcard-thumb { height: 90px; }
+    }
+    </style>
+
+    <?php
+    // 1) Today's Special Tests — safest available signal (no "special test" field exists in the
+    //    schema): the most recently published test from each Paper 1 / Sanskrit / Combined bucket.
+    $todays_special = array_filter( array( $special_paper1, $special_sanskrit, $special_combined ) );
+    $gep_hscroll_section( "Today's Special Tests", $todays_special );
+
+    // 2) Create Your Own Test — routes into the EXISTING random/custom-test builder (type=random).
+    $browse_random_url = add_query_arg( array( 'view' => 'tests', 'type' => 'random' ), $dash_url );
+    $cyo_paper1_url   = $paper1_random_test ? add_query_arg( 'id', $paper1_random_test->id, (string) gep_get_url('exam') ) : $browse_random_url;
+    $cyo_sanskrit_url = $sanskrit_random_test ? add_query_arg( 'id', $sanskrit_random_test->id, (string) gep_get_url('exam') ) : $browse_random_url;
+    ?>
+    <section class="gep-curated-section">
+        <div class="section-header-sovereign">
+            <div class="header-content"><h3>Create Your Own Test</h3><div class="header-line"></div></div>
+        </div>
+        <div class="gep-cyo-grid">
+            <a class="gep-cyo-card" href="<?php echo esc_url( $cyo_paper1_url ); ?>">
+                <div class="icon">📘</div><h4>Paper 1</h4><p>Pick subjects &amp; topics and build your own Paper 1 practice test.</p>
+            </a>
+            <a class="gep-cyo-card" href="<?php echo esc_url( $cyo_sanskrit_url ); ?>">
+                <div class="icon">📜</div><h4>Sanskrit</h4><p>Pick topics and build your own Sanskrit practice test.</p>
+            </a>
+            <a class="gep-cyo-card" href="<?php echo esc_url( $browse_random_url ); ?>">
+                <div class="icon">🧩</div><h4>Paper 1 + Sanskrit</h4><p>Build a combined custom test across both subjects.</p>
+            </a>
+        </div>
+    </section>
+
+    <?php
+    // 3) Paper 1 (Single Test) — horizontally scrollable
+    $gep_hscroll_section(
+        'Paper 1 (Single Test)',
+        $paper1_single_tests,
+        add_query_arg( 'view', 'tests', $dash_url )
+    );
+
+    // 4) Sanskrit (Single Test) — horizontally scrollable
+    $gep_hscroll_section(
+        'Sanskrit (Single Test)',
+        $sanskrit_single_tests,
+        add_query_arg( 'view', 'tests', $dash_url )
+    );
+
+    // 5) Set of Test Series — reuses the existing type='series' system
+    $gep_hscroll_section(
+        'Set of Test Series',
+        $available_series,
+        add_query_arg( array( 'view' => 'tests', 'type' => 'series' ), $dash_url )
+    );
+
+    // 6) Full Test — reuses the existing type='multiple' (full-syllabus) tests
+    $full_test_groups = array_filter( array_merge( (array) $paper1_full_tests, (array) $sanskrit_full_tests ) );
+    if ( empty( $full_test_groups ) ) {
+        $full_test_groups = $full_length_tests; // fallback: any full-length test
+    }
+    $gep_hscroll_section(
+        'Full Test',
+        $full_test_groups,
+        add_query_arg( array( 'view' => 'tests', 'type' => 'multiple' ), $dash_url )
+    );
+    ?>
+
     <!-- Recent Activity & Resume Practice -->
     <?php
     $current_user_id = get_current_user_id();

@@ -383,6 +383,50 @@ class GEP_Dashboard {
 		
 		return $wpdb->get_results( $wpdb->prepare( $query, $params ) );
 	}
+	/**
+	 * Find published tests whose category or subcategory name matches any of the given
+	 * keywords (case-insensitive). Used to derive "Paper 1" / "Sanskrit" style dashboard
+	 * groupings from existing category data instead of hardcoding category/test IDs,
+	 * which would break between environments (TRAP #14/#15).
+	 *
+	 * @param string|array $keywords    One or more substrings to match against category names.
+	 * @param string       $type_filter Test type to restrict to, or 'all'.
+	 * @param int          $limit       Max tests to return.
+	 */
+	public function get_tests_by_subject_keywords( $keywords, $type_filter = 'all', $limit = 12 ) {
+		global $wpdb;
+		$keywords = array_filter( (array) $keywords );
+		if ( empty( $keywords ) ) return array();
+
+		$like_clauses = array();
+		$like_params  = array();
+		foreach ( $keywords as $kw ) {
+			$like_clauses[] = 'name LIKE %s';
+			$like_params[]  = '%' . $wpdb->esc_like( $kw ) . '%';
+		}
+		$cat_ids = $wpdb->get_col( $wpdb->prepare(
+			"SELECT id FROM {$wpdb->prefix}gep_categories WHERE " . implode( ' OR ', $like_clauses ),
+			$like_params
+		) );
+		if ( empty( $cat_ids ) ) return array();
+
+		$cat_ids_str = implode( ',', array_map( 'absint', $cat_ids ) );
+		$where_type  = '';
+		$params      = array();
+		if ( $type_filter !== 'all' ) {
+			$where_type = ' AND type = %s';
+			$params[]   = $type_filter;
+		}
+
+		$sql = "SELECT * FROM {$wpdb->prefix}gep_tests
+				WHERE status = 'publish' AND (category_id IN ($cat_ids_str) OR subcategory_id IN ($cat_ids_str))
+				$where_type
+				ORDER BY id DESC LIMIT %d";
+		$params[] = absint( $limit );
+
+		return $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
+	}
+
 	public function has_access( $user_id, $item_id, $item_type = 'test' ) {
 		// ADMIN BYPASS: Only bypass for admins when using the admin impersonation (uid=) param
 		// BUG FIX: Do NOT auto-grant access to admins — admins must be able to test payment flow

@@ -123,6 +123,54 @@
 .gep-badge-new { background: #f97316; color: white; }
 .gep-badge-free { background: #10b981; color: white; }
 
+/* ─── Sidebar: grouped nav items (Test Series > sub-items, Miscellaneous) ─── */
+.gep-nav-group-toggle-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+}
+.gep-nav-group-toggle-btn::after {
+    content: '▾';
+    margin-left: auto;
+    font-size: 10px;
+    opacity: 0.6;
+    transition: transform 0.2s ease;
+}
+.gep-nav-group.open .gep-nav-group-toggle-btn::after {
+    transform: rotate(180deg);
+}
+.gep-nav-subitems {
+    display: flex;
+    flex-direction: column;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+}
+.gep-nav-group.open .gep-nav-subitems {
+    max-height: 300px;
+}
+.gep-nav-subitems a {
+    padding: 7px 20px 7px 56px !important;
+    font-size: 12.5px !important;
+    color: var(--gep-sidebar-text) !important;
+    text-decoration: none !important;
+    border-left: 3px solid transparent;
+    display: block !important;
+}
+.gep-nav-subitems a:hover {
+    background: var(--gep-sidebar-hover);
+    color: #fff !important;
+}
+.gep-nav-subitems a.active {
+    color: #fff !important;
+    background: rgba(59, 130, 246, 0.1);
+    border-left-color: var(--gep-sidebar-active);
+}
+
 /* Main Content Wrapper */
 .gep-dashboard-content {
     flex: 1;
@@ -249,6 +297,28 @@
     box-shadow: 0 6px 15px rgba(0, 200, 83, 0.3);
     filter: brightness(1.1);
 }
+
+.gep-header-contact-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--gep-sidebar-text, #94a3b8);
+    text-decoration: none !important;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.gep-header-contact-link:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.15);
+}
+.gep-header-contact-icon { font-size: 14px; }
 
 .gep-header-avatar {
     width: 36px;
@@ -1786,6 +1856,12 @@
     .gep-btn-pass {
         padding: 6px 12px !important;
         font-size: 11px !important;
+    }
+    .gep-header-contact-link {
+        padding: 6px 8px !important;
+    }
+    .gep-header-contact-label {
+        display: none !important;
     }
 }
 

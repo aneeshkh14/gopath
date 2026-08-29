@@ -411,6 +411,46 @@ if ( ! function_exists( 'gep_safe_json_decode' ) ) {
 	}
 }
 
+// ─── Fixed-Language ("Sanskrit paper") detection ────────────────────────────
+// The current schema has no dedicated column marking a test as fixed-language.
+// Rather than hardcode one fragile category ID, we robustly detect this from
+// test/category metadata: an explicit opt-in flag in translated_data (future-
+// proof, backward compatible) or a category/subcategory whose name mentions
+// Sanskrit. This is intentionally conservative — it only locks the language
+// selector; it never changes stored answers, marks, or evaluation logic.
+if ( ! function_exists( 'gep_test_requires_fixed_language' ) ) {
+	function gep_test_requires_fixed_language( $test ) {
+		if ( empty( $test ) ) {
+			return false;
+		}
+
+		$td = ! empty( $test->translated_data ) ? gep_safe_json_decode( $test->translated_data, true ) : array();
+
+		// 1. Explicit admin opt-in/opt-out, if ever set (most reliable when present).
+		if ( isset( $td['fixed_language'] ) ) {
+			return (bool) $td['fixed_language'];
+		}
+
+		// 2. Fall back to category / subcategory name containing "sanskrit" (case-insensitive).
+		global $wpdb;
+		$cat_ids = array_filter( array(
+			isset( $test->subcategory_id ) ? absint( $test->subcategory_id ) : 0,
+			isset( $test->category_id ) ? absint( $test->category_id ) : 0,
+		) );
+		if ( empty( $cat_ids ) ) {
+			return false;
+		}
+		$ids_str = implode( ',', $cat_ids );
+		$names = $wpdb->get_col( "SELECT name FROM {$wpdb->prefix}gep_categories WHERE id IN ($ids_str)" );
+		foreach ( $names as $name ) {
+			if ( stripos( $name, 'sanskrit' ) !== false || stripos( $name, 'संस्कृत' ) !== false ) {
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
 // Dynamic & Physical XML Sitemap Generator for Google / Bing Search Engines
 if ( ! function_exists( 'gep_write_physical_sitemap' ) ) {
 	function gep_write_physical_sitemap() {

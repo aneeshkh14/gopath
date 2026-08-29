@@ -353,4 +353,15 @@ jQuery(document).ready(function($) {
             startAutoplay();
         }
     })();
+
+    // ─── Horizontal test-card rows: convert vertical mouse-wheel to horizontal
+    // scroll on desktop (mobile/touch already scrolls natively via overflow-x). ───
+    document.querySelectorAll('.gep-hscroll-row').forEach(function(row) {
+        row.addEventListener('wheel', function(e) {
+            if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; // let native horizontal wheel/trackpad through
+            if (row.scrollWidth <= row.clientWidth) return; // nothing to scroll
+            e.preventDefault();
+            row.scrollLeft += e.deltaY;
+        }, { passive: false });
+    });
 });

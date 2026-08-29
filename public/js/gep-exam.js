@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let timerInterval;
     let remainingSeconds = examData.remaining_seconds;
     let questionStartTime = Date.now(); // NTA-style per-Q time tracking
-    let currentFontSize = 16; // Text zoom support
+    let currentFontSize = 14; // Text zoom support — matches reduced default question font size (--gep-zoom-font-size)
     
     // --- Sectional Timings ---
     let sectionalTimings = [];
@@ -186,20 +186,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    langBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            switchLanguage(this.dataset.lang);
+    // Fixed-language ("Sanskrit paper") tests: the selector is already removed from the
+    // DOM server-side, but harden here too — never honor a stale sessionStorage language,
+    // and don't wire up any switch controls that might still exist.
+    if (examData.lang_locked) {
+        sessionStorage.removeItem('gep_current_lang');
+        switchLanguage(examData.lang || 'en');
+    } else {
+        langBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                switchLanguage(this.dataset.lang);
+            });
         });
-    });
-    
-    if (ntaLangSelect) {
-        ntaLangSelect.addEventListener('change', function() {
-            switchLanguage(this.value);
-        });
+
+        if (ntaLangSelect) {
+            ntaLangSelect.addEventListener('change', function() {
+                switchLanguage(this.value);
+            });
+        }
+
+        let savedLang = sessionStorage.getItem('gep_current_lang') || examData.lang || 'en';
+        switchLanguage(savedLang);
     }
-    
-    let savedLang = sessionStorage.getItem('gep_current_lang') || examData.lang || 'en';
-    switchLanguage(savedLang);
 
     // ─── Exit Exam confirmation dialog ─────────────────────────────────────
     const exitBtn = document.getElementById('gep-exit-btn');
@@ -1041,13 +1049,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize root font size CSS custom property on page load
     document.documentElement.style.setProperty('--gep-zoom-font-size', currentFontSize + 'px');
 
-    document.querySelectorAll('.gep-zoom-btn').forEach(btn => {
+    const zoomBtns = document.querySelectorAll('.gep-zoom-btn');
+    zoomBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             const action = this.dataset.zoom;
             if (action === 'in' && currentFontSize < 24) currentFontSize += 2;
             if (action === 'out' && currentFontSize > 12) currentFontSize -= 2;
-            
+
             document.documentElement.style.setProperty('--gep-zoom-font-size', currentFontSize + 'px');
+
+            // Give the last-clicked zoom control a clear active/pressed state
+            zoomBtns.forEach(b => {
+                b.classList.remove('active');
+                b.setAttribute('aria-pressed', 'false');
+            });
+            this.classList.add('active');
+            this.setAttribute('aria-pressed', 'true');
         });
     });
 

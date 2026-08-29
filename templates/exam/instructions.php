@@ -33,6 +33,11 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
     <div class="gep-instructions-header" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 25px 40px; color: #fff; display: flex; justify-content: space-between; align-items: center;">
         <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #fff;"><?php echo esc_html( $strings['title'] ); ?></h1>
         <div class="gep-lang-status">
+            <?php if ( ! empty( $is_lang_locked ) ) : ?>
+                <div style="display: flex; align-items: center; gap: 8px;" title="This test uses a fixed language and cannot be switched.">
+                    <span style="font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.12); padding: 6px 12px; border-radius: 8px; letter-spacing: 0.3px;">🔒 Fixed Language</span>
+                </div>
+            <?php else : ?>
             <div style="display: flex; align-items: center; gap: 8px;">
                 <label style="font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7);"><?php echo esc_html( $strings['lang'] ); ?></label>
                 <select id="gep-inst-lang-select" style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: #fff; font-weight: 700; cursor: pointer; outline: none;">
@@ -40,6 +45,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                     <option value="hi"<?php selected($_gep_lang, 'hi'); ?> style="color: #334155;">Hindi</option>
                 </select>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 

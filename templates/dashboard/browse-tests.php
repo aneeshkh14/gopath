@@ -79,14 +79,15 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                 <?php endforeach; ?>
             </select>
 
+            <?php $_initial_type = isset( $initial_type_filter ) ? $initial_type_filter : 'all'; ?>
             <!-- Test Type (Single, Combined, Series, etc.) Select Dropdown -->
             <select id="gep-type-select">
-                <option value="all"><?php echo esc_html($strings['all']); ?></option>
-                <option value="series"><?php echo esc_html($strings['series']); ?></option>
-                <option value="single"><?php echo esc_html($strings['single']); ?></option>
-                <option value="multiple"><?php echo esc_html($strings['multiple']); ?></option>
-                <option value="combined"><?php echo esc_html($strings['combined']); ?></option>
-                <option value="self_test"><?php echo esc_html($strings['self_test']); ?></option>
+                <option value="all"<?php selected( $_initial_type, 'all' ); ?>><?php echo esc_html($strings['all']); ?></option>
+                <option value="series"<?php selected( $_initial_type, 'series' ); ?>><?php echo esc_html($strings['series']); ?></option>
+                <option value="single"<?php selected( $_initial_type, 'single' ); ?>><?php echo esc_html($strings['single']); ?></option>
+                <option value="multiple"<?php selected( $_initial_type, 'multiple' ); ?>><?php echo esc_html($strings['multiple']); ?></option>
+                <option value="combined"<?php selected( $_initial_type, 'combined' ); ?>><?php echo esc_html($strings['combined']); ?></option>
+                <option value="self_test"<?php selected( $_initial_type, 'self_test' ); ?>><?php echo esc_html($strings['self_test']); ?></option>
             </select>
         </div>
         
@@ -655,6 +656,11 @@ jQuery(document).ready(function($) {
     $('#gep-cat-select').on('change', filterAssets);
     $('#gep-type-select').on('change', filterAssets);
     $('#gep-test-search').on('input', filterAssets);
+
+    // Apply any server-provided initial type filter (e.g. deep link from "Create Your Own Test")
+    if ($('#gep-type-select').val() !== 'all') {
+        filterAssets();
+    }
 });
 </script>
 

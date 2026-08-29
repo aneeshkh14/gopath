@@ -2553,8 +2553,10 @@ span.sa-text.active { display: inline; }
 }
 
 /* ─── Text Zoom via CSS Variable ─────────────────────────────────────────── */
+/* Default lowered from 16px so the main question text takes noticeably less
+   vertical space by default while staying readable; A+/A- still zoom from here. */
 :root {
-    --gep-zoom-font-size: 16px;
+    --gep-zoom-font-size: 14px;
 }
 
 /* Base Question Text zoom */
@@ -3713,4 +3715,49 @@ span.sa-text.active { display: inline; }
     .gep-opt-content {
         font-size: 13px !important;
     }
+}
+
+/* ─── Answer option letters: hide the visible A/B/C/D prefix only ──────────
+   The underlying radio/checkbox `value` and option letter mapping used for
+   shuffling/answer evaluation are untouched — this is a display-only change. */
+.gep-opt-prefix {
+    display: none !important;
+}
+
+/* ─── A+ / A- zoom controls: clear active/pressed state for the last-used control ─── */
+.gep-zoom-btn.active {
+    background: var(--gep-primary, #4f46e5) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.15) inset;
+}
+
+/* ─── Tables: contain overflow locally instead of letting the page scroll ───
+   Tables already render at 100% of their container's width; this adds a
+   safety net so a table with many/long unbreakable cells scrolls within its
+   own box on small screens rather than pushing the page wider. */
+.gep-q-content,
+.gep-passage-content,
+.gep-qp-qtext,
+.gep-qr-text,
+.gep-opt-text,
+.gep-exp-body,
+.gep-short-ans-wrapper,
+.gep-numerical-wrapper,
+.gep-ar-box,
+.gep-q-text-wrapper {
+    max-width: 100%;
+}
+.gep-q-content table,
+.gep-passage-content table,
+.gep-qp-qtext table,
+.gep-qr-text table,
+.gep-opt-text table,
+.gep-exp-body table,
+.gep-short-ans-wrapper table,
+.gep-numerical-wrapper table,
+.gep-ar-box table,
+.gep-q-text-wrapper table {
+    display: block !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
 }

@@ -381,7 +381,10 @@ class GEP_Import {
 				'option_c'    => wp_kses_post( $hi_opt_c ),
 				'option_d'    => wp_kses_post( $hi_opt_d ),
 				'option_e'    => wp_kses_post( $hi_opt_e ),
-				'explanation' => wp_kses_post( $hi_expl ),
+				// BUG FIX: Hindi/translated explanation was missing the nl2br() line-break
+				// conversion that the English explanation already gets via preprocess_content(),
+				// so plain newlines from imported content silently collapsed on render.
+				'explanation' => $this->preprocess_content( $hi_expl ),
 			);
 		}
 		$data['translation_enabled'] = $translation_enabled;

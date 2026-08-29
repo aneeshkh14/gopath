@@ -315,7 +315,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
     $current_view = isset($_GET['view']) ? $_GET['view'] : 'main'; 
 
     // Detect sovereign (dark theme) views
-    $is_sovereign_view = in_array( $current_view, array( 'main', 'supercoaching', 'live-classes', 'lectures', 'tests', 'pyqs', 'skill-academy', 'rank-predictor', 'profile', 'policies', 'purchases', 'support', 'watch' ) );
+    $is_sovereign_view = in_array( $current_view, array( 'main', 'supercoaching', 'live-classes', 'lectures', 'tests', 'pyqs', 'skill-academy', 'rank-predictor', 'profile', 'policies', 'purchases', 'support', 'watch', 'about' ) );
     ?>
 
     <div id="gep-page-wrapper" style="width:100%; height:100%; display:flex; flex-direction:column;">
@@ -358,38 +358,49 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                     return $url;
                 };
                 ?>
-                <div class="gep-nav-section-title">Learn</div>
+                <?php
+                // Required sidebar information architecture (client sketch + PDF spec).
+                // Test Series has 3 sub-items; existing routes not named in the spec
+                // (Live Classes, Video Lectures, SuperCoaching, Skill Academy, Typing
+                // Practice) are kept — nothing is deleted — grouped under Miscellaneous
+                // so they stay reachable without cluttering the required top-level menu.
+                $misc_views = array( 'live-classes', 'lectures', 'supercoaching', 'skill-academy', 'typing-test' );
+                $is_misc_open = in_array( $current_view, $misc_views, true );
+                ?>
                 <a href="<?php echo $get_nav_link('main'); ?>" class="<?php echo $current_view === 'main' ? 'active' : ''; ?>">
                     <span class="gep-nav-icon">🏠</span> Dashboard
                 </a>
-                <a href="<?php echo $get_nav_link('live-classes'); ?>" class="<?php echo $current_view === 'live-classes' ? 'active' : ''; ?>">
-                    <span class="gep-nav-icon">📖</span> Live Classes <span class="gep-badge-new">New</span>
-                </a>
-                <a href="<?php echo $get_nav_link('lectures'); ?>" class="<?php echo $current_view === 'lectures' ? 'active' : ''; ?>">
-                    <span class="gep-nav-icon">🎥</span> Video Lectures
-                </a>
-                <a href="<?php echo $get_nav_link('supercoaching'); ?>" class="<?php echo $current_view === 'supercoaching' ? 'active' : ''; ?>">
-                    <span class="gep-nav-icon">🎬</span> SuperCoaching
-                </a>
-                
-                <div class="gep-nav-section-title">Tests</div>
-                <a href="<?php echo $get_nav_link('tests'); ?>" class="<?php echo $current_view === 'tests' ? 'active' : ''; ?>">
-                    <span class="gep-nav-icon">📝</span> Test Series <span class="gep-badge-free">Free</span>
-                </a>
-                <a href="<?php echo $get_nav_link('pyqs'); ?>" class="<?php echo $current_view === 'pyqs' ? 'active' : ''; ?>">
-                    <span class="gep-nav-icon">📜</span> Previous Year PYQs <span class="gep-badge-new" style="background:#ef4444;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;margin-left:5px;font-weight:800;">New</span>
-                </a>
-                <a href="<?php echo $get_nav_link('skill-academy'); ?>" class="<?php echo $current_view === 'skill-academy' ? 'active' : ''; ?>">
-                    <span class="gep-nav-icon">📊</span> Skill Academy
-                </a>
-                <a href="<?php echo $get_nav_link('typing-test'); ?>" class="<?php echo $current_view === 'typing-test' ? 'active' : ''; ?>">
-                    <span class="gep-nav-icon">⌨️</span> Typing Practice
-                </a>
+
+                <div class="gep-nav-group open">
+                    <!-- Test Series' 3 required sub-items (Section-wise / Year-wise / Create Your Own Test)
+                         stay permanently expanded — only "Miscellaneous" below is collapsible. -->
+                    <a href="<?php echo $get_nav_link('tests'); ?>" class="gep-nav-group-toggle<?php echo $current_view === 'tests' && empty($_GET['type']) ? ' active' : ''; ?>">
+                        <span class="gep-nav-icon">📝</span> Test Series <span class="gep-badge-free">Free</span>
+                    </a>
+                    <div class="gep-nav-subitems">
+                        <a href="<?php echo $get_nav_link('tests'); ?>" class="<?php echo ( $current_view === 'tests' && empty($_GET['type']) ) ? 'active' : ''; ?>">Section-wise</a>
+                        <a href="<?php echo $get_nav_link('pyqs'); ?>" class="<?php echo $current_view === 'pyqs' ? 'active' : ''; ?>">Year-wise</a>
+                        <a href="<?php echo add_query_arg( 'type', 'self_test', (string) $get_nav_link('tests') ); ?>" class="<?php echo ( $current_view === 'tests' && isset($_GET['type']) && $_GET['type'] === 'self_test' ) ? 'active' : ''; ?>">Create Your Own Test</a>
+                    </div>
+                </div>
+
                 <a href="<?php echo $get_nav_link('rank-predictor'); ?>" class="<?php echo $current_view === 'rank-predictor' ? 'active' : ''; ?>">
-                    <span class="gep-nav-icon">📈</span> Rank Predictor
+                    <span class="gep-nav-icon">📈</span> Question Predictor
                 </a>
 
-                <div class="gep-nav-section-title">Miscellaneous</div>
+                <div class="gep-nav-group<?php echo $is_misc_open ? ' open' : ''; ?>">
+                    <button type="button" class="gep-nav-group-toggle gep-nav-group-toggle-btn">
+                        <span class="gep-nav-icon">🗂️</span> Miscellaneous
+                    </button>
+                    <div class="gep-nav-subitems">
+                        <a href="<?php echo $get_nav_link('live-classes'); ?>" class="<?php echo $current_view === 'live-classes' ? 'active' : ''; ?>">Live Classes</a>
+                        <a href="<?php echo $get_nav_link('lectures'); ?>" class="<?php echo $current_view === 'lectures' ? 'active' : ''; ?>">Video Lectures</a>
+                        <a href="<?php echo $get_nav_link('supercoaching'); ?>" class="<?php echo $current_view === 'supercoaching' ? 'active' : ''; ?>">SuperCoaching</a>
+                        <a href="<?php echo $get_nav_link('skill-academy'); ?>" class="<?php echo $current_view === 'skill-academy' ? 'active' : ''; ?>">Skill Academy</a>
+                        <a href="<?php echo $get_nav_link('typing-test'); ?>" class="<?php echo $current_view === 'typing-test' ? 'active' : ''; ?>">Typing Practice</a>
+                    </div>
+                </div>
+
                 <a href="<?php echo $get_nav_link('purchases'); ?>" class="<?php echo $current_view === 'purchases' ? 'active' : ''; ?>">
                     <span class="gep-nav-icon">💰</span> My Purchases
                 </a>
@@ -398,6 +409,9 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                 </a>
                 <a href="<?php echo $get_nav_link('policies'); ?>" class="<?php echo $current_view === 'policies' ? 'active' : ''; ?>">
                     <span class="gep-nav-icon">📜</span> Legal & Policies
+                </a>
+                <a href="<?php echo $get_nav_link('about'); ?>" class="<?php echo $current_view === 'about' ? 'active' : ''; ?>">
+                    <span class="gep-nav-icon">ℹ️</span> About Us
                 </a>
                 <a href="<?php echo $get_nav_link('support'); ?>" class="<?php echo $current_view === 'support' ? 'active' : ''; ?>">
                     <span class="gep-nav-icon">📧</span> Help & Support
@@ -435,6 +449,9 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                 </div>
                 
                 <div class="gep-header-actions">
+                    <a href="<?php echo esc_url( add_query_arg( 'view', 'support', (string) gep_get_url('dashboard') ) ); ?>" class="gep-header-contact-link" title="Contact Us">
+                        <span class="gep-header-contact-icon">✉️</span><span class="gep-header-contact-label">Contact Us</span>
+                    </a>
                     <div class="gep-header-notification-wrapper" id="gep-notif-trigger">
                         <div class="gep-notif-bell">🔔</div>
                         <?php 
@@ -565,6 +582,17 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                     }
                 });
             }
+
+            // Sidebar "Miscellaneous" group expand/collapse
+            document.querySelectorAll('.gep-nav-group-toggle-btn').forEach(function(btn) {
+                btn.setAttribute('aria-expanded', btn.closest('.gep-nav-group').classList.contains('open') ? 'true' : 'false');
+                btn.addEventListener('click', function() {
+                    const group = btn.closest('.gep-nav-group');
+                    if (!group) return;
+                    const nowOpen = group.classList.toggle('open');
+                    btn.setAttribute('aria-expanded', nowOpen ? 'true' : 'false');
+                });
+            });
 
             // Notification Panel Toggle
             const notifTrigger = document.getElementById('gep-notif-trigger');

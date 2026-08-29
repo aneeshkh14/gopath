@@ -92,8 +92,8 @@ foreach ( $section_counters as $cat_key => $val ) {
             
             <!-- Text Zoom Controls -->
             <div class="gep-zoom-controls" style="display:flex;gap:2px;background:rgba(255,255,255,0.1);padding:2px;border-radius:8px;">
-                <button type="button" class="gep-zoom-btn" data-zoom="out" title="Decrease Text Size" style="background:none;border:none;color:#f1f5f9;font-weight:800;font-size:12px;cursor:pointer;padding:2px 6px;border-radius:6px;">A-</button>
-                <button type="button" class="gep-zoom-btn" data-zoom="in" title="Increase Text Size" style="background:none;border:none;color:#f1f5f9;font-weight:800;font-size:12px;cursor:pointer;padding:2px 6px;border-radius:6px;">A+</button>
+                <button type="button" class="gep-zoom-btn" data-zoom="out" title="Decrease Text Size" aria-label="Decrease text size" aria-pressed="false" style="background:none;border:none;color:#f1f5f9;font-weight:800;font-size:12px;cursor:pointer;padding:2px 6px;border-radius:6px;">A-</button>
+                <button type="button" class="gep-zoom-btn" data-zoom="in" title="Increase Text Size" aria-label="Increase text size" aria-pressed="false" style="background:none;border:none;color:#f1f5f9;font-weight:800;font-size:12px;cursor:pointer;padding:2px 6px;border-radius:6px;">A+</button>
             </div>
 
             <div class="gep-lang-selector" style="display: none;">
@@ -148,11 +148,15 @@ foreach ( $section_counters as $cat_key => $val ) {
             
             <!-- NTA Style Language Selector Dropdown -->
             <div class="gep-nta-lang-selector-wrap" style="display: flex; align-items: center; gap: 8px;">
+                <?php if ( ! empty( $is_lang_locked ) ) : ?>
+                    <span style="font-size: 11px; font-weight: 800; color: #475569; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 10px; border-radius: 6px; letter-spacing: 0.3px;" title="This test uses a fixed language and cannot be switched.">🔒 Fixed Language</span>
+                <?php else : ?>
                 <label style="font-size: 11px; font-weight: 850; color: #475569; text-transform: uppercase; letter-spacing: 0.8px;">View In:</label>
                 <select class="gep-nta-lang-select" style="height: 32px; padding: 0 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: 700; font-size: 13px; color: #1e293b; cursor: pointer; outline: none; transition: border-color 0.2s;">
                     <option value="en"<?php selected($current_lang, 'en'); ?>>English</option>
                     <option value="hi"<?php selected($current_lang, 'hi'); ?>>Hindi</option>
                 </select>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -188,8 +192,8 @@ foreach ( $section_counters as $cat_key => $val ) {
             <div id="gep-question-display-wrapper" style="position: relative; flex: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; overflow: visible;">
 
                 <div class="gep-pane-header" style="background: #f1f5f9; padding: 10px 15px; border-bottom: 1px solid #cbd5e1; font-weight: 850; font-size: 12px; color: #475569; display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: 0.5px;">
-                    <span class="en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>">Question: <span class="gep-header-q-num">1</span> of <span class="gep-header-q-total"><?php echo count($questions); ?></span></span>
-                    <span class="hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>">प्रश्न: <span class="gep-header-q-num">1</span> का <span class="gep-header-q-total"><?php echo count($questions); ?></span></span>
+                    <span class="en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>">Question <span class="gep-header-q-num">1</span></span>
+                    <span class="hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>">प्रश्न <span class="gep-header-q-num">1</span></span>
                 </div>
                 <div id="gep-question-display" style="position: relative; flex: 1; min-height: 0; min-width: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px 100px 20px;">
 
