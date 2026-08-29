@@ -1,0 +1,222 @@
+:root {
+    --gep-primary: #6366f1;
+    --gep-primary-hover: #4f46e5;
+    --gep-secondary: #f4f4f5;
+    --gep-text: #18181b;
+    --gep-text-muted: #71717a;
+    --gep-bg: #f8fafc;
+    --gep-white: #ffffff;
+    --gep-border: #e4e4e7;
+    --gep-radius: 12px;
+    --gep-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.gep-auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    background-color: var(--gep-bg);
+    padding: 20px;
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.gep-auth-card {
+    background: var(--gep-white);
+    padding: 40px;
+    border-radius: var(--gep-radius);
+    box-shadow: var(--gep-shadow);
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid var(--gep-border);
+}
+
+.gep-auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.gep-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    margin-bottom: 15px;
+    border-radius: 12px;
+}
+
+.gep-auth-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gep-text);
+    margin: 0;
+}
+
+.gep-auth-header p {
+    color: var(--gep-text-muted);
+    margin-top: 5px;
+}
+
+.gep-form-group {
+    margin-bottom: 20px;
+}
+
+.gep-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.gep-form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gep-text);
+    margin-bottom: 8px;
+}
+
+.gep-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--gep-border);
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.2s;
+}
+
+.gep-input:focus {
+    outline: none;
+    border-color: var(--gep-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.gep-form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.gep-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: var(--gep-text-muted);
+}
+
+.gep-link {
+    color: var(--gep-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.gep-link:hover {
+    text-decoration: underline;
+}
+
+.gep-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.gep-btn-primary {
+    background-color: var(--gep-primary);
+    color: var(--gep-white);
+}
+
+.gep-btn-primary:hover {
+    background-color: var(--gep-primary-hover);
+    transform: translateY(-1px);
+}
+
+.gep-btn-block {
+    width: 100%;
+}
+
+.gep-auth-footer {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--gep-text-muted);
+    border-top: 1px solid var(--gep-border);
+    padding-top: 20px;
+}
+
+.gep-auth-alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.gep-alert-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.gep-alert-success {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+.gep-otp-inputs {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.gep-otp-box {
+    width: 50px;
+    height: 60px;
+    border: 2px solid var(--gep-border);
+    border-radius: 12px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gep-primary);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #f8fafc;
+}
+
+.gep-otp-box:focus {
+    border-color: var(--gep-primary);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    outline: none;
+    transform: translateY(-2px);
+}
+
+.gep-otp-info {
+    font-size: 14px;
+    color: var(--gep-text-muted);
+    line-height: 1.5;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+@media (max-width: 480px) {
+    .gep-form-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .gep-auth-card {
+        padding: 24px;
+    }
+    .gep-otp-box {
+        width: 42px;
+        height: 50px;
+        font-size: 20px;
+    }
+}

@@ -1,0 +1,696 @@
+/* Admin Specific Styling - Premium Edition */
+:root {
+    --admin-primary: #6366f1;
+    --admin-primary-dark: #4f46e5;
+    --admin-bg: #f8fafc;
+    --admin-card-bg: #ffffff;
+    --admin-text: #1e293b;
+    --admin-muted: #64748b;
+    --admin-border: #e2e8f0;
+    --admin-success: #10b981;
+    --admin-danger: #ef4444;
+    --admin-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+    --admin-shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+}
+
+/* Premium Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--admin-bg); }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+.gep-admin-wrap {
+    padding: 25px;
+    background: var(--admin-bg);
+    min-height: 100vh;
+}
+
+.gep-admin-wrap h1 {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--admin-text);
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+}
+
+.gep-admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.gep-stat-card {
+    background: var(--admin-card-bg);
+    padding: 20px 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--admin-border);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.gep-stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+}
+
+.gep-stat-card h3 {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--admin-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 15px;
+}
+
+.gep-stat-card .number {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--admin-text);
+    margin: 15px 0;
+}
+
+/* Premium Data Table System */
+.gep-admin-table-container {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid var(--admin-border);
+    overflow-x: auto; /* Allow horizontal scroll if content overflows */
+    overflow-y: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+    margin-top: 40px;
+    position: relative;
+    max-width: 100%; /* Keep in window area */
+}
+
+.gep-admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.gep-admin-table thead {
+    background: #f8fafc;
+    border-bottom: 2px solid var(--admin-border);
+}
+
+.gep-admin-table th {
+    padding: 18px 25px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--admin-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    position: sticky;
+    top: 0;
+    background: #f8fafc;
+    z-index: 10;
+}
+
+.gep-admin-table td {
+    padding: 18px 25px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--admin-text);
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.gep-admin-table tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+.gep-admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+.gep-admin-table tr:hover {
+    background: #fcfdff;
+}
+
+.gep-admin-table .row-title {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--admin-primary);
+    text-decoration: none;
+    line-height: 1.4;
+    display: block;
+}
+
+.gep-admin-table .row-actions {
+    margin-top: 6px;
+    font-size: 11px;
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
+}
+
+.gep-admin-table tr:hover .row-actions {
+    opacity: 1;
+}
+
+.gep-admin-table .row-actions a {
+    color: var(--admin-muted);
+    text-decoration: none;
+    margin-right: 12px;
+    font-weight: 600;
+}
+
+.gep-admin-table .row-actions a:hover {
+    color: var(--admin-primary);
+}
+
+.gep-admin-table .row-actions a.delete:hover {
+    color: var(--admin-danger);
+}
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-block;
+}
+
+.gep-admin-recent-activity {
+    margin-top: 30px;
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: 20px;
+    border: 1px solid var(--admin-border);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+}
+
+.gep-admin-recent-activity h2 {
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 30px;
+    color: var(--admin-text);
+}
+
+/* Premium Button System */
+.button.button-primary {
+    background: var(--admin-primary) !important;
+    border: none !important;
+    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39) !important;
+    transition: all 0.3s ease !important;
+}
+
+.button.button-primary:hover {
+    background: var(--admin-primary-dark) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.23) !important;
+}
+
+.button-discard {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+}
+
+.button-discard:hover {
+    background: #e2e8f0 !important;
+    color: #1e293b !important;
+    transform: translateY(-2px);
+}
+
+.button.button-primary:active {
+    transform: translateY(0);
+}
+
+/* Premium Form Controls */
+input[type="text"], input[type="number"], input[type="url"], input[type="password"], input[type="email"], select, textarea {
+    border: 2px solid var(--admin-border) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    transition: all 0.3s ease !important;
+    outline: none !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--admin-primary) !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Option Input Icons */
+.gep-option-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.gep-option-input-wrapper input {
+    padding-left: 55px !important;
+    width: 100%;
+}
+
+.gep-option-icon {
+    position: absolute;
+    left: 4px;
+    width: 42px;
+    height: 42px;
+    background: #f1f5f9;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: var(--admin-muted);
+    font-size: 14px;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+input:focus + .gep-option-icon {
+    background: var(--admin-primary);
+    color: #fff;
+}
+
+/* Magic Auto-Extract Button */
+.gep-magic-btn {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+    color: #0369a1 !important;
+    border: 1px solid #bae6fd !important;
+    padding: 10px 20px !important;
+    border-radius: 12px !important;
+    font-weight: 800 !important;
+    font-size: 11px !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+.gep-magic-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 15px -3px rgba(3, 105, 161, 0.1) !important;
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%) !important;
+}
+
+.gep-magic-btn span {
+    font-size: 16px;
+    animation: magic-sparkle 2s infinite;
+}
+
+@keyframes magic-sparkle {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(15deg); }
+}
+
+/* Refined Detection Alert */
+.gep-detection-alert {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    padding: 15px 25px;
+    border-radius: 18px;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    animation: slideInDown 0.4s ease;
+}
+
+@keyframes slideInDown {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+
+/* Premium Modal System */
+.gep-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.gep-modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 24px;
+    width: 550px;
+    max-width: 95%;
+    box-shadow: var(--admin-shadow-lg);
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Premium Admin Console (For complex forms) */
+.gep-admin-console {
+    background: #fff;
+    border-radius: 24px;
+    border: 1px solid var(--admin-border);
+    box-shadow: var(--admin-shadow);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.gep-admin-console-header {
+    background: #f8fafc;
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.gep-admin-console-body {
+    padding: 30px;
+}
+
+.gep-admin-console-footer {
+    padding: 20px 30px;
+    background: #f8fafc;
+    border-top: 1px solid var(--admin-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+/* Utility: Glass Effect */
+.gep-glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Premium Switch */
+.gep-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.gep-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.gep-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: .4s;
+}
+
+.gep-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+}
+
+.gep-switch input:checked + .slider {
+    background-color: var(--admin-primary);
+}
+
+.gep-switch input:focus + .slider {
+    box-shadow: 0 0 1px var(--admin-primary);
+}
+
+.gep-switch input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+.gep-switch .slider.round {
+    border-radius: 34px;
+}
+
+.gep-switch .slider.round:before {
+    border-radius: 50%;
+}
+
+/* Sovereign Admin Responsive Layer */
+@media (max-width: 1200px) {
+    .gep-admin-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 782px) {
+    .gep-admin-wrap {
+        padding: 15px;
+    }
+
+    .gep-admin-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gep-admin-console-body {
+        padding: 20px;
+    }
+
+    /* Table Responsiveness: Force Scroll */
+    .gep-admin-table-container {
+        border-radius: 12px;
+        margin-top: 20px;
+    }
+
+    .gep-admin-table th, .gep-admin-table td {
+        padding: 12px 10px;
+        font-size: 12px;
+    }
+
+    /* Mobile Form Stack */
+    .gep-admin-console-footer {
+        flex-direction: column;
+    }
+
+    .gep-admin-console-footer .button {
+        width: 100%;
+        margin: 0 !important;
+    }
+}
+
+/* High-Fidelity Size Containers for Admin Sections */
+.gep-admin-section-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Touch-Friendly Action Targets */
+@media (max-width: 600px) {
+    .gep-admin-table td .row-actions {
+        opacity: 1; /* Always show actions on touch devices */
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        font-size: 9px;
+    }
+}
+
+/* Premium Empty State Style System */
+.empty-state {
+    text-align: center !important;
+    padding: 120px 50px !important;
+}
+
+.empty-state div {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.empty-state h3 {
+    font-size: 24px !important;
+    font-weight: 900 !important;
+    color: #1e293b !important;
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
+    letter-spacing: -0.5px !important;
+    text-align: center !important;
+}
+
+.empty-state p {
+    color: #64748b !important;
+    font-weight: 600 !important;
+    max-width: 450px !important;
+    margin: 0 auto 40px !important;
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+    text-align: center !important;
+}
+
+.empty-state button, .empty-state .button {
+    margin: 0 auto !important;
+    display: inline-block !important;
+}
+
+/* Sticky Header & Filter Area */
+.gep-sticky-header-container {
+    position: sticky;
+    top: 32px;
+    z-index: 999;
+    background: var(--admin-bg, #f8fafc);
+    padding: 10px 0;
+    margin-bottom: 20px;
+    border-bottom: 1.5px solid var(--admin-border);
+    box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05);
+}
+
+@media (max-width: 782px) {
+    .gep-sticky-header-container {
+        top: 46px;
+    }
+}
+
+/* Compact Filter Forms */
+.gep-filter-form-compact {
+    background: #ffffff !important;
+    border: 1px solid var(--admin-border) !important;
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    margin-bottom: 0 !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.02) !important;
+}
+
+.gep-filter-form-compact label {
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    color: var(--admin-muted) !important;
+    margin-bottom: 4px !important;
+    display: block !important;
+    text-transform: uppercase !important;
+}
+
+.gep-filter-form-compact input,
+.gep-filter-form-compact select {
+    height: 32px !important;
+    padding: 2px 8px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+    border: 1.5px solid var(--admin-border) !important;
+    font-weight: 700 !important;
+    color: var(--admin-text) !important;
+}
+
+.gep-filter-form-compact input:focus,
+.gep-filter-form-compact select:focus {
+    border-color: var(--admin-primary) !important;
+    outline: none !important;
+}
+
+.gep-subject-quick-tabs .button {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    padding: 5px 12px !important;
+    border-radius: 8px !important;
+    height: auto !important;
+    line-height: 1.5 !important;
+}
+
+/* Tooltip help system to explain DB ID system gaps */
+.gep-info-tip {
+    position: relative;
+    cursor: help;
+    font-size: 11px;
+    background: rgba(99, 102, 241, 0.12);
+    color: var(--admin-primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    display: inline-block;
+    vertical-align: middle;
+    user-select: none;
+}
+.gep-info-tip:hover::after {
+    content: attr(title);
+    position: fixed; /* Use fixed to escape all overflow:hidden parents */
+    top: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin-top: 8px;
+    background: #0f172a;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 11px;
+    white-space: normal;
+    width: 260px;
+    z-index: 99999; /* Above everything including WP admin bar */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    line-height: 1.6;
+    text-align: left;
+    font-weight: 500;
+    pointer-events: none;
+}
+.gep-info-tip:hover::before {
+    display: none; /* Remove the arrow that can't align well with fixed positioning */
+}
+
+/* Sticky header for Question Bank page */
+.gep-sticky-header-container {
+    position: sticky;
+    top: 32px; /* WP admin bar height */
+    z-index: 100;
+    background: var(--admin-bg);
+    padding-bottom: 8px;
+    margin-bottom: 0;
+}
+
+/* Filter form: responsive wrap on smaller screens */
+.gep-filter-form-compact .gep-filter-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    align-items: flex-end !important;
+}
+.gep-filter-form-compact .gep-filter-grid > div {
+    flex: 1 1 120px !important;
+    min-width: 100px !important;
+    max-width: 200px !important;
+}
+
+/* Table container: allow overflow-y so tooltips can pop out */
+.gep-admin-table-container {
+    overflow-y: visible !important; /* Was hidden — was clipping tooltips */
+}
+
+/* WP admin notice styling override for plugin context */
+.gep-admin-wrap .notice.notice-success {
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+}
+.gep-admin-wrap .notice.notice-success p {
+    font-size: 14px !important;
+    margin: 0 !important;
+}
+

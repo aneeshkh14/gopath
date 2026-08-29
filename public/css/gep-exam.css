@@ -1,0 +1,3716 @@
+:root {
+    --gep-primary: #2563eb;
+    --gep-success: #10b981;
+    --gep-danger: #ef4444;
+    --gep-warning: #f59e0b;
+    --gep-info: #3b82f6;
+    --gep-neutral: #94a3b8;
+    --gep-bg: #f8fafc;
+    --gep-white: #ffffff;
+    --gep-header-h: 40px;
+    --gep-footer-h: 65px;
+    --gep-sidebar-w: 320px;
+}
+
+/* Exam Layout Wrapper */
+.gep-exam-fullscreen-container {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99999;
+    background: var(--gep-bg);
+    display: flex;
+    flex-direction: column;
+}
+
+body.gep-exam-locked {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;             /* Desktop: grid layout handles scroll internally */
+    background-color: var(--gep-bg);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    user-select: none;
+}
+/* Mobile: MUST allow body scroll — inner-scroll won't work without definite parent heights */
+@media (max-width: 992px) {
+    body.gep-exam-locked {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+}
+
+
+.gep-exam-layout {
+    display: grid;
+    grid-template-areas: 
+        "header header"
+        "main sidebar"
+        "footer footer";
+    grid-template-rows: var(--gep-header-h) 1fr var(--gep-footer-h);
+    grid-template-columns: 1fr var(--gep-sidebar-w);
+    height: 100vh;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+}
+
+/* Perfect Header */
+.gep-exam-header {
+    grid-area: header;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    z-index: 100;
+}
+
+.gep-header-left { display: flex; align-items: center; gap: 15px; }
+.gep-header-right { display: flex; align-items: center; gap: 20px; }
+
+.gep-logo-shield {
+    background: linear-gradient(135deg, var(--gep-primary) 0%, #1e40af 100%);
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 14px;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+.gep-header-meta { display: flex; flex-direction: column; }
+
+.gep-test-title { 
+    font-size: 16px; 
+    font-weight: 800; 
+    margin: 0; 
+    color: #fff;
+    line-height: 1.2;
+}
+
+.gep-subject-tag {
+    font-size: 11px;
+    font-weight: 800;
+    color: #38bdf8; /* Brighter blue for visibility */
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.gep-exam-timer-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.05);
+    padding: 4px 12px;
+    border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.gep-timer-dot {
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+}
+
+.gep-timer-dot.pulse {
+    animation: timerPulse 2s infinite;
+}
+
+@keyframes timerPulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.gep-exam-timer {
+    font-size: 16px;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+}
+
+.gep-lang-selector {
+    display: flex;
+    background: rgba(255,255,255,0.1);
+    padding: 2px;
+    border-radius: 8px;
+}
+
+.gep-lang-btn {
+    padding: 3px 8px;
+    border: none;
+    background: none;
+    color: #94a3b8;
+    font-weight: 800;
+    font-size: 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.gep-lang-btn.active {
+    background: #fff;
+    color: #1e293b;
+}
+
+.gep-user-badge .avatar {
+    width: 28px;
+    height: 28px;
+    background: var(--gep-success);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 12px;
+}
+
+/* High-Fidelity Main Area */
+.gep-exam-main {
+    grid-area: main;
+    padding: 0;
+    overflow: hidden;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.gep-question-card {
+    max-width: 100%;
+    margin: 0;
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.gep-q-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.gep-q-num {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--gep-primary);
+    letter-spacing: 1.5px;
+}
+
+.gep-q-marks {
+    display: flex;
+    gap: 10px;
+}
+
+.gep-q-marks span {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.gep-q-marks span.pos { background: #ecfdf5; color: #059669; }
+.gep-q-marks span.neg { background: #fef2f2; color: #dc2626; }
+
+.gep-q-content {
+    margin-bottom: 30px;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+.gep-q-text-wrapper {
+    display: none;
+    font-size: 20px;
+    line-height: 1.6;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.gep-q-text-wrapper.active { display: block; }
+
+/* Match the Following / Question Table Styles */
+.gep-q-content table {
+    width: 100%;
+    max-width: 100%; /* Changed from 600px to fix spacing */
+    margin: 15px 0;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.gep-q-content table th, 
+.gep-q-content table td {
+    border: 1px solid #e2e8f0;
+    padding: 12px 16px;
+    text-align: left;
+}
+.gep-q-content table th {
+    background: #f8fafc;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.gep-options-container {
+    display: grid;
+    gap: 15px;
+}
+
+.gep-option-card {
+    display: flex;
+    align-items: center;
+    padding: 18px 24px;
+    background: #fff;
+    border: 2px solid #f1f5f9;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gep-option-card:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    transform: translateX(8px);
+}
+
+.gep-option-card.selected {
+    background: #eff6ff;
+    border-color: var(--gep-primary);
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1);
+}
+
+.gep-option-card input[type="radio"] { display: none; }
+
+.gep-opt-indicator {
+    width: 32px;
+    height: 32px;
+    background: #f1f5f9;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: 900;
+    font-size: 14px;
+    margin-right: 20px;
+    transition: all 0.2s;
+}
+
+.gep-option-card.selected .gep-opt-indicator {
+    background: var(--gep-primary);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+.gep-opt-content {
+    flex: 1;
+}
+
+.gep-opt-content div { display: none; font-weight: 600; color: #334155; }
+.gep-opt-content div.active { display: block; min-height: 1em; }
+
+
+/* FIX: Language toggle for span-based option text (en-text/hi-text/sa-text) */
+.gep-opt-content span.en-text,
+.gep-opt-content span.hi-text,
+.gep-opt-content span.sa-text { display: none; font-weight: 600; color: #334155; }
+.gep-opt-content span.en-text.active,
+.gep-opt-content span.hi-text.active,
+.gep-opt-content span.sa-text.active { display: inline; }
+
+/* Also ensure question text spans work */
+span.en-text { display: none; }
+span.en-text.active { display: inline; }
+span.hi-text { display: none; }
+span.hi-text.active { display: inline; }
+span.sa-text { display: none; }
+span.sa-text.active { display: inline; }
+
+/* Generic language visibility toggles for block-level elements */
+.en-text, .hi-text, .sa-text {
+    display: none;
+}
+.en-text.active, .hi-text.active, .sa-text.active {
+    display: block;
+}
+
+.gep-opt-label { 
+    font-weight: 900; 
+    margin-right: 12px; 
+    color: var(--gep-primary);
+    font-size: 16px;
+}
+
+.gep-opt-text {
+    font-size: 17px;
+    font-weight: 500;
+    color: #334155;
+}
+
+/* Professional Sidebar */
+.gep-exam-sidebar {
+    grid-area: sidebar;
+    background: #f8fafc;
+    border-left: 1px solid #e2e8f0;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.gep-exam-sidebar h3 { 
+    font-size: 15px; 
+    font-weight: 800; 
+    margin: 0 0 25px 0; 
+    color: #1e293b; 
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.gep-palette-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 40px;
+}
+
+.gep-palette-btn {
+    aspect-ratio: 1;
+    border: none; /* Removed border */
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #fff;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gep-palette-btn:hover {
+    border-color: var(--gep-primary);
+    color: var(--gep-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.gep-palette-btn.active { 
+    transform: scale(1.1); 
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+    border: none; /* Keep borderless */
+    z-index: 1;
+    background: #eff6ff;
+    color: var(--gep-primary);
+}
+
+.gep-palette-btn.answered { background: #10b981; border-color: #10b981; color: #fff; }
+.gep-palette-btn.not-answered { background: #f43f5e; border-color: #f43f5e; color: #fff; }
+.gep-palette-btn.flagged { background: #6366f1; border-color: #6366f1; color: #fff; border-radius: 50%; }
+.gep-palette-btn.answered-flagged { background: #6366f1; border-color: #4f46e5; color: #fff; border-radius: 50%; position: relative; }
+.gep-palette-btn.answered-flagged::after { content: '●'; position: absolute; bottom: -4px; right: 0px; font-size: 14px; color: #4ade80; text-shadow: 0 0 2px rgba(0,0,0,0.5); }
+
+.gep-palette-btn.answered-flagged { 
+    background: #6366f1; 
+    border-color: #6366f1; 
+    color: #fff; 
+    position: relative; 
+}
+
+.gep-palette-btn.answered-flagged:after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.gep-palette-legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding-top: 25px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.legend-item {
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: capitalize;
+}
+
+.legend-item .box {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.box.answered { background: #10b981; }
+.box.not-answered { background: #f43f5e; }
+.box.flagged { background: #6366f1; border-radius: 50%; }
+.box.answered-flagged { background: #6366f1; position: relative; border-radius: 50%; }
+.box.answered-flagged:after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 10px;
+    height: 10px;
+    background: #10b981;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+.box.not-visited { background: #fff; border: 1px solid #e2e8f0; color: #64748b; }
+
+/* Hide redundant counters */
+.gep-palette-counters { display: none; }
+
+/* Perfect Footer */
+.gep-exam-footer {
+    grid-area: footer;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    padding: 0 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
+}
+
+.gep-btn {
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.gep-btn-secondary { background: #f1f5f9; color: #475569; }
+.gep-btn-warning { background: #6366f1; color: #fff; }
+.gep-btn-danger {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.1);
+}
+.gep-btn-danger:hover {
+    background: #fca5a5;
+    color: #991b1b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.2);
+}
+
+.gep-sidebar-actions {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.gep-btn-block {
+    width: 100%;
+    justify-content: center;
+    padding: 16px;
+    font-size: 16px;
+}
+
+.gep-btn-primary { 
+    background: var(--gep-primary); 
+    color: #fff; 
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); 
+}
+
+.gep-btn-primary:hover {
+    background: #1d4ed8;
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    transform: translateY(-2px);
+}
+
+.gep-btn:active { transform: translateY(0); }
+
+/* Sophisticated Circular Progress Indicators */
+.gep-circular-grid {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin: 40px 0;
+    flex-wrap: wrap;
+}
+
+.gep-circular-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 140px;
+}
+
+.circular-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.circular-svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.circular-bg {
+    fill: none;
+    stroke: #f1f5f9;
+    stroke-width: 8;
+}
+
+.circular-progress {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dasharray 1s ease-out;
+}
+
+.gep-circular-item.correct .circular-progress { stroke: var(--gep-success); }
+.gep-circular-item.wrong .circular-progress { stroke: var(--gep-danger); }
+.gep-circular-item.accuracy .circular-progress { stroke: var(--gep-primary); }
+
+.circular-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: 900;
+    color: #1e293b;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.circular-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-align: center;
+}
+
+/* Result Review Specifics */
+.gep-result-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.gep-result-summary {
+    margin-bottom: 50px;
+}
+
+.gep-summary-card {
+    background: #fff;
+    border-radius: 32px;
+    padding: 60px 50px;
+    text-align: center;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.02) 0%, #fff 40%);
+}
+
+.gep-summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+}
+
+.gep-summary-card.pass::before { background: var(--gep-success); }
+.gep-summary-card.fail::before { background: var(--gep-danger); }
+
+.gep-summary-card h2 {
+    font-size: 32px;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 40px;
+}
+
+.gep-score-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin: 40px 0;
+}
+
+.score-item {
+    background: rgba(248, 250, 252, 0.5);
+    padding: 30px 25px;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid #f1f5f9;
+    transition: all 0.3s;
+    backdrop-filter: blur(5px);
+}
+
+.score-item:hover {
+    background: #fff;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border-color: var(--gep-primary);
+}
+
+.score-item .label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.score-item .value {
+    font-size: 28px;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+/* Premium Status Badges */
+.gep-badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 25px;
+}
+
+.gep-badge-status.pass { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.gep-badge-status.fail { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+/* Subject Grid & Cards */
+.gep-subject-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.gep-subject-card {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 24px;
+    transition: all 0.3s;
+}
+
+.gep-subject-card:hover {
+    background: #fff;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border-color: var(--gep-primary);
+}
+
+.sub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.sub-name { font-size: 16px; font-weight: 800; color: #1e293b; }
+.sub-pct { font-size: 14px; font-weight: 900; color: var(--gep-primary); }
+
+.sub-progress-bar {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.sub-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gep-primary), #6366f1);
+    border-radius: 10px;
+}
+
+.sub-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.sub-stats b { color: #1e293b; }
+
+/* Premium Buttons */
+.gep-btn-premium-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 40px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #fff;
+    border-radius: 16px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: all 0.3s;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2);
+}
+
+.gep-btn-premium-home:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(15, 23, 42, 0.3);
+    color: #fff;
+}
+
+/* Solution Review Headers */
+.gep-section-header-styled {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.gep-section-header-styled h2 { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0; }
+.gep-item-count { background: #f1f5f9; padding: 6px 16px; border-radius: 100px; font-size: 13px; font-weight: 800; color: #475569; }
+
+/* Question Cards & Options */
+.q-meta { display: flex; flex-direction: column; gap: 4px; }
+.q-number { font-size: 12px; font-weight: 800; color: var(--gep-primary); text-transform: uppercase; letter-spacing: 1px; }
+.q-type { font-size: 11px; color: #94a3b8; font-weight: 600; }
+
+.q-status-badge {
+    padding: 6px 16px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.q-status-badge.correct { background: #dcfce7; color: #15803d; }
+.q-status-badge.wrong { background: #fee2e2; color: #b91c1c; }
+.q-status-badge.skipped { background: #f1f5f9; color: #475569; }
+
+.gep-q-text-premium {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.6;
+    color: #1e293b;
+    margin: 30px 0;
+}
+
+.gep-review-options-premium {
+    display: grid;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.gep-review-option-premium {
+    padding: 20px 25px;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+}
+
+.gep-review-option-premium.is-correct {
+    background: #ecfdf5;
+    border-color: #10b981;
+    color: #065f46;
+}
+
+.gep-review-option-premium.is-wrong {
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #991b1b;
+}
+
+.opt-content { display: flex; gap: 15px; align-items: flex-start; }
+.opt-prefix { 
+    width: 28px; 
+    height: 28px; 
+    background: #fff; 
+    border: 1px solid #e2e8f0; 
+    border-radius: 8px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 13px; 
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.gep-review-option-premium.is-correct .opt-prefix { background: #10b981; color: #fff; border-color: #10b981; }
+.gep-review-option-premium.is-wrong .opt-prefix { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+.opt-text { font-size: 16px; font-weight: 500; }
+
+/* Explanation Section */
+.gep-explanation-premium {
+    margin-top: 30px;
+    background: #f0f9ff;
+    border-radius: 16px;
+    padding: 25px;
+    border-left: 4px solid #0ea5e9;
+}
+
+.exp-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 800;
+    color: #0369a1;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.exp-body { font-size: 15px; line-height: 1.7; color: #334155; font-weight: 500; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Review Cards */
+.gep-review-section h3 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 30px;
+}
+
+.gep-review-card {
+    background: #fff;
+    border-radius: 24px;
+    border: 1px solid #e2e8f0;
+    padding: 40px;
+    margin-bottom: 30px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.gep-review-card:hover { 
+    transform: translateX(8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    border-color: var(--gep-primary);
+}
+
+.gep-review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.q-status {
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.gep-review-card.correct .q-status { background: #dcfce7; color: #15803d; }
+.gep-review-card.wrong .q-status { background: #fee2e2; color: #b91c1c; }
+.gep-review-card.skipped .q-status { background: #f1f5f9; color: #475569; }
+
+.gep-review-options {
+    display: grid;
+    gap: 12px;
+    margin: 25px 0;
+}
+
+.gep-review-option {
+    padding: 16px 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    border: 1px solid #f1f5f9;
+}
+
+.gep-review-option.is-correct {
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #166534;
+    font-weight: 700;
+}
+
+.gep-review-option.is-wrong {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #991b1b;
+}
+
+.gep-explanation {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.gep-explanation strong { color: var(--gep-primary); font-size: 14px; display: block; margin-bottom: 8px; }
+.exp-text { font-size: 15px; line-height: 1.6; color: #475569; }
+.gep-palette-btn.saving {
+    animation: savingPulse 1s infinite alternate;
+    opacity: 0.7;
+}
+
+@keyframes savingPulse {
+    from { transform: scale(1); opacity: 0.7; }
+    to { transform: scale(0.95); opacity: 0.4; }
+}
+
+.gep-palette-btn.save-success {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+    transform: scale(1.1);
+    z-index: 2;
+}
+
+.timer-danger {
+    background: rgba(239, 68, 68, 0.2) !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+.timer-danger .gep-exam-timer {
+    color: #ef4444;
+}
+
+/* Instructions Page Styling */
+.gep-instructions-fullscreen {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: #f8fafc;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #334155;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99999;
+}
+
+.gep-instructions-main-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #fff;
+    border-right: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.gep-step-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.gep-step-header {
+    background: #f8fafc;
+    padding: 30px 40px;
+    border-bottom: 1.5px solid #e2e8f0;
+}
+
+.gep-step-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+}
+
+.gep-test-meta-info {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.gep-meta-sep {
+    color: #cbd5e1;
+}
+
+.gep-step-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    background: #fff;
+}
+
+.gep-instructions-inner-content {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #475569;
+}
+
+.gep-instructions-inner-content h1,
+.gep-instructions-inner-content h2,
+.gep-instructions-inner-content h3 {
+    color: #0f172a;
+    font-weight: 800;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.gep-instructions-inner-summary {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 25px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #475569;
+    margin-bottom: 30px;
+}
+
+.gep-lang-choose-row {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.gep-lang-choose-row label {
+    font-weight: 800;
+    font-size: 14px;
+    color: #1e293b;
+    margin-right: 15px;
+}
+
+#gep-inst-lang-select {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1.5px solid #cbd5e1;
+    font-weight: 700;
+    font-size: 13px;
+    color: #1e293b;
+    outline: none;
+    background: #fff;
+}
+
+.gep-lang-warning {
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 700;
+    margin: 12px 0 0 0;
+    line-height: 1.5;
+}
+
+.gep-declaration-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 25px;
+}
+
+.gep-declaration-section h4 {
+    margin: 0 0 15px 0;
+    font-weight: 800;
+    font-size: 15px;
+    color: #1e293b;
+}
+
+.gep-step-footer {
+    padding: 25px 40px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.gep-step-footer .gep-btn {
+    padding: 12px 28px;
+    font-size: 14px;
+    font-weight: 800;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.gep-step-footer .gep-btn-primary {
+    background: var(--gep-primary);
+    color: #fff;
+}
+
+.gep-step-footer .gep-btn-primary:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+
+.gep-step-footer .gep-btn-primary:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.gep-step-footer .gep-btn-secondary {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.gep-step-footer .gep-btn-secondary:hover {
+    background: #cbd5e1;
+}
+
+/* Sidebar Styling */
+.gep-instructions-sidebar {
+    width: 280px;
+    background: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 60px;
+    box-shadow: inset 5px 0 15px rgba(0,0,0,0.02);
+    box-sizing: border-box;
+}
+
+.gep-profile-card {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gep-avatar-large {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: #6366f1;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+    margin-bottom: 15px;
+    border: 4px solid #fff;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.gep-avatar-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gep-username-large {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.gep-checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.gep-checkbox-container input {
+    display: none;
+}
+
+.gep-checkmark {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.gep-checkbox-container:hover .gep-checkmark {
+    border-color: var(--gep-primary);
+    transform: scale(1.05);
+}
+
+.gep-checkbox-container input:checked ~ .gep-checkmark {
+    background: var(--gep-primary);
+    border-color: var(--gep-primary);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.gep-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 8px;
+    top: 4px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+}
+
+.gep-checkbox-container input:checked ~ .gep-checkmark:after {
+    display: block;
+}
+
+.gep-label-text {
+    user-select: none;
+}
+
+.gep-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.gep-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Secure Exam Environment Initialization Overlay */
+.gep-secure-init-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.gep-secure-init-card {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+    border-radius: 32px;
+    padding: 50px 40px;
+    max-width: 550px;
+    width: 100%;
+    text-align: center;
+    animation: scaleUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.gep-secure-init-icon {
+    font-size: 64px;
+    margin-bottom: 25px;
+    animation: pulse 2s infinite;
+}
+
+.gep-secure-init-card h2 {
+    font-size: 26px;
+    font-weight: 950;
+    color: #0f172a;
+    margin: 0 0 15px 0;
+    letter-spacing: -0.5px;
+}
+
+.gep-secure-init-card p {
+    font-size: 15px;
+    color: #475569;
+    line-height: 1.6;
+    margin: 0 0 35px 0;
+    font-weight: 600;
+}
+
+.gep-enter-secure-btn {
+    width: 100%;
+    padding: 18px 30px;
+    background: linear-gradient(135deg, var(--gep-primary) 0%, #1e40af 100%);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.gep-enter-secure-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+}
+
+.gep-enter-secure-btn:active {
+    transform: translateY(0);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ==========================================================================
+   RESPONSIVENESS AND MOBILE ADAPTATIONS
+   ========================================================================== */
+
+/* Show/Hide Text Helpers */
+.gep-show-mobile { display: none; }
+.gep-hide-mobile { display: inline; }
+
+/* Palette Toggle Button */
+.gep-palette-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-weight: 800;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.gep-palette-toggle:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+@media (max-width: 992px) {
+    .gep-show-mobile { display: inline; }
+    .gep-hide-mobile { display: none; }
+    
+    .gep-palette-toggle {
+        display: flex;
+    }
+    
+    .gep-exam-layout {
+        grid-template-areas: 
+            "header"
+            "main"
+            "footer";
+        grid-template-columns: 1fr;
+        grid-template-rows: var(--gep-header-h) 1fr auto !important;
+    }
+    
+    .gep-exam-sidebar {
+        grid-area: unset !important;
+        position: fixed;
+        right: -100%;
+        top: var(--gep-header-h);
+        bottom: 0;
+        width: 320px;
+        height: calc(100vh - var(--gep-header-h));
+        max-height: none !important;
+        z-index: 1000;
+        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+        border-left: 1px solid #cbd5e1;
+    }
+    
+    .gep-exam-sidebar.active {
+        right: 0 !important;
+    }
+    
+    .gep-exam-main {
+        padding: 10px 10px !important;
+    }
+
+    .gep-exam-footer {
+        height: auto !important;
+        padding: 10px 16px !important;
+        min-height: 60px !important;
+    }
+
+    .gep-sidebar-collapse-toggle {
+        display: none !important;
+    }
+
+    .gep-instructions-sidebar {
+        display: none !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .gep-exam-header {
+        padding: 0 10px !important;
+    }
+    .gep-logo-shield {
+        display: none !important;
+    }
+    .gep-zoom-controls {
+        display: flex !important;
+        margin-left: 2px !important;
+        gap: 1px !important;
+        padding: 1px !important;
+        border-radius: 6px !important;
+    }
+    .gep-zoom-btn {
+        padding: 2px 4px !important;
+        font-size: 10px !important;
+        border-radius: 4px !important;
+    }
+    .gep-test-title {
+        font-size: 13px !important;
+        max-width: 100px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .gep-exam-timer {
+        font-size: 15px !important;
+    }
+    .gep-exam-timer-wrapper {
+        padding: 4px 8px !important;
+    }
+    .gep-palette-toggle span {
+        display: inline !important;
+        margin-left: 2px !important;
+    }
+    .gep-lang-selector {
+        display: none !important;
+    }
+    .gep-exam-footer {
+        padding: 8px 10px !important;
+        gap: 6px !important;
+    }
+    .gep-btn {
+        padding: 8px 12px !important;
+        font-size: 11px !important;
+        gap: 4px !important;
+    }
+    .gep-q-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px !important;
+        padding: 10px 15px !important;
+    }
+    .gep-q-marks {
+        align-self: flex-end;
+    }
+    .gep-option-card {
+        padding: 12px 15px !important;
+    }
+
+    /* Section Bar Wrapper Column Layout */
+    .gep-sections-bar-wrapper {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        padding: 8px 10px !important;
+    }
+    .gep-sections-tabs {
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        max-width: 100% !important;
+        display: flex !important;
+        gap: 6px !important;
+        padding-bottom: 4px !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    .gep-sections-tabs::-webkit-scrollbar {
+        height: 3px;
+    }
+    .gep-sections-tabs::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 2px;
+    }
+    .gep-section-tab {
+        flex-shrink: 0 !important;
+        padding: 5px 10px !important;
+        font-size: 11px !important;
+        margin-right: 0 !important;
+    }
+    .gep-nta-lang-selector-wrap {
+        align-self: flex-end !important;
+    }
+
+    /* Instructions page spacing */
+    .gep-step-header {
+        padding: 15px 20px !important;
+    }
+    .gep-step-header h2 {
+        font-size: 18px !important;
+    }
+    .gep-step-content {
+        padding: 20px !important;
+    }
+    .gep-step-footer {
+        padding: 15px 20px !important;
+    }
+}
+
+/* ==========================================================================
+   Exam Window UI Refinements & Collapsible Sidebar
+   ========================================================================== */
+
+/* Section Tabs Header */
+.gep-sections-bar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 5px 30px;
+    margin-bottom: 0;
+}
+
+.gep-sections-title {
+    font-size: 11px;
+    font-weight: 850;
+    color: #475569;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.gep-sections-tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.gep-section-tab {
+    padding: 4px 12px;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 800;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.gep-section-tab:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-color: #94a3b8;
+}
+
+.gep-section-tab.active {
+    background: #0f172a;
+    color: #fff;
+    border-color: #0f172a;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+}
+
+/* Sidebar Profile Header */
+.gep-sidebar-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 25px;
+    background: rgba(255, 255, 255, 0.4);
+    border-bottom: 1px solid #e2e8f0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.gep-sidebar-avatar-wrap .avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #6366f1;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 15px;
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.15);
+}
+
+.gep-sidebar-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+/* Sidebar Active Section Header */
+.gep-sidebar-section-header {
+    background: #e2e8f0;
+    padding: 8px 25px;
+    font-size: 11px;
+    font-weight: 850;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+/* Palette Counters Grid */
+.gep-palette-counters {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e2e8f0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.gep-palette-counters .counter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gep-palette-counters .badge {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.gep-palette-counters .badge.answered { background: var(--gep-success); }
+.gep-palette-counters .badge.flagged { background: var(--gep-warning); }
+.gep-palette-counters .badge.not-visited { background: #fff; border: 1.5px solid #cbd5e1; color: #475569; }
+.gep-palette-counters .badge.answered-flagged {
+    background: #6366f1;
+    position: relative;
+}
+.gep-palette-counters .badge.answered-flagged::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ade80;
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+}
+.gep-palette-counters .badge.not-answered { background: var(--gep-danger); }
+
+.gep-palette-counters .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    line-height: 1.2;
+}
+
+/* Sidebar Question Grid Container */
+.gep-palette-grid-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 25px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.gep-palette-grid-container::-webkit-scrollbar { width: 5px; }
+.gep-palette-grid-container::-webkit-scrollbar-track { background: transparent; }
+.gep-palette-grid-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+/* Sidebar Bottom Actions Panel */
+.gep-sidebar-bottom-actions {
+    background: #f8fafc;
+    border-top: 1px solid #cbd5e1;
+    padding: 20px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.gep-sidebar-bottom-actions .gep-row-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.gep-sidebar-bottom-actions .gep-btn {
+    padding: 14px 10px;
+    font-size: 14px;
+    font-weight: 800;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    text-align: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.gep-sidebar-bottom-actions .gep-btn-info {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.gep-sidebar-bottom-actions .gep-btn-info:hover {
+    background: #bae6fd;
+}
+
+.gep-sidebar-bottom-actions .gep-btn-primary {
+    background: var(--gep-primary);
+    color: #fff;
+}
+
+.gep-sidebar-bottom-actions .gep-btn-primary:hover {
+    background: #1d4ed8;
+}
+
+/* Footer layout modification */
+.gep-exam-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    background: #f1f5f9;
+    border-top: 1.5px solid #cbd5e1;
+    z-index: 101;
+}
+
+.gep-footer-left, .gep-footer-right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.gep-footer-left .gep-btn, .gep-footer-right .gep-btn {
+    padding: 12px 24px;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 10px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.gep-footer-right .gep-btn-primary {
+    background: #06b6d4;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(6, 182, 212, 0.2);
+}
+
+.gep-footer-right .gep-btn-primary:hover {
+    background: #0891b2;
+}
+
+/* Sidebar Collapse mechanics */
+.gep-exam-layout {
+    transition: grid-template-columns 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gep-exam-layout.sidebar-collapsed {
+    grid-template-columns: 1fr 0px !important;
+}
+
+.gep-exam-sidebar {
+    position: relative;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    background: #f8fafc;
+    border-left: 1px solid #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    z-index: 100;
+    height: 100%;
+    max-height: calc(100vh - var(--gep-header-h) - var(--gep-footer-h));
+    min-height: 0;
+}
+
+.gep-exam-sidebar.collapsed {
+    width: 0px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    border: none;
+}
+
+.gep-exam-sidebar.collapsed > *:not(.gep-sidebar-collapse-toggle) {
+    display: none;
+}
+
+/* Collapse Toggle Button */
+.gep-sidebar-collapse-toggle {
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 60px;
+    background: #0f172a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-right: none;
+    border-radius: 10px 0 0 10px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 102;
+    padding: 0;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.gep-sidebar-collapse-toggle:hover {
+    background: #1e293b;
+    left: -22px;
+    width: 22px;
+}
+
+/* Standard Checked Radio Indicators */
+.gep-option-card {
+    border-radius: 12px;
+    border: 1.5px solid #e2e8f0;
+    padding: 15px 20px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.gep-option-card:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: none; /* remove hover transform translation */
+}
+
+.gep-option-card.selected {
+    background: #f0fdf4;
+    border-color: #10b981;
+}
+
+.gep-option-card input[type="radio"],
+.gep-option-card input[type="checkbox"] {
+    display: none;
+}
+
+.gep-palette-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 800;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.gep-opt-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.gep-option-card.selected .gep-opt-indicator {
+    border-color: #10b981;
+    background: #fff;
+    box-shadow: none;
+}
+
+.gep-option-card.selected .gep-opt-indicator::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+    display: block;
+}
+
+/* Checkbox (MSQ) Indicator checked state checkmark */
+.gep-options-container[data-qtype="msq"] .gep-opt-indicator {
+    border-radius: 4px;
+}
+
+.gep-options-container[data-qtype="msq"] .gep-option-card.selected .gep-opt-indicator::after {
+    border-radius: 0;
+    width: 4px;
+    height: 8px;
+    border: solid #10b981;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+    background: transparent;
+    margin-bottom: 2px;
+}
+
+.gep-opt-content {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.gep-opt-prefix {
+    font-weight: 800;
+    color: #475569;
+    margin-right: 5px;
+}
+
+/* Reduced Question Font Size */
+.gep-q-text-wrapper {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.6;
+    color: #1e293b;
+}
+
+.gep-exam-main {
+    padding: 20px 20px !important;
+}
+
+.gep-q-header {
+    margin-bottom: 20px;
+}
+
+/* Popup Modals Styling */
+.gep-popup-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99990;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gep-popup-modal-content {
+    background: #fff;
+    border-radius: 20px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 80%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    overflow: hidden;
+    position: relative;
+    animation: gepModalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes gepModalSlideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.gep-popup-modal-content h2 {
+    margin: 0;
+    padding: 25px 30px;
+    border-bottom: 1.5px solid #e2e8f0;
+    font-size: 20px;
+    font-weight: 850;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+}
+
+.gep-popup-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 28px;
+    color: #64748b;
+    cursor: pointer;
+    font-weight: 600;
+    transition: color 0.2s;
+    z-index: 1;
+}
+
+.gep-popup-modal-close:hover {
+    color: #0f172a;
+}
+
+.gep-popup-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #475569;
+}
+
+.gep-popup-modal-body::-webkit-scrollbar { width: 6px; }
+.gep-popup-modal-body::-webkit-scrollbar-track { background: transparent; }
+.gep-popup-modal-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+/* Question paper modal listing */
+.gep-qpaper-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.gep-qpaper-item {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1.5px solid #f1f5f9;
+}
+
+.gep-qpaper-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.gep-qp-qnum {
+    font-size: 12px;
+    font-weight: 850;
+    color: var(--gep-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.gep-qp-qtext {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-top: 8px;
+    margin-bottom: 12px;
+}
+
+.gep-qp-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.gep-qp-opt {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #475569;
+    font-weight: 600;
+}
+
+.gep-qp-opt-lbl {
+    font-weight: 800;
+    color: #94a3b8;
+    margin-right: 6px;
+}
+
+/* ─── NTA-Style 5-State Palette ─────────────────────────────────────────── */
+.gep-palette-btn.not-visited { background: #fff; border: 1px solid #cbd5e1; color: #64748b; }
+.gep-palette-btn.not-answered { background: #ef4444; border-color: #ef4444; color: #fff; border: none; }
+.gep-palette-btn.answered { background: #10b981; border-color: #10b981; color: #fff; border: none; }
+.gep-palette-btn.flagged { background: #8b5cf6; border-color: #8b5cf6; color: #fff; border-radius: 50% !important; border: none; }
+.gep-palette-btn.answered-flagged { background: #8b5cf6; border-color: #6d28d9; color: #fff; border-radius: 50% !important; position: relative; border: none; }
+.gep-palette-btn.answered-flagged::after {
+    content: '';
+    position: absolute; top: 3px; right: 3px;
+    width: 8px; height: 8px;
+    background: #10b981; border-radius: 50%; border: 2px solid #fff;
+}
+
+/* NTA Palette Legend */
+.gep-palette-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding: 12px 0;
+    border-top: 1px solid #e2e8f0;
+    margin: 12px 0;
+}
+.gep-legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;
+}
+.gep-legend-dot {
+    width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0;
+}
+.gep-legend-dot.answered { background: #10b981; }
+.gep-legend-dot.not-answered { background: #ef4444; }
+.gep-legend-dot.not-visited { background: #fff; border: 2px solid #cbd5e1; }
+.gep-legend-dot.flagged { background: #8b5cf6; border-radius: 50%; }
+.gep-legend-dot.answered-flagged { background: #8b5cf6; border-radius: 50%; position: relative; }
+
+/* ─── Question Type Badge ─────────────────────────────────────────────────── */
+.gep-qtype-badge {
+    font-size: 10px; font-weight: 800; padding: 3px 10px;
+    border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.gep-qtype-mcq { background: #eff6ff; color: #2563eb; }
+.gep-qtype-multi_select,.gep-qtype-msq { background: rgba(99,102,241,0.1); color: #6366f1; }
+.gep-qtype-numerical { background: rgba(245,158,11,0.1); color: #d97706; border: 1px solid rgba(245,158,11,0.3); }
+.gep-qtype-matching { background: rgba(16,185,129,0.1); color: #059669; }
+.gep-qtype-assertion_reason { background: rgba(239,68,68,0.1); color: #dc2626; }
+.gep-qtype-true_false { background: rgba(107,114,128,0.1); color: #4b5563; }
+.gep-qtype-short_answer { background: #f1f5f9; color: #475569; }
+
+/* ─── Assertion-Reason Box ────────────────────────────────────────────────── */
+.gep-ar-box {
+    background: linear-gradient(135deg, rgba(37,99,235,0.04), rgba(99,102,241,0.04));
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+.gep-ar-assertion { color: #2563eb; font-weight: 700; line-height: 1.6; }
+.gep-ar-reason { color: #059669; font-weight: 700; line-height: 1.6; }
+
+/* ─── Numerical Answer Input ────────────────────────────────────────────── */
+.gep-numerical-wrapper input.gep-numerical-ans {
+    border: 2px solid #f59e0b !important;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 22px;
+    font-weight: 800;
+    color: #1e293b;
+    transition: all 0.2s;
+    -moz-appearance: textfield;
+}
+.gep-numerical-wrapper input.gep-numerical-ans:focus {
+    outline: none;
+    border-color: #d97706 !important;
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+}
+.gep-numerical-ans::-webkit-outer-spin-button,
+.gep-numerical-ans::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* ─── Calculator Button ────────────────────────────────────────────────── */
+.gep-calc-btn {
+    padding: 5px 12px;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.3);
+    color: #d97706;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.gep-calc-btn:hover { background: rgba(245,158,11,0.15); transform: translateY(-1px); }
+.gep-calc-key:hover { filter: brightness(1.2); transform: scale(1.05); }
+.gep-calc-key:active { transform: scale(0.97); }
+
+/* ─── Palette Counters (NTA-style) ──────────────────────────────────────── */
+.gep-palette-counters {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.counter-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.counter-item .badge {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff;
+}
+.counter-item .badge.answered { background: #10b981; }
+.counter-item .badge.not-answered { background: #ef4444; }
+.counter-item .badge.flagged { background: #8b5cf6; border-radius: 50%; }
+.counter-item .badge.answered-flagged { background: #8b5cf6; border-radius: 50%; }
+.counter-item .badge.not-visited { background: #fff; border: 2px solid #cbd5e1; color: #64748b; }
+.counter-item .label { font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase; text-align: center; letter-spacing: 0.3px; }
+
+/* ─── Analytics Charts Section (Result Page) ────────────────────────────── */
+.gep-analytics-section {
+    background: #fff;
+    border-radius: 24px;
+    border: 1px solid #e2e8f0;
+    padding: 32px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+}
+.gep-analytics-charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 24px;
+}
+.gep-chart-card {
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 20px;
+}
+.gep-chart-card h4 {
+    font-size: 12px; font-weight: 800; color: #64748b;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin: 0 0 16px;
+}
+.gep-chart-canvas-wrap { position: relative; height: 200px; }
+
+/* Percentile Badge */
+.gep-percentile-banner {
+    display: flex; align-items: center; justify-content: center;
+    gap: 16px; padding: 20px; margin-bottom: 24px;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border-radius: 16px; color: #f1f5f9;
+    border: 1px solid #334155;
+}
+.gep-percentile-num {
+    font-size: 48px; font-weight: 900;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1;
+}
+.gep-percentile-desc { font-size: 14px; font-weight: 600; color: #94a3b8; }
+
+/* Weak Topics */
+.gep-weak-topics-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.gep-weak-topic-row {
+    display: flex; align-items: center; gap: 12px;
+    background: #fef2f2; border: 1px solid #fecaca;
+    border-radius: 12px; padding: 10px 16px;
+}
+.gep-weak-topic-name { flex: 1; font-size: 13px; font-weight: 700; color: #991b1b; }
+.gep-weak-topic-pct { font-size: 20px; font-weight: 900; color: #ef4444; }
+
+/* ─── Mobile Responsive Overrides ──────────────────────────────────────── */
+@media (max-width: 768px) {
+    .gep-analytics-charts-grid { grid-template-columns: 1fr; }
+    .gep-chart-canvas-wrap { height: 160px; }
+    .gep-percentile-num { font-size: 36px; }
+}
+
+/* ─── NTA-Style Question Type Badge ──────────────────────────────────────── */
+.gep-qtype-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    background: #f1f5f9;
+    color: #475569;
+}
+.gep-qtype-numerical { background: rgba(245,158,11,0.12); color: #b45309; }
+.gep-qtype-msq, .gep-qtype-multi_select { background: rgba(99,102,241,0.12); color: #4f46e5; }
+.gep-qtype-assertion_reason { background: rgba(16,185,129,0.1); color: #065f46; }
+.gep-qtype-matching { background: rgba(139,92,246,0.12); color: #7c3aed; }
+.gep-qtype-true_false { background: rgba(59,130,246,0.1); color: #1d4ed8; }
+
+/* ─── NTA 5-State Palette Legend ─────────────────────────────────────────── */
+.gep-palette-legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+    padding: 12px 0;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 12px;
+}
+.gep-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.gep-legend-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.gep-legend-dot.answered { background: #10b981; }
+.gep-legend-dot.not-answered { background: #f43f5e; }
+.gep-legend-dot.not-visited { background: #fff; border: 2px solid #94a3b8; }
+.gep-legend-dot.flagged { background: #6366f1; border-radius: 50%; }
+.gep-legend-dot.answered-flagged { background: #6366f1; border-radius: 50%; position: relative; }
+.gep-legend-dot.answered-flagged::after {
+    content: '';
+    position: absolute;
+    top: 1px; right: 1px;
+    width: 6px; height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    border: 1px solid #fff;
+}
+
+/* ─── Assertion-Reason Question Box ─────────────────────────────────────── */
+.gep-ar-box {
+    background: linear-gradient(135deg, rgba(16,185,129,0.04), rgba(99,102,241,0.04));
+    border: 1px solid rgba(99,102,241,0.15);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+}
+.gep-ar-assertion {
+    background: rgba(59,130,246,0.06);
+    border-left: 3px solid #3b82f6;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+    color: #1e40af;
+    font-weight: 600;
+    line-height: 1.6;
+}
+.gep-ar-reason {
+    background: rgba(16,185,129,0.06);
+    border-left: 3px solid #10b981;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+    color: #065f46;
+    font-weight: 600;
+    line-height: 1.6;
+}
+
+/* ─── Numerical Input ────────────────────────────────────────────────────── */
+.gep-numerical-ans {
+    border: 2px solid #f59e0b !important;
+    background: #fffbeb;
+    transition: all 0.2s;
+}
+.gep-numerical-ans:focus {
+    outline: none;
+    border-color: #d97706 !important;
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+    background: #fff;
+}
+
+/* ─── Calculator Keys Hover ──────────────────────────────────────────────── */
+.gep-calc-key:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05);
+}
+.gep-calc-key:active {
+    transform: scale(0.95);
+}
+
+/* ─── Zoom Buttons ───────────────────────────────────────────────────────── */
+.gep-zoom-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.gep-zoom-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* ─── Opt Prefix Letter Style (A/B/C/D) ─────────────────────────────────── */
+.gep-opt-prefix {
+    font-size: 13px;
+    font-weight: 900;
+    color: #64748b;
+    margin-right: 10px;
+    min-width: 20px;
+}
+.gep-option-card.selected .gep-opt-prefix { color: var(--gep-primary); }
+
+/* ─── Mobile Exam Window ─────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .gep-exam-main { padding: 20px 16px; }
+    .gep-palette-legend { grid-template-columns: 1fr; }
+    .gep-exam-footer { padding: 0 16px; gap: 8px; flex-wrap: wrap; }
+    .gep-exam-footer .gep-footer-left, .gep-exam-footer .gep-footer-right { gap: 6px; }
+    .gep-btn { padding: 10px 14px; font-size: 12px; }
+}
+
+/* Split Screen Mobile */
+@media (max-width: 900px) {
+    #gep-exam-split-wrapper { 
+        flex-direction: column !important; 
+    }
+    #gep-exam-split-wrapper.has-passage #gep-active-passage-pane { 
+        flex: 1 1 50% !important;
+        height: 50% !important;
+        max-height: 50% !important;
+        min-height: 0 !important;
+        margin-bottom: 10px !important;
+        display: flex !important;
+    }
+    #gep-exam-split-wrapper.has-passage #gep-question-display-wrapper {
+        flex: 1 1 50% !important;
+        height: 50% !important;
+        min-height: 0 !important;
+    }
+    #gep-exam-split-wrapper.has-passage #gep-question-display {
+        padding: 10px 15px 60px 15px !important;
+    }
+    #gep-question-display {
+        padding: 10px 15px 60px 15px !important;
+    }
+}
+
+/* ─── Global Table Styles inside Exam Portal ──────────────────────────────── */
+.gep-q-content table,
+.gep-passage-content table,
+.gep-qp-qtext table,
+.gep-qr-text table,
+.gep-opt-text table,
+.gep-exp-body table,
+.gep-short-ans-wrapper table,
+.gep-numerical-wrapper table,
+.gep-ar-box table,
+.gep-q-text-wrapper table {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 15px 0 !important;
+    border-collapse: collapse !important;
+    background: #fff !important;
+    border-radius: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+}
+.gep-q-content table th,
+.gep-q-content table td,
+.gep-passage-content table th,
+.gep-passage-content table td,
+.gep-qr-text table th,
+.gep-qr-text table td,
+.gep-exp-body table th,
+.gep-exp-body table td,
+.gep-q-text-wrapper table th,
+.gep-q-text-wrapper table td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 10px 14px !important;
+    text-align: left !important;
+    color: #1e293b !important;
+}
+.gep-q-content table th,
+.gep-passage-content table th,
+.gep-qr-text table th,
+.gep-exp-body table th,
+.gep-q-text-wrapper table th {
+    background: #f1f5f9 !important;
+    font-weight: 800 !important;
+}
+
+/* ─── Text Zoom via CSS Variable ─────────────────────────────────────────── */
+:root {
+    --gep-zoom-font-size: 16px;
+}
+
+/* Base Question Text zoom */
+.gep-q-text-wrapper,
+.gep-ar-assertion,
+.gep-ar-reason {
+    font-size: calc(var(--gep-zoom-font-size) + 2px) !important;
+}
+
+/* Options, passage pane, and other content wrappers */
+.gep-q-content,
+.gep-opt-content,
+.gep-numerical-wrapper,
+.gep-short-ans-wrapper,
+#gep-active-passage-pane {
+    font-size: var(--gep-zoom-font-size) !important;
+}
+
+/* Force common text elements inside the zoom wrappers to inherit the parent's zoom font-size.
+   We exclude MathJax (mjx-container, .MathJax) and sub/sup elements to preserve math/formatting structures. */
+.gep-q-text-wrapper *:not(mjx-container):not(mjx-container *):not(.MathJax):not(.MathJax *):not(sub):not(sup),
+.gep-ar-assertion *:not(mjx-container):not(mjx-container *):not(.MathJax):not(.MathJax *):not(sub):not(sup),
+.gep-ar-reason *:not(mjx-container):not(mjx-container *):not(.MathJax):not(.MathJax *):not(sub):not(sup),
+.gep-opt-content *:not(mjx-container):not(mjx-container *):not(.MathJax):not(.MathJax *):not(sub):not(sup),
+.gep-numerical-wrapper *:not(mjx-container):not(mjx-container *):not(.MathJax):not(.MathJax *):not(sub):not(sup),
+.gep-short-ans-wrapper *:not(mjx-container):not(mjx-container *):not(.MathJax):not(.MathJax *):not(sub):not(sup),
+#gep-active-passage-pane *:not(mjx-container):not(mjx-container *):not(.MathJax):not(.MathJax *):not(sub):not(sup) {
+    font-size: inherit !important;
+}
+
+/* ─── NTA Style Option Rows (no card border, native radio/checkbox visible, left aligned, smaller font) ─── */
+.gep-options-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+}
+
+.gep-option-card {
+    border: none !important;
+    background: transparent !important;
+    padding: 2px 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+    transition: none !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+}
+
+.gep-option-card:hover {
+    background: transparent !important;
+    border-color: transparent !important;
+    transform: none !important;
+}
+
+.gep-option-card.selected {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Visually show native radio and checkbox inputs */
+.gep-option-card input[type="radio"],
+.gep-option-card input[type="checkbox"] {
+    display: inline-block !important;
+    position: static !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0 8px 0 0 !important;
+    cursor: pointer !important;
+    vertical-align: middle !important;
+}
+
+/* Hide simulated indicators */
+.gep-opt-indicator {
+    display: none !important;
+}
+
+/* Floating Scroll-to-Options Action Button */
+#gep-scroll-to-options-btn {
+    position: absolute;
+    bottom: 25px;
+    right: 25px;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35) !important;
+    cursor: pointer;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important;
+    font-weight: 900 !important;
+    z-index: 999;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#gep-scroll-to-options-btn:hover {
+    transform: scale(1.1);
+    background: #4338ca !important;
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5) !important;
+}
+
+/* Floating Scroll Buttons */
+.gep-floating-scroll-wrapper {
+    position: absolute;
+    bottom: 90px;
+    right: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.gep-floating-scroll-wrapper.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+.gep-float-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    color: #4f46e5;
+    transition: background 0.2s;
+    outline: none;
+}
+.gep-float-btn:hover {
+    background: #f1f5f9;
+}
+
+
+/* Option Content Styling: Left alignment and smaller font */
+.gep-opt-content {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 14px !important; /* thoda font chhota */
+    font-weight: 500 !important;
+    color: #1e293b !important;
+    text-align: left !important; /* left alignment */
+}
+
+.gep-opt-prefix {
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    color: #475569 !important;
+}
+
+.gep-opt-content .en-text,
+.gep-opt-content .hi-text,
+.gep-opt-content .sa-text {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #1e293b !important;
+    display: none !important;
+}
+
+.gep-opt-content .en-text.active,
+.gep-opt-content .hi-text.active,
+.gep-opt-content .sa-text.active {
+    display: block !important;  /* block not inline-block — p tags inside need block context */
+    min-height: 1em !important;
+    line-height: 1.5 !important;
+}
+
+
+/* Remove paragraph margin inside option cards to eliminate excessive vertical gaps */
+.gep-option-card p {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+}
+
+
+/* NTA legend dots count display centering */
+.gep-legend-dot {
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 10px !important;
+    font-weight: 850 !important;
+    color: #fff !important;
+}
+.gep-legend-dot.not-visited {
+    color: #475569 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   WHITE THEME & LEFT ALIGNMENT OVERRIDES (As requested by user/client)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Force clean pure white background on exam page layout and main header */
+.gep-exam-fullscreen-container {
+    background: #ffffff !important;
+}
+
+
+
+.gep-zoom-btn {
+    color: #475569 !important;
+}
+
+.gep-lang-btn {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+.gep-lang-btn.active {
+    background: var(--gep-primary) !important;
+    color: #ffffff !important;
+    border-color: var(--gep-primary) !important;
+}
+
+.gep-user-badge span.avatar {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* Force strict left-alignment for all question contents and typography children */
+.gep-q-content,
+.gep-q-content *,
+.gep-q-text-wrapper,
+.gep-q-text-wrapper *,
+.gep-ar-box,
+.gep-ar-box *,
+.gep-opt-content,
+.gep-opt-content *,
+#gep-active-passage-pane,
+#gep-active-passage-pane *,
+.gep-passage-content,
+.gep-passage-content * {
+    text-align: left !important;
+}
+
+/* Ensure paragraph margins inside question bodies don't cause centering issues */
+.gep-q-content p,
+.gep-q-text-wrapper p,
+#gep-active-passage-pane p {
+    text-align: left !important;
+    margin-left: 0 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MOBILE RESPONSIVENESS AND ELEMENT SCROLL HEIGHT OVERRIDES
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    /* Set dynamic viewport height to fill mobile screens perfectly */
+    .gep-exam-layout {
+        height: 100dvh !important;
+        grid-template-rows: var(--gep-header-h) 1fr auto !important;
+    }
+    
+    .gep-exam-main {
+        padding: 8px !important;
+        height: auto !important; /* Avoid grid auto-height collapsing bug */
+        min-height: 0 !important;
+    }
+
+    /* Keep sections bar clean, inline and compact on small devices */
+    .gep-sections-bar-wrapper {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 6px 8px !important;
+        gap: 6px !important;
+    }
+    
+    .gep-sections-tabs {
+        display: flex !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        gap: 6px !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    .gep-sections-tabs::-webkit-scrollbar {
+        display: none !important;
+    }
+    
+    .gep-section-tab {
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        border-radius: 6px !important;
+    }
+
+    .gep-sections-title {
+        display: none !important; /* Hide label to save horizontal width */
+    }
+
+    .gep-nta-lang-selector-wrap {
+        gap: 4px !important;
+    }
+
+    .gep-nta-lang-select {
+        height: 28px !important;
+        font-size: 11px !important;
+        padding: 0 4px !important;
+    }
+    
+    .gep-scroll-arrow-btn {
+        height: 28px !important;
+        width: 28px !important;
+        font-size: 11px !important;
+    }
+
+    /* Force height restriction on wrappers so the question display scroll container works */
+    #gep-exam-split-wrapper {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important; /* Allow flex: 1 to control height */
+        min-height: 0 !important;
+        flex: 1 !important;
+        margin-bottom: 5px !important;
+        gap: 8px !important;
+    }
+
+    #gep-question-display-wrapper {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        flex: 1 !important;
+        border-radius: 8px !important;
+    }
+
+    #gep-question-display {
+        flex: 1 !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        padding: 12px 12px 80px 12px !important; /* spacing below for clear footer view */
+    }
+
+    /* Compact footer bar in a single row to maximize vertical space */
+    .gep-exam-footer {
+        padding: 8px 10px !important;
+        gap: 4px !important;
+        flex-wrap: nowrap !important;
+        height: 50px !important;
+        min-height: 50px !important;
+    }
+
+    .gep-btn {
+        padding: 8px 10px !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        border-radius: 8px !important;
+    }
+
+    /* Instructions page responsiveness overrides */
+    .gep-instructions-scroll-wrapper {
+        padding: 10px !important;
+    }
+    .gep-exam-instructions-container {
+        border-radius: 12px !important;
+    }
+    .gep-instructions-header {
+        padding: 15px 20px !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        align-items: flex-start !important;
+    }
+    .gep-instructions-header h1 {
+        font-size: 18px !important;
+    }
+    .gep-instructions-content {
+        padding: 20px !important;
+        font-size: 13px !important;
+    }
+    .gep-instructions-footer {
+        padding: 20px !important;
+        gap: 15px !important;
+    }
+    #start-exam-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 12px !important;
+    }
+}
+
+/* Custom scrollbars for scrollable panes inside exam window */
+#gep-active-passage-pane::-webkit-scrollbar,
+#gep-question-display::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+    display: block !important;
+}
+#gep-active-passage-pane::-webkit-scrollbar-track,
+#gep-question-display::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border-radius: 10px !important;
+}
+#gep-active-passage-pane::-webkit-scrollbar-thumb,
+#gep-question-display::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.4) !important;
+    border-radius: 10px !important;
+}
+#gep-active-passage-pane::-webkit-scrollbar-thumb:hover,
+#gep-question-display::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.6) !important;
+}
+
+/* E2E CSS rule assertions matching */
+.gep-q-content {
+    text-align: left;
+}
+.gep-opt-content {
+    text-align: left !important;
+}
+.gep-option-card p {
+    display: inline;
+}
+.gep-ar-box {
+    text-align: left;
+}
+.gep-passage-content {
+    text-align: left;
+}
+
+/* ==========================================================================
+   ██████╗ ███████╗██████╗ ███████╗███████╗ ██████╗████████╗
+   ██╔══██╗██╔════╝██╔══██╗██╔════╝██╔════╝██╔════╝╚══██╔══╝
+   ██████╔╝█████╗  ██████╔╝█████╗  █████╗  ██║        ██║
+   ██╔═══╝ ██╔══╝  ██╔══██╗██╔══╝  ██╔══╝  ██║        ██║
+   ██║     ███████╗██║  ██║██║     ███████╗╚██████╗   ██║
+   ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝     ╚══════╝ ╚═════╝   ╚═╝
+   MOBILE-FIRST EXAM ENGINE — COMPLETE OVERHAUL
+   Fixes: options cut off, blank space, scroll broken, touch targets
+   ========================================================================== */
+
+/* ── CORE: Make main area scrollable on ALL screen sizes ─────────────────── */
+#gep-question-display {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* ── TOUCH: Bigger tap targets for option cards ──────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+    .gep-option-card {
+        min-height: 56px;
+        padding: 14px 16px !important;
+    }
+    .gep-opt-indicator {
+        width: 36px !important;
+        height: 36px !important;
+        flex-shrink: 0 !important;
+    }
+    .gep-btn {
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+}
+
+/* ── TABLET (≤992px) — Sidebar slides out, single column ─────────────────── */
+@media (max-width: 992px) {
+
+    /* CRITICAL: Allow main area to scroll instead of clipping */
+    .gep-exam-main {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        min-height: 0;
+        height: 100%;
+    }
+
+    #gep-question-display {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        height: 100% !important;
+        max-height: 100% !important;
+    }
+
+    .gep-exam-layout {
+        grid-template-rows: var(--gep-header-h) 1fr auto !important;
+        height: 100dvh !important;
+    }
+
+    .gep-exam-sidebar {
+        width: min(320px, 90vw) !important;
+    }
+
+    /* Passage split layout: stack vertically on tablet */
+    .gep-passage-split {
+        flex-direction: column !important;
+        height: auto !important;
+    }
+    .gep-active-passage-pane {
+        max-height: 40vh !important;
+        border-right: none !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+}
+
+/* ── MOBILE (≤640px) — Full phone layout ─────────────────────────────────── */
+@media (max-width: 640px) {
+
+    /* ── Variables ─────────────────────────────────────────── */
+    :root {
+        --gep-header-h: 48px;
+        --gep-footer-h: 60px;
+    }
+
+    /* ── Full viewport fix — critical for phone browsers ──── */
+    .gep-exam-fullscreen-container,
+    .gep-exam-layout {
+        height: 100dvh !important;
+        height: -webkit-fill-available !important;
+    }
+
+    /* ── Header: compact for small screens ────────────────── */
+    .gep-exam-header {
+        padding: 0 8px !important;
+        height: var(--gep-header-h) !important;
+        min-height: var(--gep-header-h) !important;
+    }
+    .gep-header-left { gap: 8px !important; }
+    .gep-header-right { gap: 6px !important; }
+    .gep-logo-shield { display: none !important; }
+    .gep-header-meta { gap: 0 !important; }
+    .gep-subject-tag { font-size: 9px !important; letter-spacing: 0.5px !important; }
+    .gep-test-title {
+        font-size: 12px !important;
+        max-width: 90px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .gep-exam-timer { font-size: 14px !important; font-weight: 900 !important; }
+    .gep-exam-timer-wrapper { padding: 3px 7px !important; gap: 5px !important; }
+    .gep-timer-dot { width: 6px !important; height: 6px !important; }
+    .gep-zoom-controls { display: none !important; } /* Hide A+/A- on tiny screens */
+    .gep-lang-selector { display: none !important; }
+    .gep-palette-toggle {
+        padding: 5px 10px !important;
+        font-size: 12px !important;
+    }
+    .gep-palette-toggle span { display: none !important; }
+
+    /* ── Exit button ──────────────────────────────────────── */
+    .gep-exit-btn {
+        padding: 5px 10px !important;
+        font-size: 12px !important;
+        border-radius: 8px !important;
+    }
+
+    /* ── Main area: scrollable, no clipping ───────────────── */
+    .gep-exam-main {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 !important;
+        min-height: 0;
+    }
+
+    /* ── Question display area ────────────────────────────── */
+    #gep-question-display {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px 10px 80px 10px !important; /* bottom pad for footer overlap */
+        height: auto !important;
+        max-height: calc(100dvh - var(--gep-header-h) - var(--gep-footer-h) - 50px) !important;
+    }
+
+    /* ── Section tabs bar ─────────────────────────────────── */
+    .gep-sections-bar-wrapper {
+        padding: 6px 10px !important;
+        gap: 6px !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    .gep-sections-title { display: none !important; }
+    .gep-sections-tabs {
+        display: flex !important;
+        gap: 6px !important;
+        flex-shrink: 0;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 2px;
+    }
+    .gep-section-tab {
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+    }
+    .gep-nta-lang-selector-wrap select {
+        font-size: 12px !important;
+        padding: 4px 6px !important;
+    }
+
+    /* ── Question card ────────────────────────────────────── */
+    .gep-question-card { animation: none !important; }
+
+    .gep-q-header {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 10px 12px !important;
+        margin-bottom: 10px !important;
+    }
+    .gep-q-num { font-size: 11px !important; }
+    .gep-q-marks span { padding: 3px 7px !important; font-size: 10px !important; }
+
+    /* ── Question text ────────────────────────────────────── */
+    .gep-q-text-wrapper {
+        font-size: 15px !important;
+        line-height: 1.65 !important;
+        padding: 0 12px 10px 12px !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    .gep-q-content {
+        margin-bottom: 10px !important;
+        padding: 0 !important;
+    }
+
+    /* ── Tables inside questions ──────────────────────────── */
+    .gep-q-content table {
+        display: block !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        width: 100% !important;
+        font-size: 13px !important;
+    }
+    .gep-q-content table td,
+    .gep-q-content table th {
+        padding: 8px 10px !important;
+        min-width: 80px;
+        white-space: normal !important;
+    }
+
+    /* ── Options container ────────────────────────────────── */
+    .gep-options-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        padding: 0 10px !important;
+    }
+
+    /* ── Option cards ─────────────────────────────────────── */
+    .gep-option-card {
+        padding: 12px 14px !important;
+        border-radius: 12px !important;
+        min-height: 52px !important;
+        align-items: flex-start !important;
+        /* Remove hover transform — causes layout jump on mobile */
+        transform: none !important;
+        transition: background 0.15s, border-color 0.15s !important;
+        -webkit-tap-highlight-color: transparent;
+        cursor: pointer !important;
+        user-select: none;
+    }
+    .gep-option-card:hover { transform: none !important; }
+    .gep-option-card:active { background: #eff6ff !important; }
+
+    .gep-opt-indicator {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        font-size: 13px !important;
+        margin-right: 12px !important;
+        border-radius: 8px !important;
+        flex-shrink: 0 !important;
+        align-self: flex-start !important;
+        margin-top: 2px !important;
+    }
+    .gep-opt-content {
+        font-size: 14px !important;
+        line-height: 1.55 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    .gep-opt-content div { font-size: 14px !important; }
+
+    /* ── Passage split layout ─────────────────────────────── */
+    .gep-passage-split {
+        flex-direction: column !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+    #gep-active-passage-pane {
+        max-height: 35vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        border-right: none !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+        padding: 12px !important;
+    }
+    #gep-question-side {
+        height: auto !important;
+        overflow-y: visible !important;
+        padding: 10px !important;
+    }
+
+    /* ── Footer navigation ────────────────────────────────── */
+    .gep-exam-footer {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: auto !important;
+        min-height: var(--gep-footer-h) !important;
+        max-height: none !important;
+        padding: 8px 10px env(safe-area-inset-bottom) !important;
+        z-index: 200 !important;
+        background: #fff !important;
+        border-top: 2px solid #e2e8f0 !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        align-items: center !important;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.08) !important;
+    }
+    .gep-btn {
+        padding: 8px 10px !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        border-radius: 10px !important;
+        gap: 3px !important;
+        flex: 1 1 0 !important;
+        text-align: center !important;
+        justify-content: center !important;
+        min-width: 0 !important;
+        white-space: nowrap !important;
+    }
+    .gep-btn-review { order: 1; }
+    .gep-btn-clear   { order: 2; max-width: 60px !important; }
+    .gep-btn-prev    { order: 3; max-width: 50px !important; }
+    .gep-btn-next    { order: 4; }
+
+    /* ── Sidebar overlay ──────────────────────────────────── */
+    .gep-exam-sidebar {
+        width: 100vw !important;
+        right: -100vw !important;
+    }
+    .gep-exam-sidebar.active {
+        right: 0 !important;
+    }
+    .gep-palette-grid {
+        grid-template-columns: repeat(7, 1fr) !important;
+        gap: 6px !important;
+    }
+    .gep-palette-btn {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 11px !important;
+    }
+
+    /* ── Secure init overlay ──────────────────────────────── */
+    .gep-secure-init-card {
+        margin: 0 16px !important;
+        padding: 24px 20px !important;
+        border-radius: 16px !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+    .gep-secure-init-card h2 { font-size: 20px !important; }
+    #gep-enter-secure-btn {
+        width: 100% !important;
+        padding: 14px !important;
+    }
+
+    /* ── Submit overlay ───────────────────────────────────── */
+    .gep-submit-overlay .gep-submit-card {
+        margin: 0 16px !important;
+        max-height: 80vh !important;
+        overflow-y: auto !important;
+    }
+
+    /* ── Violation overlay ────────────────────────────────── */
+    .gep-violation-overlay {
+        padding: 16px !important;
+    }
+
+    /* ── Scroll down indicator button ─────────────────────── */
+    .gep-scroll-down-hint {
+        width: 38px !important;
+        height: 38px !important;
+        bottom: calc(var(--gep-footer-h) + 10px) !important;
+    }
+}
+
+/* ── TINY PHONES (≤390px) — Extra compact ────────────────────────────────── */
+@media (max-width: 390px) {
+    .gep-test-title { max-width: 70px !important; }
+    .gep-opt-content { font-size: 13px !important; }
+    .gep-q-text-wrapper { font-size: 14px !important; }
+    .gep-btn { font-size: 10px !important; padding: 7px 6px !important; }
+    .gep-palette-grid { grid-template-columns: repeat(6, 1fr) !important; }
+}
+
+/* ── iOS Safari fix — prevents address bar resize breaking layout ─────────── */
+@supports (-webkit-touch-callout: none) {
+    .gep-exam-fullscreen-container,
+    .gep-exam-layout {
+        height: -webkit-fill-available !important;
+    }
+    .gep-exam-footer {
+        padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+    }
+}
+
+/* ── Android Chrome status bar fix ──────────────────────────────────────── */
+@media screen and (display-mode: fullscreen) {
+    .gep-exam-header {
+        padding-top: env(safe-area-inset-top) !important;
+    }
+}
+
+/* ==========================================================================
+   MOBILE EXAM — SIMPLE NATURAL SCROLL (NO FIXED HEIGHTS, NO COMPLEX FLEX)
+   ─────────────────────────────────────────────────────────────────────────
+   Philosophy: On mobile, treat exam like a normal webpage.
+   Body scrolls. No overflow:hidden anywhere. No flex:1/min-height:0 chains.
+   Desktop keeps the fancy grid. Mobile keeps it dead simple.
+   ========================================================================== */
+
+@media (max-width: 992px) {
+
+    /* ── 1. Kill the CSS Grid layout — switch to simple block ── */
+    .gep-exam-layout {
+        display: block !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow: visible !important;
+    }
+
+    /* ── 2. Sticky header at top ── */
+    .gep-exam-header {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 200 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0 10px !important;
+    }
+
+    /* ── 3. Hide sidebar — toggled by palette button ── */
+    .gep-exam-sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        right: -100% !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9999 !important;
+        transition: right 0.3s ease !important;
+        overflow-y: auto !important;
+    }
+    .gep-exam-sidebar.active {
+        right: 0 !important;
+    }
+
+    /* ── 4. Main area: block, scrolls with body ── */
+    .gep-exam-main {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 10px 10px 140px 10px !important; /* bottom pad for fixed footer */
+    }
+
+    /* ── 5. Sections bar: horizontal scroll ── */
+    .gep-sections-bar-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        white-space: nowrap !important;
+        padding: 8px 10px !important;
+        gap: 8px !important;
+    }
+    .gep-section-tab {
+        display: inline-block !important;
+        white-space: nowrap !important;
+        font-size: 12px !important;
+        padding: 5px 12px !important;
+    }
+    .gep-sections-title { display: none !important; }
+
+    /* ── 6. Split wrapper: block layout (passage on top, question below) ── */
+    #gep-exam-split-wrapper {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        gap: 0 !important;
+    }
+
+    /* ── 7. Passage pane: scrollable box at top ── */
+    #gep-active-passage-pane {
+        display: block !important;
+        width: 100% !important;
+        max-height: 200px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        border-right: none !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+        border-radius: 10px 10px 0 0 !important;
+        background: #f8fafc !important;
+        box-sizing: border-box !important;
+        margin-bottom: 0 !important;
+    }
+    #gep-passage-body {
+        height: auto !important;
+        overflow: visible !important;
+        padding: 12px !important;
+        font-size: 14px !important;
+        line-height: 1.6 !important;
+    }
+
+    /* ── 8. Question wrapper: simple block, no height limit ── */
+    #gep-question-display-wrapper {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: #fff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0 0 10px 10px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* ── 9. Question pane header ── */
+    .gep-pane-header {
+        padding: 10px 12px !important;
+        font-size: 11px !important;
+        position: sticky !important;
+        top: 40px !important; /* Below exam header */
+        z-index: 100 !important;
+        background: #f1f5f9 !important;
+    }
+
+    /* ── 10. Question display: natural height, NO overflow:hidden, NO scroll ── */
+    #gep-question-display {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 14px 12px 20px 12px !important;
+    }
+
+    /* ── 11. Question blocks: visible, auto height ── */
+    .gep-question-block {
+        display: none; /* JS shows active one */
+        height: auto !important;
+        overflow: visible !important;
+    }
+    .gep-question-block[style*="display: block"],
+    .gep-question-block[style*="display:block"] {
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    /* ── 12. Question card: full width, no clipping ── */
+    .gep-question-card {
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        box-sizing: border-box !important;
+        padding: 0 !important;
+    }
+
+    /* ── 13. Question header ── */
+    .gep-q-header {
+        margin-bottom: 16px !important;
+        padding-bottom: 10px !important;
+    }
+
+    /* ── 14. Question text ── */
+    .gep-q-text-wrapper,
+    .gep-q-content {
+        font-size: 15px !important;
+        line-height: 1.7 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        overflow: visible !important;
+        height: auto !important;
+        width: 100% !important;
+    }
+
+    /* ── 15. Options: full column, all visible ── */
+    .gep-options-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        overflow: visible !important;
+        height: auto !important;
+        width: 100% !important;
+        margin-top: 14px !important;
+    }
+
+    /* ── 16. Option cards: large touch targets, full width ── */
+    .gep-option-card {
+        display: flex !important;
+        align-items: flex-start !important;
+        width: 100% !important;
+        min-height: 54px !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 14px 12px !important;
+        border-radius: 12px !important;
+        transform: none !important;
+        box-sizing: border-box !important;
+        cursor: pointer !important;
+        -webkit-tap-highlight-color: transparent !important;
+        touch-action: manipulation !important;
+    }
+    .gep-option-card:hover { transform: none !important; }
+    .gep-option-card:active { background: #eff6ff !important; }
+
+    /* ── 17. Option content text ── */
+    .gep-opt-content {
+        flex: 1 !important;
+        min-width: 0 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        overflow: visible !important;
+        height: auto !important;
+        font-size: 14px !important;
+        line-height: 1.6 !important;
+    }
+    .gep-opt-indicator {
+        flex-shrink: 0 !important;
+        margin-right: 12px !important;
+        margin-top: 2px !important;
+    }
+    .gep-opt-prefix {
+        flex-shrink: 0 !important;
+        margin-right: 8px !important;
+        font-weight: 700 !important;
+        color: var(--gep-primary) !important;
+    }
+
+    /* ── 18. Tables inside questions ── */
+    .gep-q-content table {
+        display: block !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        max-width: 100% !important;
+        font-size: 13px !important;
+    }
+
+    /* ── 19. Header compact for mobile ── */
+    .gep-logo-shield { display: none !important; }
+    .gep-test-title {
+        font-size: 12px !important;
+        max-width: 90px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .gep-header-meta { gap: 2px !important; }
+    .gep-subject-tag { font-size: 10px !important; }
+    .gep-exam-timer { font-size: 14px !important; }
+
+    /* ── 20. Footer: FIXED at bottom, always visible ── */
+    .gep-exam-footer {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 500 !important;
+        background: #fff !important;
+        border-top: 2px solid #e2e8f0 !important;
+        box-shadow: 0 -4px 16px rgba(0,0,0,0.1) !important;
+        padding: 8px !important;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+        display: flex !important;
+        gap: 6px !important;
+        box-sizing: border-box !important;
+    }
+    .gep-exam-footer .gep-btn {
+        flex: 1 !important;
+        min-width: 0 !important;
+        font-size: 11px !important;
+        padding: 10px 4px !important;
+        text-align: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* ── 21. Scroll arrow button ── */
+    #gep-float-scroll-down,
+    #gep-scroll-to-options-btn {
+        bottom: 80px !important;
+        right: 14px !important;
+    }
+
+    /* ── 22. Palette grid ── */
+    .gep-palette-grid {
+        grid-template-columns: repeat(7, 1fr) !important;
+        gap: 6px !important;
+    }
+    .gep-palette-btn {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 11px !important;
+    }
+
+    /* ── 23. Overlays/modals ── */
+    .gep-secure-init-card,
+    .gep-submit-card {
+        margin: 0 12px !important;
+        padding: 20px 16px !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    /* ── 24. body.gep-exam-locked: DO NOT hide overflow on mobile ── */
+    body.gep-exam-locked {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+}
+
+/* ── TINY PHONES (≤480px) ── */
+@media (max-width: 480px) {
+    .gep-exam-main {
+        padding: 8px 8px 140px 8px !important;
+    }
+    .gep-option-card {
+        padding: 12px 10px !important;
+        min-height: 50px !important;
+    }
+    .gep-q-text-wrapper,
+    .gep-q-content {
+        font-size: 14px !important;
+    }
+    .gep-opt-content {
+        font-size: 13px !important;
+    }
+}

@@ -1,0 +1,1217 @@
+<?php
+// Translation Mapping
+$ui_strings = array(
+    'en' => array(
+        'promo_tag'     => "OFFICER'S CHOICE 2026",
+        'promo_title'   => "Mission Officer 2026",
+        'promo_desc'    => "Your Journey to Government Job Starts Here. Get access to premium tests and video courses.",
+        'explore'       => "Explore Academy",
+        'tests_att'     => "Tests Attempted",
+        'exams_passed'  => "Exams Passed",
+        'active_courses'=> "Active Courses",
+        'global_rank'   => "Global Rank",
+        'live_classes'  => "Live Classes",
+        'test_series'   => "Test Series",
+        'supercoaching' => "SuperCoaching",
+        'skill_academy' => "Skill Academy",
+        'rank_predictor'=> "Rank Predictor",
+        'my_purchases'  => "My Purchases",
+        'suggested'     => "Suggested Coaching",
+        'view_all'      => "View All",
+        'popular'       => "Popular Test Series",
+        'start_learning'=> "Start Learning",
+        'start_test'    => "Start",
+        'no_tests'      => "No Tests Available Yet",
+        'no_tests_desc' => "Tests will appear here once the administrator publishes them."
+    ),
+    'hi' => array(
+        'promo_tag'     => "अधिकारी की पसंद 2026",
+        'promo_title'   => "मिशन ऑफिसर 2026",
+        'promo_desc'    => "सरकारी नौकरी की आपकी यात्रा यहीं से शुरू होती है। प्रीमियम टेस्ट और वीडियो कोर्स तक पहुंचें।",
+        'explore'       => "अकादमी एक्सप्लोर करें",
+        'tests_att'     => "प्रयास किए गए टेस्ट",
+        'exams_passed'  => "उत्तीर्ण परीक्षा",
+        'active_courses'=> "सक्रिय पाठ्यक्रम",
+        'global_rank'   => "वैश्विक रैंक",
+        'live_classes'  => "लाइव क्लासेस",
+        'test_series'   => "टेस्ट सीरीज",
+        'supercoaching' => "सुपरकोचिंग",
+        'skill_academy' => "स्किल एकेडमी",
+        'rank_predictor'=> "रैंक प्रेडिक्टर",
+        'my_purchases'  => "मेरी खरीदारी",
+        'suggested'     => "सुझाए गए कोचिंग",
+        'view_all'      => "सभी देखें",
+        'popular'       => "लोकप्रिय टेस्ट सीरीज",
+        'start_learning'=> "सीखना शुरू करें",
+        'start_test'    => "शुरू करें",
+        'no_tests'      => "अभी कोई टेस्ट उपलब्ध नहीं है",
+        'no_tests_desc' => "प्रशासक द्वारा प्रकाशित किए जाने के बाद टेस्ट यहां दिखाई देंगे।"
+    )
+);
+
+$_gep_lang = (isset($_SESSION['gep_lang']) ? $_SESSION['gep_lang'] : (get_user_meta(get_current_user_id(), 'gep_preferred_lang', true) ?: 'en'));
+$strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_strings['en'];
+?>
+
+    <?php
+    // Fetch dynamic slides settings from database
+    $slide1_title = get_option('gep_slide1_title', 'Mission Officer 2026');
+    $slide1_desc  = get_option('gep_slide1_desc', 'Your Journey to Government Job Starts Here. Get access to premium tests and video courses.');
+    $slide1_btn   = get_option('gep_slide1_btn', 'Explore Academy');
+    $slide1_url   = get_option('gep_slide1_url');
+    if ( empty( $slide1_url ) ) {
+        $slide1_url = add_query_arg( 'view', 'supercoaching', (string) gep_get_url('dashboard') );
+    }
+    $slide1_img   = get_option('gep_slide1_image');
+    $slide1_bg    = ! empty( $slide1_img ) ? "linear-gradient(180deg, rgba(9, 9, 11, 0.4) 0%, rgba(9, 9, 11, 0.85) 100%), url('" . esc_url($slide1_img) . "') no-repeat center center / cover" : "linear-gradient(135deg, #09090b 0%, #1e1b4b 100%)";
+
+    $slide2_title = get_option('gep_slide2_title', 'UGC NET Mock Tests');
+    $slide2_desc  = get_option('gep_slide2_desc', 'Challenge yourself with realistic full-length paper simulations. Track your progress with advanced cohort analytics.');
+    $slide2_btn   = get_option('gep_slide2_btn', 'Practice Now');
+    $slide2_url   = get_option('gep_slide2_url');
+    if ( empty( $slide2_url ) ) {
+        $slide2_url = add_query_arg( 'view', 'tests', (string) gep_get_url('dashboard') );
+    }
+    $slide2_img   = get_option('gep_slide2_image');
+    $slide2_bg    = ! empty( $slide2_img ) ? "linear-gradient(180deg, rgba(2, 6, 23, 0.4) 0%, rgba(2, 6, 23, 0.85) 100%), url('" . esc_url($slide2_img) . "') no-repeat center center / cover" : "linear-gradient(135deg, #020617 0%, #064e3b 100%)";
+
+    $slide3_title = get_option('gep_slide3_title', 'Live Doubt Solving');
+    $slide3_desc  = get_option('gep_slide3_desc', 'Connect with top educators in real-time interactively. Resolve conceptual doubts and learn exam techniques.');
+    $slide3_btn   = get_option('gep_slide3_btn', 'Join Live Class');
+    $slide3_url   = get_option('gep_slide3_url');
+    if ( empty( $slide3_url ) ) {
+        $slide3_url = add_query_arg( 'view', 'live-classes', (string) gep_get_url('dashboard') );
+    }
+    $slide3_img   = get_option('gep_slide3_image');
+    $slide3_bg    = ! empty( $slide3_img ) ? "linear-gradient(180deg, rgba(9, 9, 11, 0.4) 0%, rgba(9, 9, 11, 0.85) 100%), url('" . esc_url($slide3_img) . "') no-repeat center center / cover" : "linear-gradient(135deg, #09090b 0%, #581c87 100%)";
+    ?>
+    <!-- Hero Slideshow Carousel Section -->
+    <div class="gep-dashboard-carousel">
+        <div class="gep-carousel-slides">
+            
+            <!-- Slide 1: Mission Officer -->
+            <div class="gep-carousel-slide active" style="background: <?php echo $slide1_bg; ?>;">
+                <?php if ( empty( $slide1_img ) ) : ?>
+                    <div class="visual-orb" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 350px; background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);"></div>
+                <?php endif; ?>
+                <div style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;">
+                    <div style="font-size: 48px; margin-bottom: 12px; animation: placeholderFloat 3s infinite alternate; will-change: transform;">🚀</div>
+                    <span class="gep-banner-tag-sovereign"><?php echo esc_html($strings['promo_tag']); ?></span>
+                    <h2 class="gep-carousel-title" style="background-image: linear-gradient(135deg, #fde047 0%, #d97706 100%) !important; -webkit-background-clip: text !important; background-clip: text !important;"><?php echo esc_html($slide1_title); ?></h2>
+                    <p class="gep-carousel-desc"><?php echo esc_html($slide1_desc); ?></p>
+                    <a href="<?php echo esc_url($slide1_url); ?>" class="gep-btn-sovereign-primary" style="padding: 12px 28px; font-size: 14px; border-radius: 14px;">
+                        <span><?php echo esc_html($slide1_btn); ?></span>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Slide 2: National Mock Tests -->
+            <div class="gep-carousel-slide" style="background: <?php echo $slide2_bg; ?>;">
+                <?php if ( empty( $slide2_img ) ) : ?>
+                    <div class="visual-orb" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 350px; background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);"></div>
+                <?php endif; ?>
+                <div style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;">
+                    <div style="font-size: 48px; margin-bottom: 12px; animation: placeholderFloat 3s infinite alternate; will-change: transform;">🏆</div>
+                    <span class="gep-banner-tag-sovereign" style="background: rgba(16, 185, 129, 0.15); color: #a7f3d0; border: 1px solid rgba(16,185,129,0.3);">NATIONAL SCHOLARSHIP MOCK</span>
+                    <h2 class="gep-carousel-title" style="background-image: linear-gradient(135deg, #34d399 0%, #059669 100%) !important; -webkit-background-clip: text !important; background-clip: text !important;"><?php echo esc_html($slide2_title); ?></h2>
+                    <p class="gep-carousel-desc"><?php echo esc_html($slide2_desc); ?></p>
+                    <a href="<?php echo esc_url($slide2_url); ?>" class="gep-btn-sovereign-primary" style="padding: 12px 28px; font-size: 14px; border-radius: 14px; background: #10b981; color: #fff;">
+                        <span><?php echo esc_html($slide2_btn); ?></span>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Slide 3: Live Doubt Solving -->
+            <div class="gep-carousel-slide" style="background: <?php echo $slide3_bg; ?>;">
+                <?php if ( empty( $slide3_img ) ) : ?>
+                    <div class="visual-orb" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 350px; background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%);"></div>
+                <?php endif; ?>
+                <div style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;">
+                    <div style="font-size: 48px; margin-bottom: 12px; animation: placeholderFloat 3s infinite alternate; will-change: transform;">📡</div>
+                    <span class="gep-banner-tag-sovereign" style="background: rgba(168, 85, 247, 0.15); color: #e9d5ff; border: 1px solid rgba(168,85,247,0.3);">LIVE BATCHES</span>
+                    <h2 class="gep-carousel-title" style="background-image: linear-gradient(135deg, #c084fc 0%, #7c3aed 100%) !important; -webkit-background-clip: text !important; background-clip: text !important;"><?php echo esc_html($slide3_title); ?></h2>
+                    <p class="gep-carousel-desc"><?php echo esc_html($slide3_desc); ?></p>
+                    <a href="<?php echo esc_url($slide3_url); ?>" class="gep-btn-sovereign-primary" style="padding: 12px 28px; font-size: 14px; border-radius: 14px; background: #a855f7; color: #fff;">
+                        <span><?php echo esc_html($slide3_btn); ?></span>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Carousel Bottom Dots -->
+        <div class="gep-carousel-dots" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10;">
+            <span class="gep-carousel-dot active" data-index="0" style="width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s;"></span>
+            <span class="gep-carousel-dot" data-index="1" style="width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s;"></span>
+            <span class="gep-carousel-dot" data-index="2" style="width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s;"></span>
+        </div>
+    </div>
+
+    <!-- Telemetry Stats (Refined) -->
+    <div class="gep-telemetry-grid">
+        <div class="gep-telemetry-card-micro gep-glass">
+            <div class="card-icon">🎯</div>
+            <div class="card-info">
+                <div class="val"><?php echo $stats['total_attempts']; ?></div>
+                <div class="lbl"><?php echo esc_html($strings['tests_att']); ?></div>
+            </div>
+        </div>
+        <div class="gep-telemetry-card-micro gep-glass">
+            <div class="card-icon">🏆</div>
+            <div class="card-info">
+                <div class="val"><?php echo $stats['passed_exams']; ?></div>
+                <div class="lbl"><?php echo esc_html($strings['exams_passed']); ?></div>
+            </div>
+        </div>
+        <div class="gep-telemetry-card-micro gep-glass">
+            <div class="card-icon">🎓</div>
+            <div class="card-info">
+                <div class="val"><?php echo $stats['active_courses']; ?></div>
+                <div class="lbl"><?php echo esc_html($strings['active_courses']); ?></div>
+            </div>
+        </div>
+        <div class="gep-telemetry-card-micro rank-card gep-glass">
+            <div class="card-icon">⚡</div>
+            <div class="card-info">
+                <div class="val"><?php echo is_numeric($stats['rank']) ? '#' . $stats['rank'] : $stats['rank']; ?></div>
+                <div class="lbl"><?php echo esc_html($strings['global_rank']); ?></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & Resume Practice -->
+    <?php
+    $current_user_id = get_current_user_id();
+    global $wpdb;
+    $recent_attempts = $wpdb->get_results( $wpdb->prepare(
+        "SELECT a.id, a.test_id, t.title, a.score, a.percentage, a.status, a.end_time, t.total_marks 
+         FROM {$wpdb->prefix}gep_attempts a
+         JOIN {$wpdb->prefix}gep_tests t ON a.test_id = t.id
+         WHERE a.user_id = %d
+         ORDER BY a.id DESC LIMIT 3",
+        $current_user_id
+    ) );
+    ?>
+    <?php if ( ! empty( $recent_attempts ) ) : ?>
+    <section class="gep-curated-section" style="margin-top: 20px; margin-bottom: 40px;">
+        <div class="section-header-sovereign">
+            <div class="header-content">
+                <h3>Recent Activity & Mock Results</h3>
+                <div class="header-line"></div>
+            </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <?php foreach ( $recent_attempts as $att ) : 
+                $is_ip = ($att->status === 'in_progress');
+            ?>
+            <div class="gep-test-strip gep-glass" style="padding: 16px 24px; border-radius: 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="font-size: 20px;"><?php echo $is_ip ? '⏳' : '📊'; ?></div>
+                    <div>
+                        <h5 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #fff;"><?php echo esc_html($att->title); ?></h5>
+                        <span style="font-size: 11px; color: #a1a1aa; font-weight: 600;">
+                            <?php if ( $is_ip ) : ?>
+                                In Progress • Started recently
+                            <?php else : ?>
+                                Submitted • <?php echo esc_html( date_i18n( get_option('date_format'), strtotime($att->end_time) ) ); ?>
+                            <?php endif; ?>
+                        </span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 24px;">
+                    <?php if ( ! $is_ip ) : ?>
+                    <div style="text-align: right;">
+                        <div style="font-size: 16px; font-weight: 900; color: #10b981;"><?php echo number_format($att->score, 1); ?> <small style="font-size: 11px; color: #64748b;">/<?php echo number_format($att->total_marks, 0); ?></small></div>
+                        <div style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase;">Score</div>
+                    </div>
+                    <div style="text-align: right; min-width: 60px;">
+                       <div style="font-size: 16px; font-weight: 900; color: #6366f1;"><?php echo round($att->percentage); ?>%</div>
+                       <div style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase;">Accuracy</div>
+                    </div>
+                    <?php endif; ?>
+                    <div>
+                        <?php if ( $is_ip ) : ?>
+                            <a href="<?php echo esc_url( add_query_arg( 'id', $att->test_id, (string) gep_get_url('exam') ) ); ?>" class="gep-btn-strip" style="background: linear-gradient(135deg,#6366f1,#8b5cf6); border: none; font-size: 12px; padding: 8px 18px; border-radius: 10px;">
+                                Resume Test
+                            </a>
+                        <?php else : ?>
+                            <a href="<?php echo esc_url( add_query_arg( array( 'view' => 'results', 'attempt_id' => $att->id ), (string) gep_get_url('dashboard') ) ); ?>" class="gep-btn-strip" style="font-size: 12px; padding: 8px 18px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);">
+                                Review Analysis
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </section>
+    <?php endif; ?>
+
+    <!-- Popular Exams Section (Testbook-style) -->
+    <?php
+    $cat_helper = new GEP_Category();
+    $hierarchical_cats = $cat_helper->get_hierarchical_categories();
+    
+    // Filter hierarchical categories to keep only those with content
+    $active_hierarchical_cats = array();
+    foreach ( $hierarchical_cats as $pcat ) {
+        // Fetch children
+        $children = $pcat->children;
+        
+        // Also fetch tests directly under this parent category
+        $direct_tests = $wpdb->get_results( $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}gep_tests WHERE category_id = %d AND status = 'publish' LIMIT 8",
+            $pcat->id
+        ) );
+        
+        if ( ! empty( $children ) || ! empty( $direct_tests ) ) {
+            $pcat->children = array_slice((array)$children, 0, 11); // Limit child cards to max 11 to fit cleanly with the last "Explore all" card
+            $pcat->direct_tests = array_slice((array)$direct_tests, 0, 11);
+            $active_hierarchical_cats[] = $pcat;
+        }
+    }
+    ?>
+
+    <?php if ( ! empty( $active_hierarchical_cats ) ) : ?>
+    <style>
+    /* Popular Exams Widget - Dark/Glass Theme */
+    .gep-popular-exams-section {
+        background: transparent;
+        padding: 0;
+        border: none;
+        margin-top: 40px;
+        margin-bottom: 35px;
+        box-shadow: none;
+    }
+    /* Horizontal scrolling tab list */
+    .gep-popular-tabs-list {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 25px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scrollbar-width: none; /* Firefox */
+    }
+    .gep-popular-tabs-list::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
+    .gep-popular-tab-btn {
+        padding: 10px 24px;
+        border-radius: 100px;
+        font-size: 14px;
+        font-weight: 700;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        color: #94a3b8;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .gep-popular-tab-btn:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        color: #fff;
+        background: rgba(255, 255, 255, 0.06);
+    }
+    .gep-popular-tab-btn.active {
+        background: #6366f1;
+        border-color: #6366f1;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(99,102,241,0.25);
+    }
+    /* Grid layout for exam cards */
+    .gep-popular-exams-grid {
+        display: none;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    .gep-popular-exams-grid.active {
+        display: grid;
+    }
+    @media (max-width: 1024px) {
+        .gep-popular-exams-grid.active {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    @media (max-width: 640px) {
+        .gep-popular-exams-grid.active {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+    }
+    .gep-exam-card-link {
+        text-decoration: none !important;
+    }
+    .gep-exam-category-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .gep-exam-category-card:hover {
+        border-color: rgba(99, 102, 241, 0.4) !important;
+        box-shadow: 0 8px 24px rgba(99,102,241,0.15) !important;
+        transform: translateY(-2px);
+    }
+    .gep-exam-card-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .gep-exam-card-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(99, 102, 241, 0.15);
+        color: #818cf8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .gep-exam-card-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .gep-exam-card-name {
+        font-size: 15px;
+        font-weight: 800;
+        color: #fff;
+    }
+    .gep-exam-card-arrow {
+        color: #94a3b8;
+        transition: transform 0.2s;
+        display: flex;
+        align-items: center;
+    }
+    .gep-exam-category-card:hover .gep-exam-card-arrow {
+        transform: translateX(4px);
+        color: #6366f1;
+    }
+    </style>
+
+    <section class="gep-popular-exams-section">
+        <div class="section-header-sovereign">
+            <div class="header-content">
+                <h3>Popular Exams</h3>
+                <div class="header-line"></div>
+            </div>
+        </div>
+        <p style="font-size: 14px; color: #94a3b8; margin: -10px 0 25px 0; font-weight: 600;">Get exam-ready with mock tests, PYQs, and study materials as per the latest pattern.</p>
+        
+        <!-- Tabs List -->
+        <div class="gep-popular-tabs-list">
+            <?php foreach ( $active_hierarchical_cats as $idx => $pcat ) : ?>
+                <button type="button" class="gep-popular-tab-btn<?php echo $idx === 0 ? ' active' : ''; ?>" data-parent-id="<?php echo $pcat->id; ?>">
+                    <?php echo esc_html( $pcat->name ); ?>
+                </button>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- Grids Content -->
+        <?php foreach ( $active_hierarchical_cats as $idx => $pcat ) : ?>
+            <div class="gep-popular-exams-grid<?php echo $idx === 0 ? ' active' : ''; ?>" id="gep-popular-exams-grid-<?php echo $pcat->id; ?>">
+                <?php if ( ! empty( $pcat->children ) ) : ?>
+                    <?php foreach ( $pcat->children as $child ) : ?>
+                        <a href="<?php echo esc_url( add_query_arg( array( 'view' => 'tests', 'cat' => $child->id ), (string) gep_get_url('dashboard') ) ); ?>" class="gep-exam-card-link">
+                            <div class="gep-exam-category-card gep-glass-dark" style="border: 1px solid rgba(255,255,255,0.08);">
+                                <div class="gep-exam-card-left">
+                                    <div class="gep-exam-card-icon">🎓</div>
+                                    <div class="gep-exam-card-name"><?php echo esc_html( $child->name ); ?></div>
+                                </div>
+                                <div class="gep-exam-card-arrow">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </div>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                <?php elseif ( ! empty( $pcat->direct_tests ) ) : ?>
+                    <?php foreach ( $pcat->direct_tests as $test ) : ?>
+                        <a href="<?php echo esc_url( add_query_arg( array( 'id' => $test->id ), (string) gep_get_url('exam') ) ); ?>" class="gep-exam-card-link">
+                            <div class="gep-exam-category-card gep-glass-dark" style="border: 1px solid rgba(255,255,255,0.08);">
+                                <div class="gep-exam-card-left">
+                                    <div class="gep-exam-card-icon">
+                                        <?php if ( ! empty($test->thumbnail) ) : ?>
+                                            <img src="<?php echo esc_url($test->thumbnail); ?>" alt="<?php echo esc_attr($test->title); ?>" loading="lazy">
+                                        <?php else : ?>
+                                            📝
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="gep-exam-card-name"><?php echo esc_html( $test->title ); ?></div>
+                                </div>
+                                <div class="gep-exam-card-arrow">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </div>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+                
+                <!-- Explore all exams card -->
+                <a href="<?php echo esc_url( add_query_arg( 'view', 'tests', (string) gep_get_url('dashboard') ) ); ?>" class="gep-exam-card-link">
+                    <div class="gep-exam-category-card gep-glass-dark" style="background: rgba(255,255,255,0.01) !important; border-style: dashed !important; border-color: rgba(255,255,255,0.15) !important;">
+                        <div class="gep-exam-card-left">
+                            <div class="gep-exam-card-icon" style="background: rgba(255,255,255,0.05); color: #94a3b8;">🔍</div>
+                            <div class="gep-exam-card-name" style="color: #94a3b8;">Explore all exams</div>
+                        </div>
+                        <div class="gep-exam-card-arrow">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        <?php endforeach; ?>
+    </section>
+
+    <script>
+    jQuery(document).ready(function($) {
+        $('.gep-popular-tab-btn').on('click', function() {
+            var parentId = $(this).data('parent-id');
+            
+            // Update tabs active state
+            $('.gep-popular-tab-btn').removeClass('active');
+            $(this).addClass('active');
+            
+            // Hide all grids, show selected
+            $('.gep-popular-exams-grid').removeClass('active');
+            $('#gep-popular-exams-grid-' + parentId).addClass('active');
+        });
+    });
+    </script>
+    <?php endif; ?>
+
+    <!-- Curated Modules -->
+    <div class="gep-dashboard-sections">
+        <!-- Suggested Coaching -->
+        <?php if ( ! empty( $available_courses ) ) : ?>
+        <section class="gep-curated-section">
+            <div class="section-header-sovereign">
+                <div class="header-content">
+                    <h3><?php echo esc_html($strings['suggested']); ?></h3>
+                    <div class="header-line"></div>
+                </div>
+                <a href="<?php echo add_query_arg( 'view', 'supercoaching', (string) gep_get_url('dashboard') ); ?>" class="view-all-link">
+                    <?php echo esc_html($strings['view_all']); ?>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+            </div>
+            
+            <div class="gep-curated-grid">
+                <?php foreach ( array_slice($available_courses, 0, 3) as $idx => $course ) : ?>
+                <div class="gep-curated-card gep-glass">
+                    <div class="card-thumb">
+                        <?php if ( $course->thumbnail ) : ?>
+                            <img src="<?php echo esc_url($course->thumbnail); ?>" alt="<?php echo esc_attr($course->title); ?>" loading="lazy" width="600" height="400" decoding="async">
+                        <?php else : ?>
+                            <?php 
+                            $placeholders = array(
+                                'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+                                'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+                                'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80'
+                            );
+                            $cur_image = $placeholders[$idx % count($placeholders)];
+                            ?>
+                            <div class="thumb-placeholder">
+                                <img src="<?php echo esc_url($cur_image); ?>" alt="<?php echo esc_attr($course->title); ?>" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" width="600" height="400" decoding="async">
+                                <div class="placeholder-overlay-tag">PREMIUM CONTENT</div>
+                            </div>
+                        <?php endif; ?>
+                        <div class="thumb-overlay"></div>
+                    </div>
+                    <div class="card-body">
+                        <h4><?php echo esc_html($course->title); ?></h4>
+                        <div class="card-instructor">Prof. <?php echo esc_html($course->instructor); ?></div>
+                        <div class="card-footer">
+                            <span class="card-price">₹<?php echo number_format($course->price, 0); ?></span>
+                            <?php 
+                            $temp_dashboard = new GEP_Dashboard();
+                            if ( $temp_dashboard->has_access( get_current_user_id(), $course->id, 'course' ) ) : ?>
+                                <a href="<?php echo add_query_arg( 'id', $course->id, add_query_arg( 'view', 'watch', (string) gep_get_url( 'dashboard' ) ) ); ?>" class="gep-btn-mini">
+                                    <?php echo esc_html($strings['start_learning']); ?>
+                                </a>
+                            <?php else : ?>
+                                <a href="<?php echo add_query_arg( array( 'id' => $course->id, 'type' => 'course' ), (string) gep_get_url( 'checkout' ) ); ?>" class="gep-btn-mini" style="background: #10b981; border-color: #059669;">
+                                    Enroll Now
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
+        <!-- Popular Tests -->
+        <?php if ( ! empty( $available_tests ) ) : ?>
+        <section class="gep-curated-section">
+            <div class="section-header-sovereign">
+                <div class="header-content">
+                    <h3><?php echo esc_html($strings['popular']); ?></h3>
+                    <div class="header-line"></div>
+                </div>
+                <a href="<?php echo add_query_arg( 'view', 'tests', (string) gep_get_url('dashboard') ); ?>" class="view-all-link">
+                    <?php echo esc_html($strings['view_all']); ?>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+            </div>
+
+            <div class="gep-test-matrix">
+                <?php foreach ( array_slice($available_tests, 0, 4) as $test ) : ?>
+                <div class="gep-test-strip gep-glass">
+                    <?php 
+                    $is_series = ($test->type === 'series' || $test->type === 'bundle');
+                    $strip_icon = '⚡';
+                    if ( $is_series ) {
+                        $strip_icon = '📁';
+                    } else {
+                        if ( $test->type === 'single' ) {
+                            $strip_icon = '📝';
+                        } elseif ( $test->type === 'multiple' ) {
+                            $strip_icon = '📚';
+                        } elseif ( $test->type === 'combined' ) {
+                            $strip_icon = '🧩';
+                        } elseif ( $test->type === 'self_test' ) {
+                            $strip_icon = '⚙️';
+                        }
+                    }
+                    ?>
+                    <div class="strip-icon">
+                        <?php if ( ! empty($test->thumbnail) ) : ?>
+                            <img src="<?php echo esc_url($test->thumbnail); ?>" alt="<?php echo esc_attr($test->title); ?>" loading="lazy">
+                        <?php else : ?>
+                            <?php echo $strip_icon; ?>
+                        <?php endif; ?>
+                    </div>
+                    <div class="strip-info">
+                        <h5><?php echo esc_html($test->title); ?></h5>
+                        <div class="strip-meta">
+                            <span><?php echo (int)$test->duration_minutes; ?> Mins</span>
+                            <span>•</span>
+                            <span><?php echo isset($test->pass_marks) ? (int)$test->pass_marks . '% Pass' : '—'; ?></span>
+                        </div>
+                    </div>
+                    <?php 
+                    $temp_dashboard = new GEP_Dashboard();
+                    if ( $temp_dashboard->has_access( get_current_user_id(), $test->id, 'test' ) ) : ?>
+                        <a href="<?php echo esc_url( add_query_arg( 'id', $test->id, (string) gep_get_url('exam') ) ); ?>" class="gep-btn-strip">
+                            <?php echo esc_html($strings['start_test']); ?>
+                        </a>
+                    <?php else : ?>
+                        <a href="<?php echo esc_url( add_query_arg( array( 'id' => $test->id, 'type' => 'test' ), (string) gep_get_url('checkout') ) ); ?>" class="gep-btn-strip" style="background: #10b981; border-color: #059669; color: white;">
+                            Buy Now
+                        </a>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+    </div>
+</div>
+
+<style>
+.gep-sovereign-dashboard {
+    padding: 0 20px 20px 20px;
+    font-family: 'Inter', sans-serif;
+    color: #fff;
+    background: #09090b;
+    min-height: 100vh;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.gep-promo-title {
+    font-size: 56px !important;
+}
+
+.gep-promo-desc {
+    font-size: 19px !important;
+}
+
+.gep-dashboard-hero {
+    position: relative;
+    margin-bottom: 40px;
+}
+
+.hero-glow {
+    position: absolute;
+    top: -50px;
+    left: 10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+    filter: blur(60px);
+    z-index: 0;
+}
+
+.gep-promo-banner-premium {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 60px;
+    border-radius: 40px;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.05);
+    overflow: hidden;
+    z-index: 1;
+}
+
+.gep-banner-tag-sovereign {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: rgba(255,255,255,0.1);
+    color: #e2e8f0;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+}
+
+.gep-promo-banner-premium h2 {
+    font-size: 48px;
+    font-weight: 950;
+    letter-spacing: -2px;
+    margin-bottom: 15px;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fde047 0%, #d97706 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+.gep-promo-banner-premium p {
+    font-size: 18px;
+    color: #a1a1aa;
+    max-width: 500px;
+    margin-bottom: 35px;
+    font-weight: 500;
+}
+
+.gep-btn-sovereign-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    color: #000;
+    padding: 16px 32px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 800;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gep-btn-sovereign-primary:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(255,255,255,0.1);
+}
+
+.gep-banner-visual {
+    position: relative;
+    width: 200px;
+    height: 200px;
+}
+
+.visual-orb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 160px;
+    height: 160px;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.5;
+    animation: pulseOrb 4s infinite alternate;
+}
+
+.visual-icon {
+    font-size: 80px;
+    z-index: 2;
+}
+
+@keyframes pulseOrb {
+    from { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+    to { transform: translate(-50%, -50%) scale(1.3); opacity: 0.6; }
+}
+
+/* Telemetry Grid */
+.gep-telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.gep-telemetry-card-micro {
+    padding: 20px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.4s;
+    background: #18181b;
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.gep-telemetry-card-micro:hover {
+    transform: translateY(-5px);
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+}
+
+.gep-telemetry-card-micro .card-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.gep-telemetry-card-micro .val {
+    font-size: 24px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+}
+
+.gep-telemetry-card-micro .lbl {
+    font-size: 11px;
+    font-weight: 800;
+    color: #a1a1aa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+}
+
+.rank-card .val { color: #fde047; }
+
+/* Matrix Navigation */
+.gep-nav-matrix {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 15px;
+    margin-bottom: 60px;
+}
+
+.matrix-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 10px;
+    border-radius: 24px;
+    text-decoration: none;
+    transition: all 0.3s;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.matrix-item:hover {
+    background: rgba(255,255,255,0.1);
+    transform: scale(1.05);
+    border-color: rgba(255,255,255,0.2);
+}
+
+.matrix-icon {
+    font-size: 24px;
+}
+
+.matrix-item span {
+    font-size: 11px;
+    font-weight: 800;
+    color: #e2e8f0;
+    text-align: center;
+}
+
+/* Curated Sections */
+.gep-curated-section {
+    margin-bottom: 50px;
+}
+
+.section-header-sovereign {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+}
+
+.header-content h3 {
+    font-size: 24px;
+    font-weight: 900;
+    color: #fff;
+    white-space: nowrap;
+}
+
+.header-line {
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    flex: 1;
+}
+
+.view-all-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #a1a1aa;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    transition: background 0.3s;
+}
+.view-all-link:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+.gep-curated-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+.gep-curated-card {
+    border-radius: 28px;
+    overflow: hidden;
+    transition: all 0.4s;
+    background: #18181b;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.gep-curated-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(124, 58, 237, 0.3);
+    box-shadow: 0 30px 60px rgba(124, 58, 237, 0.15);
+}
+
+.card-thumb {
+    position: relative;
+    height: 160px;
+}
+
+.card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.thumb-placeholder {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.thumb-placeholder.course-grad-0 {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #7c3aed 100%);
+}
+
+.thumb-placeholder.course-grad-1 {
+    background: linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #f43f5e 100%);
+}
+
+.thumb-placeholder.course-grad-2 {
+    background: linear-gradient(135deg, #064e3b 0%, #10b981 50%, #06b6d4 100%);
+}
+
+.thumb-placeholder:not([class*="course-grad-"]) {
+    background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #9333ea 100%);
+}
+
+.placeholder-pattern {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+                      radial-gradient(circle at 75% 60%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.8;
+    z-index: 1;
+}
+
+.placeholder-icon {
+    font-size: 52px;
+    z-index: 2;
+    text-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    animation: placeholderFloat 3s ease-in-out infinite alternate;
+    will-change: transform;
+}
+
+.placeholder-overlay-tag {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    padding: 4px 12px;
+    border-radius: 50px;
+    text-transform: uppercase;
+    z-index: 2;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+@keyframes placeholderFloat {
+    from { transform: translateY(0) scale(1); }
+    to { transform: translateY(-6px) scale(1.05); }
+}
+
+.card-body { padding: 25px; }
+
+.card-body h4 {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: #fff;
+}
+
+.card-instructor {
+    font-size: 13px;
+    font-weight: 600;
+    color: #a1a1aa;
+    margin-bottom: 20px;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-price {
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+}
+
+.gep-btn-mini {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 800;
+    transition: background 0.3s;
+}
+.gep-btn-mini:hover { background: rgba(255,255,255,0.2); }
+
+/* Test Matrix */
+.gep-test-matrix {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.gep-test-strip {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 25px;
+    border-radius: 24px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.strip-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.strip-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.strip-info { flex: 1; }
+.strip-info h5 {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    color: #fff;
+}
+.strip-meta {
+    font-size: 12px;
+    font-weight: 700;
+    color: #a1a1aa;
+    display: flex;
+    gap: 8px;
+}
+
+.gep-btn-strip {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 14px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 800;
+    transition: background 0.3s;
+}
+.gep-btn-strip:hover { background: rgba(255,255,255,0.2); }
+
+@media (max-width: 1200px) {
+    .gep-telemetry-grid { grid-template-columns: repeat(2, 1fr); }
+    .gep-nav-matrix { grid-template-columns: repeat(3, 1fr); }
+    .gep-curated-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .gep-promo-banner-premium { padding: 30px; flex-direction: column; text-align: center; }
+    .gep-banner-visual { order: -1; margin-bottom: 30px; }
+    .gep-promo-title { font-size: 32px !important; }
+    .gep-promo-desc { font-size: 15px !important; }
+    .gep-test-matrix { grid-template-columns: 1fr; }
+    
+    .section-header-sovereign {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+    .header-content {
+        width: 100% !important;
+    }
+    .header-content h3 {
+        white-space: normal !important;
+        font-size: 20px !important;
+    }
+    .header-line {
+        display: none !important;
+    }
+    .gep-banner-tag-sovereign {
+        margin-bottom: 0 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .gep-telemetry-grid { grid-template-columns: 1fr; }
+    .gep-curated-grid { grid-template-columns: 1fr; }
+}
+
+/* Hero Carousel Styles */
+.gep-dashboard-carousel {
+    margin-top: -5px;
+    position: relative;
+    margin-bottom: 30px;
+    overflow: hidden;
+    border-radius: 40px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+.gep-carousel-slides {
+    position: relative;
+    height: 360px;
+    width: 100%;
+}
+@media (max-width: 768px) {
+    .gep-carousel-slides {
+        height: 290px;
+    }
+}
+.gep-carousel-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px 20px;
+    transition: opacity 0.5s ease-in-out;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+.gep-carousel-slide.active {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 2 !important;
+}
+.gep-carousel-title {
+    font-size: 36px;
+    font-weight: 950;
+    letter-spacing: -1.5px;
+    margin: 0 0 12px;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+.gep-carousel-desc {
+    font-size: 15px;
+    color: #e2e8f0 !important;
+    max-width: 600px;
+    margin: 0 auto 24px auto;
+    line-height: 1.5;
+}
+@media (max-width: 768px) {
+    .gep-carousel-title {
+        font-size: 22px !important;
+        letter-spacing: -0.5px !important;
+        margin-bottom: 8px !important;
+    }
+    .gep-carousel-desc {
+        font-size: 13px !important;
+        margin-bottom: 16px !important;
+        line-height: 1.4 !important;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .gep-carousel-slide {
+        padding: 20px 15px;
+    }
+}
+.gep-carousel-dot.active {
+    background: #fff !important;
+    width: 24px !important;
+    border-radius: 10px !important;
+}
+.gep-carousel-arrow:hover {
+    background: rgba(255,255,255,0.15) !important;
+    transform: translateY(-50%) scale(1.05);
+}
+</style>
+

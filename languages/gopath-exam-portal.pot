@@ -1,0 +1,334 @@
+# Copyright (C) 2026 GoPath
+# This file is distributed under the same license as the GoPath Exam Portal package.
+msgid ""
+msgstr ""
+"Project-Id-Version: GoPath Exam Portal 1.0.0\n"
+"Report-Msgid-Bugs-To: https://gopath.in\n"
+"POT-Creation-Date: 2026-07-12 12:00:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2026-07-12 12:00:00+00:00\n"
+"Last-Translator: GoPath\n"
+"Language-Team: GoPath\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: templates/dashboard/typing-test.php:65
+#: templates/dashboard/typing-test.php:65
+msgid "1 Minute"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:44
+msgid "1-Month Pass"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:68
+#: templates/dashboard/typing-test.php:68
+msgid "2 Minutes"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:71
+#: templates/dashboard/typing-test.php:71
+msgid "5 Minutes"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:94
+#: templates/dashboard/typing-test.php:134
+#: templates/dashboard/typing-test.php:163
+msgid "Accuracy"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:68
+msgid "Best Value"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:54
+#: templates/dashboard/get-pass.php:82
+#: templates/dashboard/get-pass.php:107
+msgid "Bilingual support (English &amp; Hindi)"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:61
+msgid "Buy 1-Month Pass"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:114
+msgid "Buy Lifetime Pass"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:90
+msgid "Buy Yearly Pass Pro"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:50
+msgid "Configure Typing Session"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:56
+msgid "Constitutional History (Medium) - Indian Constitution"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:55
+#: templates/dashboard/get-pass.php:83
+msgid "Core Dashboard Analytics"
+msgstr ""
+
+#: templates/dashboard/results.php:174
+msgid "Correct:"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:161
+msgid "Date"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:38
+msgid "Develop speed and accuracy for SSC, Bank, and Typing Clerk exams."
+msgstr ""
+
+#: templates/dashboard/get-pass.php:56
+#: templates/dashboard/get-pass.php:84
+msgid "Doubt solver access"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:142
+msgid "Duration"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:116
+msgid "End Early"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:164
+msgid "Errors"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:57
+msgid "Extra test attempts allocation"
+msgstr ""
+
+#: templates/dashboard/results.php:140
+msgid "Focus on lectures in SuperCoaching."
+msgstr ""
+
+#: templates/dashboard/get-pass.php:101
+msgid "Forever"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:108
+msgid "Full Core Dashboard Analytics"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:53
+#: templates/dashboard/get-pass.php:81
+msgid "Full access to all Exams &amp; PYQs"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:105
+msgid "Full access to all current Exams &amp; PYQs"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:20
+msgid "Get complete access to all test series, typing assessments, chapter tests, and analytics with a single, affordable pass. No separate purchases needed!"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:14
+msgid "GoPath Premium Pass"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:45
+msgid "Ideal for quick, short-term practice sessions before exams."
+msgstr ""
+
+#: templates/dashboard/results.php:128
+msgid "Identify topics where you need to focus more to increase your test scores."
+msgstr ""
+
+#: templates/dashboard/typing-test.php:37
+msgid "Interactive Typing Console"
+msgstr ""
+
+#: templates/dashboard/results.php:147
+msgid "Keep practicing to maintain edge."
+msgstr ""
+
+#: templates/dashboard/get-pass.php:96
+msgid "Lifetime Pass Ultimate"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:110
+msgid "Lifetime valid - never expires"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:98
+msgid "Mistakes"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:17
+msgid "Mock Tests &amp; PYQs"
+msgstr ""
+
+#: templates/dashboard/results.php:151
+msgid "Moderate Zone"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:49
+msgid "Month"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:72
+msgid "Most popular option for students looking to prep for multiple exams."
+msgstr ""
+
+#: templates/dashboard/typing-test.php:130
+msgid "Net WPM"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:97
+msgid "Never pay again. Access all future mock exams, courses, and updates."
+msgstr ""
+
+#: templates/dashboard/typing-test.php:181
+msgid "No sessions completed yet."
+msgstr ""
+
+#: templates/dashboard/get-pass.php:30
+msgid "Premium Pass Active!"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:109
+msgid "Priority VIP teacher support"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:86
+msgid "Priority support &amp; assistance"
+msgstr ""
+
+#: templates/dashboard/results.php:192
+msgid "Rank"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:154
+msgid "Recent Typing Log"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:113
+msgid "Restart"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:55
+msgid "SSC CHSL Practice (Easy) - Technology Overview"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:77
+msgid "Save 75% compared to Monthly"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:57
+msgid "Scientific Innovation (Hard) - Artificial Intelligence"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:53
+#: templates/dashboard/typing-test.php:54
+msgid "Select Exercise Text"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:62
+msgid "Select Test Duration"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:124
+msgid "Session Completed!"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:36
+msgid "Skill Academy Simulator"
+msgstr ""
+
+#: templates/dashboard/results.php:153
+msgid "Solve PYQs to bridge core concepts."
+msgstr ""
+
+#: templates/dashboard/typing-test.php:162
+msgid "Speed"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:90
+msgid "Speed (WPM)"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:147
+msgid "Start New Session"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:77
+msgid "Start Typing Test"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:109
+msgid "Start typing here to activate test..."
+msgstr ""
+
+#: templates/dashboard/results.php:145
+msgid "Strong Zone"
+msgstr ""
+
+#: templates/dashboard/results.php:126
+msgid "Subject-Wise Weakness &amp; Strength Tracker"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:104
+msgid "Target text to type"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:86
+msgid "Time Remaining"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:138
+msgid "Total Errors"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:109
+msgid "Typing input area"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:85
+msgid "Unlimited extra attempts"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:17
+msgid "Unlock All %s"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:106
+msgid "Unlocks all FUTURE added mock tests"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:33
+msgid "Valid until:"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:171
+msgid "WPM"
+msgstr ""
+
+#: templates/dashboard/results.php:138
+msgid "Weak Zone"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:76
+msgid "Year"
+msgstr ""
+
+#: templates/dashboard/get-pass.php:71
+msgid "Yearly Pass Pro"
+msgstr ""
+
+#: templates/dashboard/typing-test.php:125
+msgid "Your stats have been computed and saved to your skill academy profile."
+msgstr ""
+
+#: templates/dashboard/get-pass.php:32
+msgid "Your subscription is fully active. You have full access to all resources."
+msgstr ""
+
