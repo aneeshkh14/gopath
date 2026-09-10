@@ -260,13 +260,13 @@ foreach ( $section_counters as $cat_key => $val ) {
                                     $reason_hi    = isset($ar_parts_hi[1]) ? $ar_parts_hi[1] : '';
                                 ?>
                                 <div class="gep-ar-box">
-                                    <div class="gep-ar-assertion en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>"><strong>Assertion (A):</strong> <?php echo wpautop(wp_kses_post($assertion_en)); ?></div>
+                                    <div class="gep-ar-assertion en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>"><strong>Assertion (A):</strong> <?php echo gep_format_rich_content( $assertion_en ); ?></div>
                                     <?php if ($reason_en) : ?>
-                                    <div class="gep-ar-reason en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>" style="margin-top:10px;"><strong>Reason (R):</strong> <?php echo wpautop(wp_kses_post($reason_en)); ?></div>
+                                    <div class="gep-ar-reason en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>" style="margin-top:10px;"><strong>Reason (R):</strong> <?php echo gep_format_rich_content( $reason_en ); ?></div>
                                     <?php endif; ?>
-                                    <div class="gep-ar-assertion hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>"><strong>अभिकथन (A):</strong> <?php echo wpautop(wp_kses_post($assertion_hi)); ?></div>
+                                    <div class="gep-ar-assertion hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>"><strong>अभिकथन (A):</strong> <?php echo gep_format_rich_content( $assertion_hi ); ?></div>
                                     <?php if ($reason_hi) : ?>
-                                    <div class="gep-ar-reason hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>" style="margin-top:10px;"><strong>कारण (R):</strong> <?php echo wpautop(wp_kses_post($reason_hi)); ?></div>
+                                    <div class="gep-ar-reason hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>" style="margin-top:10px;"><strong>कारण (R):</strong> <?php echo gep_format_rich_content( $reason_hi ); ?></div>
                                     <?php endif; ?>
                                 </div>
                             <?php else : ?>
@@ -286,10 +286,10 @@ foreach ( $section_counters as $cat_key => $val ) {
                                 $display_text_en = !empty($text_en) ? $text_en : $display_text_hi;
                             ?>
                             <div class="gep-q-text-wrapper en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>">
-                                <?php echo gep_clean_wpautop_tables( wpautop( wp_kses_post( $display_text_en ) ) ); ?>
+                                <?php echo gep_format_rich_content( $display_text_en ); ?>
                             </div>
                             <div class="gep-q-text-wrapper hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>">
-                                <?php echo gep_clean_wpautop_tables( wpautop( wp_kses_post( $display_text_hi ) ) ); ?>
+                                <?php echo gep_format_rich_content( $display_text_hi ); ?>
                             </div>
                             <?php endif; ?>
 
@@ -402,8 +402,8 @@ foreach ( $section_counters as $cat_key => $val ) {
                                         <input type="<?php echo $input_type; ?>" name="q<?php echo $q->id; ?><?php echo $is_msq ? '[]' : ''; ?>" value="<?php echo $orig_letter; ?>">
                                         <div class="gep-opt-content">
                                             <span class="gep-opt-prefix"><?php echo $display_label; ?>.</span>
-                                            <div class="en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>"><?php echo gep_clean_wpautop_tables( wp_kses_post( $display_opt_en ) ); ?></div>
-                                            <div class="hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>"><?php echo gep_clean_wpautop_tables( wp_kses_post( $display_opt_hi ) ); ?></div>
+                                            <div class="en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>"><?php echo gep_format_rich_content( $display_opt_en, false ); ?></div>
+                                            <div class="hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>"><?php echo gep_format_rich_content( $display_opt_hi, false ); ?></div>
                                         </div>
                                     </label>
                                 <?php endforeach; ?>
@@ -543,8 +543,8 @@ foreach ( $section_counters as $cat_key => $val ) {
         $display_p_en = !empty($pdata->title) ? $pdata->title : $display_p_hi;
     ?>
         <div class="gep-passage-content" data-pid="<?php echo $pid; ?>">
-            <div class="en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>"><?php echo wpautop(wp_kses_post($display_p_en)); ?></div>
-            <div class="hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>"><?php echo wpautop(wp_kses_post($display_p_hi)); ?></div>
+            <div class="en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>"><?php echo gep_format_rich_content( $display_p_en ); ?></div>
+            <div class="hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>"><?php echo gep_format_rich_content( $display_p_hi ); ?></div>
         </div>
     <?php endforeach; ?>
 </div>
@@ -598,8 +598,8 @@ foreach ( $section_counters as $cat_key => $val ) {
                 ?>
                     <div class="gep-qpaper-item">
                         <strong class="gep-qp-qnum">Question <?php echo $idx + 1; ?>:</strong>
-                        <div class="gep-qp-qtext en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>"><?php echo gep_clean_wpautop_tables( wp_kses_post($qp_text_en) ); ?></div>
-                        <div class="gep-qp-qtext hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>"><?php echo gep_clean_wpautop_tables( wp_kses_post($qp_text_hi) ); ?></div>
+                        <div class="gep-qp-qtext en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>"><?php echo gep_format_rich_content( $qp_text_en, false ); ?></div>
+                        <div class="gep-qp-qtext hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>"><?php echo gep_format_rich_content( $qp_text_hi, false ); ?></div>
                         
                         <div class="gep-qp-options">
                             <?php                                    $opts = array('A', 'B', 'C', 'D');
@@ -641,8 +641,8 @@ foreach ( $section_counters as $cat_key => $val ) {
                             ?>
                                 <div class="gep-qp-opt">
                                     <span class="gep-qp-opt-lbl"><?php echo $labels[$opt_idx]; ?>.</span>
-                                    <span class="en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>"><?php echo gep_clean_wpautop_tables( wp_kses_post($qp_opt_en) ); ?></span>
-                                    <span class="hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>"><?php echo gep_clean_wpautop_tables( wp_kses_post($qp_opt_hi) ); ?></span>
+                                    <span class="en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>"><?php echo gep_format_rich_content( $qp_opt_en, false ); ?></span>
+                                    <span class="hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>"><?php echo gep_format_rich_content( $qp_opt_hi, false ); ?></span>
                                 </div>
                             <?php endforeach; ?>
                         </div>

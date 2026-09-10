@@ -394,10 +394,18 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 
 <style>
 /* ─── Result Page — Professional Design ──────────────────────────────────── */
+/* Full-width solution surface.
+   The portal shell paints a near-black background on dashboard views; the result
+   page is a light document, so we repaint the content area and let the solution
+   use the whole screen instead of sitting in a 1400px column with black gutters. */
+.gep-dashboard-container.gep-sovereign-active .gep-dashboard-content,
+.gep-dashboard-container.gep-sovereign-active .gep-main-inner {
+    background: #f4f6f9 !important;
+}
 .gep-result-wrap {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 32px 24px 80px;
+    max-width: 100%;
+    margin: 0;
+    padding: 16px 16px 60px;
     font-family: 'Inter', sans-serif;
     width: 100%;
     box-sizing: border-box;
@@ -552,46 +560,49 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-subject-nums { display: flex; gap: 8px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .gep-subject-nums .c { color: #10b981; } .gep-subject-nums .w { color: #ef4444; } .gep-subject-nums .s { color: #94a3b8; }
 
-/* Question Analysis */
+/* Question Analysis — deliberately flat & full-bleed so the solution text gets
+   the entire screen width (no card border, minimal margin/padding). */
 .gep-analysis-section {
     background: #fff;
-    border-radius: 24px;
-    border: 1px solid #e2e8f0;
-    padding: 32px;
-    margin-bottom: 28px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+    border-radius: 0;
+    border: none;
+    padding: 12px 14px 20px;
+    margin-bottom: 12px;
+    box-shadow: none;
 }
 .gep-analysis-header {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 .gep-q-count-pill {
     background: #f1f5f9; border-radius: 100px;
     padding: 6px 14px; font-size: 12px; font-weight: 700; color: #64748b;
 }
 
-/* Question Review Cards */
+/* Question Review Cards — borderless, separated only by a hairline rule */
 .gep-qr-card {
     background: #fff;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    margin-bottom: 16px;
-    overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-    transition: box-shadow 0.2s;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid #eef2f6;
+    margin-bottom: 0;
+    padding-bottom: 6px;
+    box-shadow: none;
 }
-.gep-qr-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.08); }
-.gep-qr-card.correct  { border-left: 4px solid #10b981; }
-.gep-qr-card.wrong    { border-left: 4px solid #ef4444; }
-.gep-qr-card.skipped  { border-left: 4px solid #94a3b8; }
+.gep-qr-card:last-child { border-bottom: none; }
 
 .gep-qr-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 20px;
-    border-bottom: 1px solid #f1f5f9;
-    background: #fafbfc;
+    padding: 10px 0 8px;
+    border-bottom: none;
+    background: transparent;
+    /* Pills must wrap instead of overflowing sideways on narrow screens */
+    flex-wrap: wrap;
+    gap: 8px;
 }
-.gep-qr-meta { display: flex; align-items: center; gap: 10px; }
+.gep-qr-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
 .gep-qr-num { font-size: 12px; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 0.5px; }
 .gep-qr-type-pill {
     font-size: 10px; font-weight: 700; padding: 3px 10px;
@@ -606,15 +617,19 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-qr-status.wrong   { background: rgba(239,68,68,0.1);  color: #dc2626; }
 .gep-qr-status.skipped { background: rgba(148,163,184,0.1); color: #64748b; }
  
-.gep-qr-body { padding: 20px; }
-.gep-qr-text { font-size: 15px; font-weight: 600; color: #1e293b; line-height: 1.7; margin-bottom: 16px; }
+/* No side padding — the question/solution text runs edge to edge so more words
+   fit on a single line. */
+.gep-qr-body { padding: 4px 0 14px; }
+.gep-qr-text { font-size: 15px; font-weight: 500; color: #0f172a; line-height: 1.6; margin-bottom: 12px; }
+.gep-qr-text p { margin: 0 0 8px; }
+.gep-qr-text p:last-child { margin-bottom: 0; }
 
-/* Option Rows */
-.gep-opt-grid { display: flex; flex-direction: column; gap: 4px; }
+/* Option Rows — thinner, lighter, with the letter badge vertically centred */
+.gep-opt-grid { display: flex; flex-direction: column; gap: 3px; }
 .gep-opt-row {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 6px 12px; border-radius: 8px;
-    border: 1px solid #e2e8f0; background: #fafbfc;
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 10px; border-radius: 6px;
+    border: 1px solid #e8edf3; background: #fff;
     transition: all 0.15s;
 }
 .gep-opt-row.is-correct {
@@ -631,20 +646,22 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     border-color: #10b981;
 }
 .gep-opt-letter {
-    width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+    width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 800;
+    font-size: 11px; font-weight: 700;
     background: #f1f5f9; color: #64748b;
+    align-self: center; /* stays vertically centred next to multi-line options */
 }
 .gep-opt-row.is-correct .gep-opt-letter { background: #10b981; color: #fff; }
 .gep-opt-row.is-wrong-user .gep-opt-letter { background: #ef4444; color: #fff; }
-.gep-opt-text { flex: 1; font-size: 13px; font-weight: 500; color: #1e293b; line-height: 1.5; }
-.gep-opt-icon { font-size: 14px; flex-shrink: 0; margin-top: 3px; }
+.gep-opt-text { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 400; color: #0f172a; line-height: 1.5; }
+.gep-opt-text p { margin: 0; }
+.gep-opt-icon { font-size: 14px; flex-shrink: 0; align-self: center; margin-top: 0; }
 
 /* Answer Summary bar */
 .gep-ans-summary {
-    display: flex; gap: 16px; flex-wrap: wrap;
-    margin-top: 16px; padding-top: 16px;
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 10px; padding-top: 10px;
     border-top: 1px solid #f1f5f9;
     font-size: 13px; font-weight: 600;
 }
@@ -655,34 +672,45 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-ans-chip.your { background: rgba(99,102,241,0.08); color: #6366f1; }
 .gep-ans-chip.correct-ans { background: rgba(16,185,129,0.08); color: #059669; }
 
-/* Explanation */
+/* Explanation — plain white, minimal padding, full-strength (non-faded) text */
 .gep-explanation-box {
-    margin-top: 20px;
+    margin-top: 12px;
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 20px 24px;
+    border: none;
+    border-left: 2px solid #e2e8f0;
+    border-radius: 0;
+    padding: 2px 0 2px 12px;
 }
 .gep-exp-header {
     display: flex; align-items: center; gap: 8px;
     font-size: 12px; font-weight: 800; color: #6366f1;
     text-transform: uppercase; letter-spacing: 0.8px;
-    margin-bottom: 10px;
-}
-.gep-exp-body { font-size: 14px; color: #475569; line-height: 1.7; }
-
-/* Question Source: shown below the Explanation, in its own simple block */
-.gep-source-box {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #f1f5f9;
-}
-.gep-source-header {
-    font-size: 12px; font-weight: 800; color: #64748b;
-    text-transform: uppercase; letter-spacing: 0.8px;
     margin-bottom: 6px;
 }
-.gep-source-body { font-size: 13px; color: #475569; font-weight: 600; }
+.gep-exp-body {
+    font-size: 14px;
+    color: #0f172a;       /* was a faded slate grey — now full-strength near-black */
+    opacity: 1;
+    line-height: 1.65;
+    font-weight: 400;
+}
+.gep-exp-body p { margin: 0 0 8px; }
+.gep-exp-body p:last-child { margin-bottom: 0; }
+
+/* Question Source — its own box at the very end of the solution */
+.gep-source-box {
+    margin-top: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    background: #fbfcfe;
+}
+.gep-source-header {
+    font-size: 11px; font-weight: 800; color: #64748b;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin-bottom: 4px;
+}
+.gep-source-body { font-size: 13px; color: #0f172a; font-weight: 600; }
 
 /* Grade Badge */
 .gep-grade-badge {
@@ -716,10 +744,13 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 1px !important;
     }
-    .gep-subject-section,
-    .gep-analysis-section {
+    .gep-subject-section {
         padding: 20px 16px !important;
         border-radius: 16px !important;
+    }
+    .gep-analysis-section {
+        padding: 10px 12px 16px !important;
+        border-radius: 0 !important;
     }
     .gep-result-actions {
         flex-direction: column !important;
@@ -789,19 +820,27 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
         min-width: 340px !important;
     }
     /* Section cards */
-    .gep-subject-section,
+    .gep-subject-section {
+        padding: 14px 12px !important;
+        border-radius: 14px !important;
+        margin-bottom: 12px !important;
+    }
     .gep-analysis-section {
-        padding: 14px 12px !important;
-        border-radius: 14px !important;
-        margin-bottom: 12px !important;
+        padding: 8px 10px 14px !important;
+        border-radius: 0 !important;
+        margin-bottom: 8px !important;
     }
-    /* Question review cards */
+    /* Question review cards stay flat/full-bleed on phones too */
     .gep-qr-card {
-        padding: 14px 12px !important;
-        border-radius: 14px !important;
-        margin-bottom: 12px !important;
+        padding: 0 0 6px !important;
+        border-radius: 0 !important;
+        margin-bottom: 0 !important;
     }
-    .gep-qr-card-header {
+    /* FIX: this rule previously targeted `.gep-qr-card-header`, which does not
+       exist in the markup — so the meta pill row never wrapped and overflowed
+       sideways on narrow screens. The real class is `.gep-qr-header`. */
+    .gep-qr-header,
+    .gep-qr-meta {
         flex-wrap: wrap !important;
         gap: 6px !important;
     }
@@ -1229,8 +1268,8 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                     $p_title_hi = isset($p_trans['title']) ? $p_trans['title'] : '';
                     
                     // Determine language to display
-                    $p_display_en = wpautop( wp_kses_post( $p_data->title ) );
-                    $p_display_hi = ! empty( $p_title_hi ) ? wpautop( wp_kses_post( $p_title_hi ) ) : $p_display_en;
+                    $p_display_en = gep_format_rich_content( $p_data->title );
+                    $p_display_hi = ! empty( $p_title_hi ) ? gep_format_rich_content( $p_title_hi ) : $p_display_en;
                     
                     $p_content = ($current_lang === 'hi' && ! empty( $q->translation_enabled )) ? $p_display_hi : $p_display_en;
                 ?>
@@ -1244,7 +1283,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                     <div class="gep-qr-question-column" style="flex: 1; min-width: 0;">
                 <?php endif; ?>
 
-                <div class="gep-qr-text"><?php echo gep_clean_wpautop_tables( wpautop(wp_kses_post( $q->title )) ); ?></div>
+                <div class="gep-qr-text"><?php echo gep_format_rich_content( $q->title ); ?></div>
 
                 <?php if ( $qtype === 'short_answer' || $qtype === 'numerical' || $qtype === 'true_false' ) : ?>
                     <!-- Numerical / Short Answer / True-False Display -->
@@ -1360,7 +1399,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                     ?>
                         <div class="gep-opt-row <?php echo $row_class; ?>">
                             <div class="gep-opt-letter"><?php echo esc_html( $display_label ); ?></div>
-                            <div class="gep-opt-text"><?php echo gep_clean_wpautop_tables( wpautop(wp_kses_post( $opt_text )) ); ?></div>
+                            <div class="gep-opt-text"><?php echo gep_format_rich_content( $opt_text ); ?></div>
                             <?php echo $icon; ?>
                         </div>
                     <?php endforeach; ?>
@@ -1379,22 +1418,21 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                     </div>
                 <?php endif; ?>
 
-                <!-- Explanation / Solution, followed by Question Source (per required order) -->
-                <?php if ( ! empty( $q->explanation ) || ! empty( $q->source ) ) : ?>
+                <!-- Explanation / Solution first ... -->
+                <?php if ( ! empty( $q->explanation ) ) : ?>
                 <div class="gep-explanation-box">
-                    <?php if ( ! empty( $q->explanation ) ) : ?>
                     <div class="gep-exp-header">
                         <span>💡</span> <?php echo esc_html( $strings['explanation'] ); ?>
                     </div>
-                    <div class="gep-exp-body"><?php echo gep_clean_wpautop_tables( wpautop( wp_kses_post( $q->explanation ) ) ); ?></div>
-                    <?php endif; ?>
+                    <div class="gep-exp-body"><?php echo gep_format_rich_content( $q->explanation ); ?></div>
+                </div>
+                <?php endif; ?>
 
-                    <?php if ( ! empty( $q->source ) ) : ?>
-                    <div class="gep-source-box">
-                        <div class="gep-source-header">Question Source</div>
-                        <div class="gep-source-body"><?php echo esc_html( $q->source ); ?></div>
-                    </div>
-                    <?php endif; ?>
+                <!-- ... then the Sources box, as the last block of the solution -->
+                <?php if ( ! empty( $q->source ) ) : ?>
+                <div class="gep-source-box">
+                    <div class="gep-source-header">Sources</div>
+                    <div class="gep-source-body"><?php echo esc_html( $q->source ); ?></div>
                 </div>
                 <?php endif; ?>
 

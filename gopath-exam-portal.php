@@ -14,6 +14,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Guard against a second copy of this plugin being loaded.
+ *
+ * None of this plugin's classes/functions are declared conditionally, so if two
+ * copies are active at once (e.g. the original `gopath-exam-portal` folder plus a
+ * second folder created by uploading a differently-named ZIP), PHP dies with a
+ * "Cannot redeclare class GEP_Loader" fatal and WordPress only reports
+ * "Plugin could not be activated because it triggered a fatal error."
+ *
+ * Bail out cleanly instead, and tell the admin exactly what happened.
+ */
+if ( defined( 'GEP_VERSION' ) ) {
+	add_action( 'admin_notices', function() {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return;
+		}
+		echo '<div class="notice notice-error"><p><strong>GoPath Exam Portal:</strong> '
+			. esc_html__( 'Another copy of this plugin is already active, so this copy was not loaded. Deactivate and delete the duplicate copy under Plugins, then keep only one.', 'gopath-exam-portal' )
+			. '</p></div>';
+	} );
+	return;
+}
+
 // Catch fatal errors and log them
 register_shutdown_function( function() {
 	$error = error_get_last();
@@ -371,6 +394,47 @@ if ( ! function_exists( 'gep_clean_wpautop_tables' ) ) {
 			$html = preg_replace( '/<br\s*\/?>\s*(<tr>|<\/tr>|<td>|<\/td>|<th>|<\/th>|<\/table>)/i', '$1', $html );
 		}
 		return $html;
+	}
+}
+
+/**
+ * Wrap every <table> in a horizontally scrollable container.
+ *
+ * This lets a table keep `display:table; width:100%` — so it stretches to fill the
+ * available width and grows in full-screen layouts instead of staying small — while
+ * any table that genuinely cannot fit scrolls inside its own box rather than making
+ * the whole page scroll sideways.
+ *
+ * Nested tables stay balanced: every <table> gains an opening wrapper and every
+ * </table> its matching close.
+ */
+if ( ! function_exists( 'gep_wrap_tables_scrollable' ) ) {
+	function gep_wrap_tables_scrollable( $html ) {
+		if ( strpos( $html, '<table' ) === false ) {
+			return $html;
+		}
+		$html = preg_replace( '/<table\b/i', '<div class="gep-table-scroll"><table', $html );
+		$html = preg_replace( '/<\/table>/i', '</table></div>', $html );
+		return $html;
+	}
+}
+
+/**
+ * Single formatting pipeline for stored rich text (questions, options, passages,
+ * explanations): sanitize -> optional paragraph/line-break formatting -> table cleanup
+ * -> responsive table wrapping. Keeps every render site consistent.
+ */
+if ( ! function_exists( 'gep_format_rich_content' ) ) {
+	function gep_format_rich_content( $html, $autop = true ) {
+		if ( $html === null || $html === '' ) {
+			return '';
+		}
+		$html = wp_kses_post( $html );
+		if ( $autop ) {
+			$html = wpautop( $html );
+		}
+		$html = gep_clean_wpautop_tables( $html );
+		return gep_wrap_tables_scrollable( $html );
 	}
 }
 

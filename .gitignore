@@ -1,0 +1,6 @@
+# Runtime log written by the plugin's shutdown handler — never commit it
+fatal_error.log
+
+# Build output
+/build/
+/*.zip

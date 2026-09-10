@@ -3731,10 +3731,12 @@ span.sa-text.active { display: inline; }
     box-shadow: 0 0 0 1px rgba(255,255,255,0.15) inset;
 }
 
-/* ─── Tables: contain overflow locally instead of letting the page scroll ───
-   Tables already render at 100% of their container's width; this adds a
-   safety net so a table with many/long unbreakable cells scrolls within its
-   own box on small screens rather than pushing the page wider. */
+/* ─── Responsive tables ────────────────────────────────────────────────────
+   Tables are wrapped server-side in .gep-table-scroll (see
+   gep_wrap_tables_scrollable()). The table itself stays a real table at 100%
+   width, so it fills the available space and expands in full-screen layouts;
+   the wrapper scrolls only when the content genuinely cannot fit, which keeps
+   the overflow local instead of making the whole page scroll sideways. */
 .gep-q-content,
 .gep-passage-content,
 .gep-qp-qtext,
@@ -3747,17 +3749,16 @@ span.sa-text.active { display: inline; }
 .gep-q-text-wrapper {
     max-width: 100%;
 }
-.gep-q-content table,
-.gep-passage-content table,
-.gep-qp-qtext table,
-.gep-qr-text table,
-.gep-opt-text table,
-.gep-exp-body table,
-.gep-short-ans-wrapper table,
-.gep-numerical-wrapper table,
-.gep-ar-box table,
-.gep-q-text-wrapper table {
-    display: block !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
+.gep-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 14px 0;
+}
+.gep-table-scroll > table {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
 }
