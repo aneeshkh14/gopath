@@ -127,9 +127,17 @@ foreach ( $section_counters as $cat_key => $val ) {
     ?>
 
     <main class="gep-exam-main" id="gep-exam-main-container">
+        <?php
+        // A single-section paper has nothing to switch between, so the tab strip is
+        // one dead chip taking a whole row of a phone screen. Only render the bar
+        // when it actually navigates somewhere; the section name still appears in
+        // the question header and in the palette.
+        $gep_multi_section = ( count( (array) $sections_map ) > 1 );
+        ?>
+        <?php if ( $gep_multi_section ) : ?>
         <!-- Subject/Section Tabs -->
         <div class="gep-sections-bar-wrapper" style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">
-            <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 15px; min-width: 0;">
                 <span class="gep-sections-title">SECTIONS :</span>
                 <div class="gep-sections-tabs" id="gep-sections-tabs">
                     <?php 
@@ -145,20 +153,8 @@ foreach ( $section_counters as $cat_key => $val ) {
                     ?>
                 </div>
             </div>
-            
-            <!-- NTA Style Language Selector Dropdown -->
-            <div class="gep-nta-lang-selector-wrap" style="display: flex; align-items: center; gap: 8px;">
-                <?php if ( ! empty( $is_lang_locked ) ) : ?>
-                    <span style="font-size: 11px; font-weight: 800; color: #475569; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 10px; border-radius: 6px; letter-spacing: 0.3px;" title="This test uses a fixed language and cannot be switched.">🔒 Fixed Language</span>
-                <?php else : ?>
-                <label style="font-size: 11px; font-weight: 850; color: #475569; text-transform: uppercase; letter-spacing: 0.8px;">View In:</label>
-                <select class="gep-nta-lang-select" style="height: 32px; padding: 0 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: 700; font-size: 13px; color: #1e293b; cursor: pointer; outline: none; transition: border-color 0.2s;">
-                    <option value="en"<?php selected($current_lang, 'en'); ?>>English</option>
-                    <option value="hi"<?php selected($current_lang, 'hi'); ?>>Hindi</option>
-                </select>
-                <?php endif; ?>
-            </div>
         </div>
+        <?php endif; ?>
 
 
 
@@ -178,10 +174,17 @@ foreach ( $section_counters as $cat_key => $val ) {
 
             <!-- Passage Pane (Left Column) -->
             <div id="gep-active-passage-pane" style="display:none; flex: 1; min-height: 0; min-width: 0; border: 1px solid #cbd5e1; border-radius: 10px; background: #f8fafc; overflow: hidden; flex-direction: column;">
-                <div class="gep-pane-header" style="background: #f1f5f9; padding: 10px 15px; border-bottom: 1px solid #cbd5e1; font-weight: 850; font-size: 12px; color: #475569; display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: 0.5px;">
-                    <span class="en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>">Read the Passage below:</span>
-                    <span class="hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>">नीचे दिए गए गद्यांश को पढ़ें:</span>
-                </div>
+                <!-- The passage header doubles as a collapse control. On a phone the
+                     passage and the question share one screen, so being able to fold
+                     the passage away once it has been read gives the question and its
+                     options the full height instead of a 200px letterbox. -->
+                <button type="button" class="gep-pane-header gep-passage-pane-header" id="gep-passage-toggle" aria-expanded="true" aria-controls="gep-passage-body">
+                    <span class="gep-passage-header-label">
+                        <span class="en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>">📖 Read the Passage below:</span>
+                        <span class="hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>">📖 नीचे दिए गए गद्यांश को पढ़ें:</span>
+                    </span>
+                    <span class="gep-passage-toggle-icon" aria-hidden="true">▾</span>
+                </button>
                 <div id="gep-passage-body" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px; font-size: 15px; line-height: 1.6; color: #1e293b;">
 
                     <!-- Dynamically populated from #gep-passages-container -->
@@ -191,16 +194,40 @@ foreach ( $section_counters as $cat_key => $val ) {
             <!-- Question Pane (Right Column) -->
             <div id="gep-question-display-wrapper" style="position: relative; flex: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; overflow: visible;">
 
-                <div class="gep-pane-header" style="background: #f1f5f9; padding: 10px 15px; border-bottom: 1px solid #cbd5e1; font-weight: 850; font-size: 12px; color: #475569; display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: 0.5px;">
-                    <span class="en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>">Question <span class="gep-header-q-num">1</span></span>
-                    <span class="hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>">प्रश्न <span class="gep-header-q-num">1</span></span>
+                <!-- One header row carries everything about the current question:
+                     its number, its section, what it is worth, and the language
+                     control. Previously the marks sat in a row of their own inside
+                     the question body and the language control in a third row above
+                     it — three bands of chrome before a single word of the question,
+                     which is most of a phone screen. -->
+                <div class="gep-pane-header gep-q-pane-header">
+                    <div class="gep-q-pane-left">
+                        <span class="gep-q-pane-label en-text<?php echo $current_lang === 'en' ? ' active' : ''; ?>">Question <span class="gep-header-q-num">1</span></span>
+                        <span class="gep-q-pane-label hi-text<?php echo $current_lang === 'hi' ? ' active' : ''; ?>">प्रश्न <span class="gep-header-q-num">1</span></span>
+                        <span class="gep-q-pane-section" id="gep-q-pane-section"><?php
+                            $first_section_name = reset( $sections_map );
+                            echo esc_html( $first_section_name ? $first_section_name : '' );
+                        ?></span>
+                    </div>
+                    <div class="gep-q-pane-right">
+                        <!-- Marks for the active question, kept in sync by gep-exam.js -->
+                        <span class="gep-q-pane-marks" id="gep-q-pane-marks" aria-live="polite"></span>
+                        <?php if ( ! empty( $is_lang_locked ) ) : ?>
+                            <span class="gep-q-pane-lang-lock" title="This test uses a fixed language and cannot be switched.">🔒 <span class="gep-lock-word">Fixed</span></span>
+                        <?php else : ?>
+                            <select class="gep-nta-lang-select" aria-label="View question in">
+                                <option value="en"<?php selected($current_lang, 'en'); ?>>English</option>
+                                <option value="hi"<?php selected($current_lang, 'hi'); ?>>Hindi</option>
+                            </select>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 <div id="gep-question-display" style="position: relative; flex: 1; min-height: 0; min-width: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px 100px 20px;">
 
                 <?php foreach ( $questions as $index => $q ) : 
                     $pid = isset($q->passage_id) ? absint($q->passage_id) : 0;
                 ?>
-                <div class="gep-question-block" data-id="<?php echo $q->id; ?>" data-cat-id="<?php echo esc_attr($q->category_id); ?>" data-type="<?php echo esc_attr( isset($q->question_type) ? $q->question_type : 'mcq' ); ?>" data-passage-id="<?php echo $pid; ?>" data-has-translation="<?php echo (isset($q->translation_enabled) && $q->translation_enabled) ? '1' : '0'; ?>" id="q-block-<?php echo $index; ?>" style="display: none;">
+                <div class="gep-question-block" data-id="<?php echo $q->id; ?>" data-cat-id="<?php echo esc_attr($q->category_id); ?>" data-cat-name="<?php echo esc_attr( isset($sections_map[strval($q->category_id)]) ? $sections_map[strval($q->category_id)] : '' ); ?>" data-marks="<?php echo esc_attr( $q->marks ); ?>" data-neg="<?php echo esc_attr( $q->negative_marks ); ?>" data-type="<?php echo esc_attr( isset($q->question_type) ? $q->question_type : 'mcq' ); ?>" data-passage-id="<?php echo $pid; ?>" data-has-translation="<?php echo (isset($q->translation_enabled) && $q->translation_enabled) ? '1' : '0'; ?>" id="q-block-<?php echo $index; ?>" style="display: none;">
                     <div class="gep-question-card">
                         <?php 
                             $qtype = isset($q->question_type) ? $q->question_type : 'mcq';
@@ -216,24 +243,15 @@ foreach ( $section_counters as $cat_key => $val ) {
                             );
                             $qtag = isset($qtypes_label[$qtype]) ? $qtypes_label[$qtype] : strtoupper($qtype);
                         ?>
-                        <div class="gep-q-header">
-                            <div style="display:flex;align-items:center;gap:10px;">
-                                <?php if ( ! empty( $q->source ) ) : ?>
-                                    <span class="gep-source-badge" style="background: rgba(99,102,241,0.15); color: #818cf8; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px;" title="Question Source">
-                                        SOURCE: <?php echo esc_html( $q->source ); ?>
-                                    </span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="gep-q-marks">
-                                <span class="pos">+<?php echo $q->marks; ?></span>
-                                <?php if ($q->negative_marks > 0) : ?>
-                                <span class="neg">-<?php echo $q->negative_marks; ?></span>
-                                <?php endif; ?>
-                                <?php if ($is_numerical) : ?>
-                                <button type="button" class="gep-calc-btn" title="Open Calculator">🖩 Calc</button>
-                                <?php endif; ?>
-                            </div>
-                        </div>
+                        <?php
+                        /* The question's own header row is gone. Its marks now sit in
+                           the pane header above (one band of chrome instead of three),
+                           and the SOURCE badge belonged to the solution rather than to
+                           a paper the student is still sitting — it named the origin of
+                           the question mid-exam. It is still shown on the result page.
+                           A numerical question keeps its calculator, but only the one
+                           beside the answer field, where it is actually used. */
+                        ?>
                         
                         <div class="gep-q-content">
                             <?php if ($is_ar) : ?>
@@ -455,6 +473,21 @@ foreach ( $section_counters as $cat_key => $val ) {
         </div>
         -->
 
+        <!-- Palette header. On a phone the palette covers the whole screen, and it
+             previously had no way out except tapping a question or guessing at the
+             backdrop — so it needs a visible close control and a title of its own.
+             It also fills the blank strip that used to sit above the legend. -->
+        <div class="gep-palette-header">
+            <div class="gep-palette-header-titles">
+                <span class="gep-palette-title">Question Palette</span>
+                <span class="gep-palette-subtitle" id="gep-palette-section-name"><?php
+                    $palette_first_section = reset( $sections_map );
+                    echo esc_html( $palette_first_section ? $palette_first_section : '' );
+                ?></span>
+            </div>
+            <button type="button" class="gep-palette-close" id="gep-palette-close" aria-label="Close question palette" title="Close">&times;</button>
+        </div>
+
         <!-- NTA 5-State Legend -->
         <div class="gep-palette-legend">
             <div class="gep-legend-item"><div class="gep-legend-dot answered" id="count-answered">0</div>Answered</div>
@@ -463,10 +496,6 @@ foreach ( $section_counters as $cat_key => $val ) {
             <div class="gep-legend-item"><div class="gep-legend-dot flagged" id="count-flagged">0</div>Marked</div>
             <div class="gep-legend-item"><div class="gep-legend-dot answered-flagged" id="count-ans-marked">0</div>Ans+Marked</div>
         </div>
-
-        <style>
-            body, html { overflow: hidden !important; }
-        </style>
 
         <!-- Grid of Question Numbers -->
         <div class="gep-palette-grid-container" style="overflow-y: auto; padding-bottom: 20px;">

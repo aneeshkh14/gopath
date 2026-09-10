@@ -36,12 +36,6 @@ class GEP_Analytics {
         $q_results = array();
         $topic_stats = array(); // topic_id => [correct, total]
 
-        $normalize = function( $val ) {
-            $parts = array_filter( array_map( 'trim', explode( ',', strtoupper( (string) $val ) ) ) );
-            sort( $parts );
-            return implode( ',', $parts );
-        };
-
         foreach ( $questions as $q ) {
             $qid = $q->id;
             $cat_id = absint( $q->subcategory_id ?: $q->category_id );
@@ -56,14 +50,11 @@ class GEP_Analytics {
             $earned = 0;
 
             if ( $user_ans !== null && $user_ans !== '' ) {
-                $q_type = $q->question_type ?: 'mcq';
-                $is_correct = false;
-                if ( $q_type === 'numerical' ) {
-                    $tol = isset( $q->numerical_tolerance ) ? floatval( $q->numerical_tolerance ) : 0.01;
-                    $is_correct = ( abs( floatval($user_ans) - floatval($correct_ans) ) <= $tol );
-                } else {
-                    $is_correct = ( $normalize($user_ans) === $normalize($correct_ans) );
-                }
+                // One evaluator for the whole plugin. The local copy this replaced
+                // did not know about true/false casing or the Devanagari/numeric
+                // option labels the paper actually uses, so the charts disagreed
+                // with the score the student was shown.
+                $is_correct = GEP_Exam_Engine::evaluate_answer( $q, $user_ans );
                 if ( $is_correct ) {
                     $status = 'correct'; $earned = $q->marks;
                     $correct++;
@@ -151,7 +142,16 @@ class GEP_Analytics {
     }
 
     /**
-     * Get topic-level accuracy heatmap for a user across all attempts.
+     * Get topic-level accuracy heatmap for a user across their LAST 20 ATTEMPTS.
+     *
+     * NOTE ON SCOPE — read before using this for a result page.
+     * This is a *lifetime* view: it walks many attempts across many tests, so its
+     * totals are the sum of every question the student has ever seen in a topic.
+     * That is the right number for a long-term progress widget and the wrong one
+     * for "how did I do in this test", where the reader expects the totals to
+     * match the test they just sat. For a single attempt use
+     * get_weak_topics_for_attempt() instead.
+     *
      * Returns: array of {cat_id, name, correct, total, accuracy_pct}
      */
     public function get_topic_heatmap( $user_id ) {
@@ -177,9 +177,13 @@ class GEP_Analytics {
                 if ( ! isset( $topic_map[$cat] ) ) $topic_map[$cat] = ['correct'=>0,'total'=>0,'name'=>''];
                 $topic_map[$cat]['total']++;
                 if ( isset($answers[$q->id]['answer']) && $answers[$q->id]['answer'] !== '' ) {
-                    $ua = strtoupper(trim($answers[$q->id]['answer']));
-                    $ca = strtoupper(trim($q->correct_answer));
-                    if ( $ua === $ca ) $topic_map[$cat]['correct']++;
+                    // Use the one canonical evaluator. A raw string compare marked
+                    // every multi-select answer ("A,C" vs "C,A") and every numerical
+                    // answer within tolerance as wrong, so those topics always looked
+                    // weaker than the student actually was.
+                    if ( GEP_Exam_Engine::evaluate_answer( $q, $answers[$q->id]['answer'] ) ) {
+                        $topic_map[$cat]['correct']++;
+                    }
                 }
             }
         }
@@ -205,11 +209,90 @@ class GEP_Analytics {
     }
 
     /**
-     * Get top 5 weak topics for a user.
+     * Get top weak topics for a user across their recent attempts (lifetime view).
+     * See the scope note on get_topic_heatmap() before using this on a result page.
      */
     public function get_weak_topics( $user_id, $limit = 5 ) {
         $heatmap = $this->get_topic_heatmap( $user_id );
         return array_slice( $heatmap, 0, $limit );
+    }
+
+    /**
+     * Weak topics for ONE attempt — scoped to the questions in that test only.
+     *
+     * This is what a result page needs: if the test carried 16 Ved questions, the
+     * row reads "0/16", the same 16 the subject breakdown below it shows. The
+     * lifetime variant answers a different question and made the result page claim
+     * totals (0/176) that appeared nowhere else on the page.
+     *
+     * @param int   $attempt_id  Attempt to analyse.
+     * @param int   $limit       Max rows to return.
+     * @param float $threshold   Only topics below this accuracy % count as weak.
+     * @return array of {cat_id, name, correct, wrong, skipped, total, accuracy_pct}
+     */
+    public function get_weak_topics_for_attempt( $attempt_id, $limit = 5, $threshold = 60 ) {
+        global $wpdb;
+
+        $attempt = $wpdb->get_row( $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}gep_attempts WHERE id = %d", $attempt_id
+        ) );
+        if ( ! $attempt ) return array();
+
+        $answers   = json_decode( $attempt->answers, true ) ?: array();
+        $test_logic = new GEP_Test();
+        $q_logic    = new GEP_Question();
+        $questions  = $q_logic->get_questions_by_ids(
+            $test_logic->get_test_questions( $attempt->test_id, $attempt->id )
+        );
+        if ( empty( $questions ) ) return array();
+
+        $topics = array();
+        foreach ( $questions as $q ) {
+            $cat = absint( ! empty( $q->subcategory_id ) ? $q->subcategory_id : $q->category_id );
+            if ( ! isset( $topics[$cat] ) ) {
+                $topics[$cat] = array(
+                    'cat_id' => $cat, 'name' => '',
+                    'correct' => 0, 'wrong' => 0, 'skipped' => 0, 'total' => 0,
+                );
+            }
+            $topics[$cat]['total']++;
+
+            $user_ans = isset( $answers[$q->id]['answer'] ) ? (string) $answers[$q->id]['answer'] : '';
+            if ( $user_ans === '' ) {
+                $topics[$cat]['skipped']++;
+            } elseif ( GEP_Exam_Engine::evaluate_answer( $q, $user_ans ) ) {
+                $topics[$cat]['correct']++;
+            } else {
+                $topics[$cat]['wrong']++;
+            }
+        }
+
+        $ids = array_filter( array_keys( $topics ) );
+        if ( ! empty( $ids ) ) {
+            $ids_str = implode( ',', array_map( 'absint', $ids ) );
+            $cats = $wpdb->get_results( "SELECT id, name FROM {$wpdb->prefix}gep_categories WHERE id IN ($ids_str)" );
+            foreach ( $cats as $c ) {
+                if ( isset( $topics[$c->id] ) ) $topics[$c->id]['name'] = $c->name;
+            }
+        }
+
+        $weak = array();
+        foreach ( $topics as $t ) {
+            if ( $t['total'] < 1 || $t['name'] === '' ) continue;
+            $t['accuracy_pct'] = (int) round( ( $t['correct'] / $t['total'] ) * 100 );
+            if ( $t['accuracy_pct'] < $threshold ) {
+                $weak[] = $t;
+            }
+        }
+        // Weakest first; on a tie the topic carrying more marks is the bigger problem.
+        usort( $weak, function ( $a, $b ) {
+            if ( $a['accuracy_pct'] === $b['accuracy_pct'] ) {
+                return $b['total'] - $a['total'];
+            }
+            return $a['accuracy_pct'] - $b['accuracy_pct'];
+        } );
+
+        return array_slice( $weak, 0, $limit );
     }
 
     /**

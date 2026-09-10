@@ -369,6 +369,12 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSidebarCounters();
     }
 
+    // Marks come from the DB as strings like "2.00" / "0.50"; show them the way a
+    // question paper prints them.
+    function trimNum(n) {
+        return parseFloat(n.toFixed(2)).toString();
+    }
+
     function loadQuestion(index) {
         const questions = document.querySelectorAll('.gep-question-block');
 
@@ -402,6 +408,35 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.gep-header-q-num').forEach(el => {
             el.textContent = (index + 1);
         });
+
+        // Keep the pane header describing the question it sits above: its section
+        // and what it is worth. These used to live in rows of their own inside the
+        // question body; folding them into the header gives the question itself
+        // most of a phone screen back.
+        const headerBlock = document.querySelectorAll('.gep-question-block')[index];
+        if (headerBlock) {
+            const marksEl = document.getElementById('gep-q-pane-marks');
+            if (marksEl) {
+                const pos = parseFloat(headerBlock.dataset.marks);
+                const neg = parseFloat(headerBlock.dataset.neg);
+                let html = '';
+                if (!isNaN(pos) && pos !== 0) {
+                    html += '<span class="pos">+' + trimNum(pos) + '</span>';
+                }
+                if (!isNaN(neg) && neg > 0) {
+                    html += '<span class="neg">-' + trimNum(neg) + '</span>';
+                }
+                marksEl.innerHTML = html;
+            }
+            const catName = headerBlock.dataset.catName || '';
+            const sectionEl = document.getElementById('gep-q-pane-section');
+            if (sectionEl) {
+                sectionEl.textContent = catName;
+                sectionEl.style.display = catName ? '' : 'none';
+            }
+            const paletteSectionEl = document.getElementById('gep-palette-section-name');
+            if (paletteSectionEl) paletteSectionEl.textContent = catName;
+        }
 
         paletteButtons.forEach((btn, i) => btn.classList.toggle('active', i === index));
         if (prevBtn) prevBtn.disabled = (index === 0);
@@ -561,6 +596,38 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ─── Passage: collapse once it has been read ───────────────────────────
+    const passageToggle = document.getElementById('gep-passage-toggle');
+    if (passageToggle) {
+        passageToggle.addEventListener('click', function () {
+            const pane = document.getElementById('gep-active-passage-pane');
+            if (!pane) return;
+            const collapsed = pane.classList.toggle('collapsed');
+            this.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        });
+    }
+
+    // ─── Closing the palette ───────────────────────────────────────────────
+    // On a phone the palette covers the whole screen. Tapping outside it is not a
+    // discoverable way out when there is no visible "outside", so give it an
+    // explicit close button, and let Escape close it too.
+    const paletteClose = document.getElementById('gep-palette-close');
+    if (paletteClose && examSidebar) {
+        paletteClose.addEventListener('click', function(e) {
+            e.stopPropagation();
+            examSidebar.classList.remove('active');
+            if (window.innerWidth > 992) {
+                examSidebar.classList.add('collapsed');
+                if (examLayout) examLayout.classList.add('sidebar-collapsed');
+            }
+        });
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && examSidebar && examSidebar.classList.contains('active')) {
+            examSidebar.classList.remove('active');
+        }
+    });
+
     // ─── Collapsible Sidebar Edge Toggle ───────────────────────────
     const sidebarCollapseToggle = document.getElementById('gep-sidebar-collapse-toggle');
 
@@ -614,6 +681,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Trigger initial filtering
         switchSection(activeCatId, false);
+    } else {
+        // A single-section paper renders no tab strip (one dead chip is not
+        // navigation), so seed the active section from the first question instead
+        // of leaving it null until the first navigation.
+        const firstBlock = document.querySelector('.gep-question-block');
+        if (firstBlock) {
+            activeCatId = firstBlock.dataset.catId;
+            activeTab = activeCatId;
+        }
     }
 
     function switchSection(catId, forceLoadFirst = true) {
@@ -1046,27 +1122,50 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ─── Text Zoom ───────────────────────────────────────────────────────────
-    // Initialize root font size CSS custom property on page load
+    // A chosen text size should survive a reload — a proctoring lock or a dropped
+    // connection mid-paper should not hand the student back a size they rejected.
+    const ZOOM_MIN = 12, ZOOM_MAX = 24, ZOOM_KEY = 'gep_zoom_font_size';
+    try {
+        const savedZoom = parseInt(sessionStorage.getItem(ZOOM_KEY), 10);
+        if (!isNaN(savedZoom) && savedZoom >= ZOOM_MIN && savedZoom <= ZOOM_MAX) {
+            currentFontSize = savedZoom;
+        }
+    } catch (err) { /* storage blocked — the default size is fine */ }
+
     document.documentElement.style.setProperty('--gep-zoom-font-size', currentFontSize + 'px');
 
     const zoomBtns = document.querySelectorAll('.gep-zoom-btn');
+    function applyZoom(clicked) {
+        document.documentElement.style.setProperty('--gep-zoom-font-size', currentFontSize + 'px');
+        try { sessionStorage.setItem(ZOOM_KEY, String(currentFontSize)); } catch (err) {}
+
+        zoomBtns.forEach(b => {
+            // A control that can no longer move is disabled rather than silently inert,
+            // so "nothing happened" always has a visible reason.
+            const atLimit = (b.dataset.zoom === 'in' && currentFontSize >= ZOOM_MAX) ||
+                            (b.dataset.zoom === 'out' && currentFontSize <= ZOOM_MIN);
+            b.disabled = atLimit;
+            b.style.opacity = atLimit ? '0.4' : '';
+            if (b !== clicked) {
+                b.classList.remove('active');
+                b.setAttribute('aria-pressed', 'false');
+            }
+        });
+        if (clicked) {
+            clicked.classList.add('active');
+            clicked.setAttribute('aria-pressed', 'true');
+        }
+    }
+
     zoomBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             const action = this.dataset.zoom;
-            if (action === 'in' && currentFontSize < 24) currentFontSize += 2;
-            if (action === 'out' && currentFontSize > 12) currentFontSize -= 2;
-
-            document.documentElement.style.setProperty('--gep-zoom-font-size', currentFontSize + 'px');
-
-            // Give the last-clicked zoom control a clear active/pressed state
-            zoomBtns.forEach(b => {
-                b.classList.remove('active');
-                b.setAttribute('aria-pressed', 'false');
-            });
-            this.classList.add('active');
-            this.setAttribute('aria-pressed', 'true');
+            if (action === 'in'  && currentFontSize < ZOOM_MAX) currentFontSize += 2;
+            if (action === 'out' && currentFontSize > ZOOM_MIN) currentFontSize -= 2;
+            applyZoom(this);
         });
     });
+    applyZoom(null);
 
     // ─── Scrolling Logic for Question Options and Floating Up/Down Buttons ───
     const scrollDisplayPane = document.getElementById('gep-question-display');

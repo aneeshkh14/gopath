@@ -27,6 +27,17 @@
     flex-direction: column;
 }
 
+/* An inline <style> inside the palette markup used to set
+   `body, html { overflow: hidden !important }` unconditionally. On desktop that
+   is correct — the grid scrolls internally. On a phone the layout deliberately
+   falls back to normal document scroll, and `html { overflow:hidden }` propagates
+   to the viewport, so the exam simply could not be scrolled: long questions had
+   their options stranded below the fold. The lock now lives here, where it can be
+   limited to the layout that actually wants it. */
+@media (min-width: 993px) {
+    html:has(body.gep-exam-locked) { overflow: hidden; }
+}
+
 body.gep-exam-locked {
     margin: 0;
     padding: 0;
@@ -374,6 +385,8 @@ span.sa-text.active { display: inline; }
     padding: 30px;
     display: flex;
     flex-direction: column;
+    min-height: 0;   /* grid item: allow the inner grid to scroll rather than overflow */
+    overflow: hidden;
 }
 
 .gep-exam-sidebar h3 { 
@@ -1769,6 +1782,10 @@ span.sa-text.active { display: inline; }
 /* Sidebar Question Grid Container */
 .gep-palette-grid-container {
     flex: 1;
+    /* Without min-height:0 this flex child cannot shrink below its content, so a
+       long paper pushed the action bar past the bottom of the sidebar and Submit
+       rendered half cut — on desktop as well as on phones. */
+    min-height: 0;
     overflow-y: auto;
     padding: 20px 25px;
     width: 100%;
@@ -1779,8 +1796,9 @@ span.sa-text.active { display: inline; }
 .gep-palette-grid-container::-webkit-scrollbar-track { background: transparent; }
 .gep-palette-grid-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-/* Sidebar Bottom Actions Panel */
+/* Sidebar Bottom Actions Panel — never scrolls away, never shrinks. */
 .gep-sidebar-bottom-actions {
+    flex: 0 0 auto;
     background: #f8fafc;
     border-top: 1px solid #cbd5e1;
     padding: 20px 25px;
@@ -2107,11 +2125,40 @@ span.sa-text.active { display: inline; }
 
 .gep-popup-modal-body {
     flex: 1;
+    /* Without min-height:0 a flex child refuses to shrink below its content, so the
+       body grew past the modal and the overflow was simply clipped — the reason
+       Instructions and Question Paper could not be scrolled to the end. */
+    min-height: 0;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     padding: 30px;
     font-size: 15px;
     line-height: 1.7;
     color: #475569;
+}
+
+/* Modals on phones: use the screen, and keep the close control a real target. */
+@media (max-width: 768px) {
+    .gep-popup-modal { align-items: flex-end; }
+    .gep-popup-modal-content {
+        width: 100%;
+        max-width: 100%;
+        max-height: 90dvh;
+        border-radius: 18px 18px 0 0;
+    }
+    .gep-popup-modal-content h2 {
+        padding: 16px 56px 16px 18px;
+        font-size: 16px;
+    }
+    .gep-popup-modal-body { padding: 16px 18px calc(24px + env(safe-area-inset-bottom)); font-size: 14px; }
+    .gep-popup-modal-close {
+        top: 8px; right: 10px;
+        width: 40px; height: 40px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 10px;
+        background: #f1f5f9;
+    }
 }
 
 .gep-popup-modal-body::-webkit-scrollbar { width: 6px; }
@@ -2339,8 +2386,29 @@ span.sa-text.active { display: inline; }
     background: #fef2f2; border: 1px solid #fecaca;
     border-radius: 12px; padding: 10px 16px;
 }
-.gep-weak-topic-name { flex: 1; font-size: 13px; font-weight: 700; color: #991b1b; }
-.gep-weak-topic-pct { font-size: 20px; font-weight: 900; color: #ef4444; }
+.gep-weak-topic-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 700; color: #991b1b; }
+.gep-weak-topic-count {
+    font-size: 12px; font-weight: 600; color: #64748b;
+    white-space: nowrap;
+}
+.gep-weak-topic-count strong { color: #334155; font-weight: 800; }
+.gep-weak-topic-sub { color: #94a3b8; font-weight: 600; }
+.gep-weak-topic-pct { font-size: 20px; font-weight: 900; color: #b91c1c; min-width: 48px; text-align: right; }
+
+/* On a phone the three columns cannot share one line without the name being
+   clipped, so the counts drop under the name and the percentage stays on the right. */
+@media (max-width: 480px) {
+    .gep-weak-topic-row {
+        flex-wrap: wrap;
+        padding: 10px 12px;
+        row-gap: 2px;
+    }
+    /* Name and score share the first line; the detailed count drops below them
+       (source order puts the count second, so `order` moves it visually last). */
+    .gep-weak-topic-name  { flex: 1 1 auto; order: 1; }
+    .gep-weak-topic-pct   { flex: 0 0 auto; order: 2; font-size: 18px; }
+    .gep-weak-topic-count { flex: 1 0 100%; order: 3; white-space: normal; }
+}
 
 /* ─── Mobile Responsive Overrides ──────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -2564,6 +2632,19 @@ span.sa-text.active { display: inline; }
     font-weight: 800 !important;
 }
 
+
+
+
+/* wpautop closes question text with a <p>, whose bottom margin then stacks with
+   the options' own top margin — dead space on the one screen where vertical room
+   is scarcest. */
+.gep-q-text-wrapper > p:last-child,
+.gep-q-content > p:last-child,
+.gep-ar-assertion > p:last-child,
+.gep-ar-reason > p:last-child { margin-bottom: 0 !important; }
+.gep-q-text-wrapper > .gep-table-scroll:last-child { margin-bottom: 0 !important; }
+
+
 /* ─── Text Zoom via CSS Variable ─────────────────────────────────────────── */
 /* Default lowered from 16px so the main question text takes noticeably less
    vertical space by default while staying readable; A+/A- still zoom from here. */
@@ -2724,7 +2805,9 @@ span.sa-text.active { display: inline; }
     display: flex !important;
     align-items: center !important;
     gap: 6px !important;
-    font-size: 14px !important; /* thoda font chhota */
+    /* Zoom-aware: the A+/A- controls drive --gep-zoom-font-size. A literal size
+       here silently defeated them. */
+    font-size: var(--gep-zoom-font-size) !important;
     font-weight: 500 !important;
     color: #1e293b !important;
     text-align: left !important; /* left alignment */
@@ -2732,14 +2815,14 @@ span.sa-text.active { display: inline; }
 
 .gep-opt-prefix {
     font-weight: 700 !important;
-    font-size: 14px !important;
+    font-size: inherit !important;
     color: #475569 !important;
 }
 
 .gep-opt-content .en-text,
 .gep-opt-content .hi-text,
 .gep-opt-content .sa-text {
-    font-size: 14px !important;
+    font-size: inherit !important;
     font-weight: 500 !important;
     color: #1e293b !important;
     display: none !important;
@@ -3215,9 +3298,12 @@ span.sa-text.active { display: inline; }
 
     /* ── Question text ────────────────────────────────────── */
     .gep-q-text-wrapper {
-        font-size: 15px !important;
+        font-size: calc(var(--gep-zoom-font-size) + 1px) !important;
         line-height: 1.65 !important;
         padding: 0 12px 10px 12px !important;
+        /* width:100% plus side padding without border-box measured 24px wider than
+           its parent, which is what pushed the page 3px sideways at 360px. */
+        box-sizing: border-box !important;
         word-break: break-word !important;
         overflow-wrap: break-word !important;
     }
@@ -3226,19 +3312,25 @@ span.sa-text.active { display: inline; }
         padding: 0 !important;
     }
 
-    /* ── Tables inside questions ──────────────────────────── */
+    /* ── Tables inside questions ──────────────────────────────
+       A table stays display:table so its columns share the available width; as a
+       block, each cell sized to its own content and pushed the table off-screen.
+       The 80px cell minimum did the same thing from the other end — four columns
+       could not fit a 360px screen no matter how short the text was. */
     .gep-q-content table {
-        display: block !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
+        display: table !important;
+        table-layout: auto !important;
+        overflow-x: visible !important;
         width: 100% !important;
+        max-width: 100% !important;
         font-size: 13px !important;
     }
     .gep-q-content table td,
     .gep-q-content table th {
         padding: 8px 10px !important;
-        min-width: 80px;
+        min-width: 0 !important;
         white-space: normal !important;
+        overflow-wrap: anywhere !important;
     }
 
     /* ── Options container ────────────────────────────────── */
@@ -3277,12 +3369,12 @@ span.sa-text.active { display: inline; }
         margin-top: 2px !important;
     }
     .gep-opt-content {
-        font-size: 14px !important;
+        font-size: var(--gep-zoom-font-size) !important;
         line-height: 1.55 !important;
         word-break: break-word !important;
         overflow-wrap: break-word !important;
     }
-    .gep-opt-content div { font-size: 14px !important; }
+    .gep-opt-content div { font-size: inherit !important; }
 
     /* ── Passage split layout ─────────────────────────────── */
     .gep-passage-split {
@@ -3395,8 +3487,8 @@ span.sa-text.active { display: inline; }
 /* ── TINY PHONES (≤390px) — Extra compact ────────────────────────────────── */
 @media (max-width: 390px) {
     .gep-test-title { max-width: 70px !important; }
-    .gep-opt-content { font-size: 13px !important; }
-    .gep-q-text-wrapper { font-size: 14px !important; }
+    .gep-opt-content { font-size: calc(var(--gep-zoom-font-size) - 1px) !important; }
+    .gep-q-text-wrapper { font-size: var(--gep-zoom-font-size) !important; }
     .gep-btn { font-size: 10px !important; padding: 7px 6px !important; }
     .gep-palette-grid { grid-template-columns: repeat(6, 1fr) !important; }
 }
@@ -3515,7 +3607,7 @@ span.sa-text.active { display: inline; }
         height: auto !important;
         overflow: visible !important;
         padding: 12px !important;
-        font-size: 14px !important;
+        font-size: var(--gep-zoom-font-size) !important;
         line-height: 1.6 !important;
     }
 
@@ -3579,13 +3671,14 @@ span.sa-text.active { display: inline; }
     /* ── 14. Question text ── */
     .gep-q-text-wrapper,
     .gep-q-content {
-        font-size: 15px !important;
+        font-size: calc(var(--gep-zoom-font-size) + 1px) !important;
         line-height: 1.7 !important;
         word-break: break-word !important;
         overflow-wrap: break-word !important;
         overflow: visible !important;
         height: auto !important;
         width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     /* ── 15. Options: full column, all visible ── */
@@ -3626,7 +3719,7 @@ span.sa-text.active { display: inline; }
         overflow-wrap: break-word !important;
         overflow: visible !important;
         height: auto !important;
-        font-size: 14px !important;
+        font-size: var(--gep-zoom-font-size) !important;
         line-height: 1.6 !important;
     }
     .gep-opt-indicator {
@@ -3641,13 +3734,18 @@ span.sa-text.active { display: inline; }
         color: var(--gep-primary) !important;
     }
 
-    /* ── 18. Tables inside questions ── */
-    .gep-q-content table {
-        display: block !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
+    /* ── 18. Tables inside questions ──
+       A table must stay `display:table` to share width between its columns.
+       Forcing display:block made every cell size to its own content, which is
+       exactly what pushed match-the-following tables off the right edge on a
+       phone. Keep it a table and let the cells wrap instead. */
+    .gep-q-content table,
+    .gep-q-text-wrapper table {
+        display: table !important;
+        table-layout: auto !important;
+        width: 100% !important;
         max-width: 100% !important;
-        font-size: 13px !important;
+        overflow-x: visible !important;
     }
 
     /* ── 19. Header compact for mobile ── */
@@ -3737,10 +3835,10 @@ span.sa-text.active { display: inline; }
     }
     .gep-q-text-wrapper,
     .gep-q-content {
-        font-size: 14px !important;
+        font-size: var(--gep-zoom-font-size) !important;
     }
     .gep-opt-content {
-        font-size: 13px !important;
+        font-size: calc(var(--gep-zoom-font-size) - 1px) !important;
     }
 }
 
@@ -3758,12 +3856,20 @@ span.sa-text.active { display: inline; }
     box-shadow: 0 0 0 1px rgba(255,255,255,0.15) inset;
 }
 
-/* ─── Responsive tables ────────────────────────────────────────────────────
-   Tables are wrapped server-side in .gep-table-scroll (see
-   gep_wrap_tables_scrollable()). The table itself stays a real table at 100%
-   width, so it fills the available space and expands in full-screen layouts;
-   the wrapper scrolls only when the content genuinely cannot fit, which keeps
-   the overflow local instead of making the whole page scroll sideways. */
+/* ─── Responsive tables — fit the screen, do not scroll ────────────────────
+   Match-the-following tables were the worst offender on phones: the reader had
+   to swipe sideways inside the question just to see column II. Three things had
+   to be true at once for a table to fit, and all three now are:
+
+     1. The pasted markup no longer carries absolute widths — those are stripped
+        server-side by gep_make_tables_responsive().
+     2. `table-layout: fixed` shares the width equally between columns instead of
+        letting the longest cell dictate the table width.
+     3. Cell text is allowed to wrap, including long unbroken strings.
+
+   .gep-table-scroll stays a scroll container only as a safety net for a table
+   that genuinely cannot fit (six-plus columns); it keeps such overflow inside
+   its own box instead of making the whole page slide sideways. */
 .gep-q-content,
 .gep-passage-content,
 .gep-qp-qtext,
@@ -3782,12 +3888,94 @@ span.sa-text.active { display: inline; }
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     margin: 14px 0;
+    /* Scroll shadows: the two `local` layers sit on the content and slide away at
+       each end, so the fixed gradient shows only while there is more table in that
+       direction. A table that fits shows nothing at all. */
+    background:
+        linear-gradient(to right, #fff 30%, rgba(255,255,255,0)) left center / 24px 100% no-repeat local,
+        linear-gradient(to left,  #fff 30%, rgba(255,255,255,0)) right center / 24px 100% no-repeat local,
+        linear-gradient(to right, rgba(15,23,42,0.14), rgba(15,23,42,0)) left center / 14px 100% no-repeat scroll,
+        linear-gradient(to left,  rgba(15,23,42,0.14), rgba(15,23,42,0)) right center / 14px 100% no-repeat scroll;
 }
 .gep-table-scroll > table {
     width: 100% !important;
-    min-width: 100% !important;
-    max-width: none !important;
+    min-width: 0 !important;      /* was 100% — that forced the scroll it tried to avoid */
+    max-width: 100% !important;
     margin: 0 !important;
+    table-layout: auto !important; /* proportional columns; `anywhere` below guarantees it can still shrink */
+}
+/* Cells share the width and wrap their text rather than pushing the table wide. */
+.gep-table-scroll > table th,
+.gep-table-scroll > table td,
+.gep-q-content table th,
+.gep-q-content table td,
+.gep-qr-text table th,
+.gep-qr-text table td,
+.gep-exp-body table th,
+.gep-exp-body table td,
+.gep-q-text-wrapper table th,
+.gep-q-text-wrapper table td,
+.gep-passage-content table th,
+.gep-passage-content table td {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+    white-space: normal !important;
+    max-width: 100%;
+}
+/* Genuinely wide tables (5+ columns) would fit only as unreadable slivers, so
+   those alone keep a minimum width and scroll inside their own box. Browsers
+   without :has() simply fit the table — which is the preferred behaviour anyway,
+   so this is a pure enhancement, never a regression. */
+@supports selector(:has(*)) {
+    .gep-table-scroll > table:has(tr > *:nth-child(5)) {
+        min-width: 500px !important;
+    }
+}
+/* Images pasted inside a cell must not reintroduce the overflow. */
+.gep-table-scroll img,
+.gep-q-content table img,
+.gep-qr-text table img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* Tighter cells on small screens: padding is width the text could be using. */
+@media (max-width: 768px) {
+    .gep-table-scroll > table th,
+    .gep-table-scroll > table td,
+    .gep-q-content table th,
+    .gep-q-content table td,
+    .gep-qr-text table th,
+    .gep-qr-text table td,
+    .gep-exp-body table th,
+    .gep-exp-body table td,
+    .gep-q-text-wrapper table th,
+    .gep-q-text-wrapper table td {
+        padding: 7px 8px !important;
+        line-height: 1.45 !important;
+    }
+}
+@media (max-width: 480px) {
+    .gep-table-scroll > table th,
+    .gep-table-scroll > table td,
+    .gep-q-content table th,
+    .gep-q-content table td,
+    .gep-qr-text table th,
+    .gep-qr-text table td,
+    .gep-exp-body table th,
+    .gep-exp-body table td,
+    .gep-q-text-wrapper table th,
+    .gep-q-text-wrapper table td {
+        padding: 6px !important;
+    }
+    /* Match-the-following tables are usually a narrow label column ("A.", "I.")
+       next to a wide text column. Let the label column stay narrow so the text
+       column gets the rest of the screen. */
+    .gep-table-scroll > table td:first-child:not([colspan]),
+    .gep-q-content table td:first-child:not([colspan]) {
+        width: auto;
+    }
 }
 
 /* ─── Exam footer on narrow phones ─────────────────────────────────────────
@@ -3833,6 +4021,21 @@ span.sa-text.active { display: inline; }
     .gep-exam-timer-wrapper { padding: 3px 6px !important; }
     .gep-exam-timer { font-size: 12px !important; }
     .gep-exit-btn { padding: 6px 8px !important; margin-left: 4px !important; font-size: 11px !important; }
+}
+
+/* ─── Exam header at 320px ─────────────────────────────────────────────────
+   The smallest phones still in use (and any device at 200% browser zoom) ran the
+   header 19px past the right edge, which pushed EXIT off-screen and left the whole
+   page scrolling sideways. Drop the decorative label and tighten the controls;
+   every one of them stays reachable. */
+@media (max-width: 360px) {
+    .gep-exam-header .gep-palette-toggle span { display: none !important; }
+    .gep-exam-header .gep-palette-toggle { padding: 6px 8px !important; }
+    .gep-exam-header .gep-header-meta { max-width: 66px !important; }
+    .gep-exam-header .gep-test-title  { max-width: 66px !important; font-size: 10px !important; }
+    .gep-exam-header .gep-exam-timer  { font-size: 11px !important; }
+    .gep-exam-header .gep-zoom-controls .gep-zoom-btn { padding: 2px 4px !important; font-size: 11px !important; }
+    .gep-exam-header .gep-exit-btn { padding: 6px 7px !important; font-size: 10px !important; margin-left: 2px !important; }
 }
 
 /* ─── Sections bar + language selector on phones ───────────────────────────
@@ -3913,3 +4116,301 @@ span.sa-text.active { display: inline; }
     #gep-submit-btn      { min-height: 46px !important; font-size: 14px !important; }
     .gep-palette-btn     { min-width: 38px !important; min-height: 38px !important; }
 }
+
+/* ==========================================================================
+   LATE OVERRIDES — these must win over the mobile blocks above
+   Rules here were written against the responsive overrides earlier in this
+   file, so they are placed last deliberately: equal specificity is settled
+   by source order, and putting them earlier let the old mobile rules quietly
+   undo them.
+   ========================================================================== */
+
+/* ─── Answer inputs must not outgrow their column ──────────────────────────
+   The short-answer field is `width:100%` with 20px side padding and a 2px border;
+   without border-box that measured 44px wider than the question column and pushed
+   the whole page sideways at 360px. */
+.gep-text-ans,
+.gep-numerical-ans,
+.gep-short-ans-wrapper input,
+.gep-numerical-wrapper input {
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+}
+
+/* ─── Passage pane header / collapse ──────────────────────────────────────── */
+.gep-passage-pane-header {
+    width: 100%;
+    box-sizing: border-box;
+    background: #f1f5f9;
+    padding: 10px 15px;
+    border: none;
+    border-bottom: 1px solid #cbd5e1;
+    font-weight: 850;
+    font-size: 12px;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+.gep-passage-pane-header:hover { background: #e2e8f0; }
+.gep-passage-header-label { min-width: 0; }
+.gep-passage-toggle-icon {
+    flex: 0 0 auto;
+    font-size: 14px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+#gep-active-passage-pane.collapsed .gep-passage-toggle-icon { transform: rotate(-90deg); }
+#gep-active-passage-pane.collapsed #gep-passage-body { display: none !important; }
+#gep-active-passage-pane.collapsed {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    /* Side by side on desktop the pane is a flex item that stretches to the row
+       height, so hiding the body alone would leave a tall empty box; shrink to the
+       header and hand the width back to the question. */
+    align-self: flex-start !important;
+}
+
+@media (max-width: 992px) {
+    /* Half a phone screen for the passage, rather than a fixed 200px letterbox
+       that showed three lines of a twelve-line passage. */
+    #gep-exam-split-wrapper.has-passage #gep-active-passage-pane {
+        max-height: 42vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    #gep-exam-split-wrapper.has-passage #gep-active-passage-pane .gep-passage-pane-header {
+        position: sticky; top: 0; z-index: 2;   /* the label stays while the passage scrolls */
+    }
+    #gep-exam-split-wrapper.has-passage #gep-passage-body {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        min-height: 0 !important;
+    }
+    #gep-exam-split-wrapper.has-passage #gep-active-passage-pane.collapsed {
+        max-height: none !important;
+    }
+}
+
+
+/* ─── Question palette: header, fit, and a reachable Submit ────────────────
+   Three things were wrong once the palette opened on a phone: there was no way
+   to close it, the number grid scrolled sideways as well as down, and Submit sat
+   below the fold so it rendered half-cut. The palette is now a flex column —
+   header, legend, a grid that scrolls vertically only, and an action bar pinned
+   to the bottom. */
+.gep-palette-header {
+    display: none; /* desktop keeps the always-visible sidebar, so no chrome needed */
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #0f172a;
+    color: #f8fafc;
+    flex: 0 0 auto;
+}
+.gep-palette-header-titles { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.gep-palette-title {
+    font-size: 14px; font-weight: 850; letter-spacing: 0.3px;
+}
+.gep-palette-subtitle {
+    font-size: 11px; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 0.6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gep-palette-close {
+    flex: 0 0 auto;
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.12);
+    border: none; border-radius: 10px;
+    color: #f8fafc; font-size: 26px; line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+.gep-palette-close:hover  { background: rgba(255,255,255,0.2); }
+.gep-palette-close:active { transform: scale(0.95); }
+
+/* The number grid fills the width in whole columns instead of forcing a fixed
+   count that overflowed sideways on narrow phones. */
+.gep-palette-grid {
+    grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+}
+.gep-palette-grid-container {
+    overflow-x: hidden;   /* vertical scrolling only — sideways scroll was a bug */
+}
+
+@media (max-width: 992px) {
+    .gep-exam-sidebar {
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        /* content-box plus the desktop left border made the overlay 361px wide on a
+           360px screen, so it sat 1px off the edge. */
+        box-sizing: border-box !important;
+        border-left: none !important;
+        height: 100vh !important;
+        height: 100dvh !important;   /* survives the phone browser's collapsing toolbar */
+        overflow: hidden !important; /* the grid inside scrolls, not the panel */
+    }
+    .gep-palette-header { display: flex !important; }
+    /* The desktop edge-collapse handle is meaningless in the overlay. */
+    #gep-sidebar-collapse-toggle { display: none !important; }
+
+    .gep-exam-sidebar .gep-palette-legend {
+        flex: 0 0 auto !important;
+        margin: 0 !important;
+        padding: 10px 14px !important;
+        background: #f8fafc !important;
+        border-top: none !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+        gap: 6px 10px !important;
+    }
+    .gep-exam-sidebar .gep-legend-item { font-size: 11px !important; }
+    .gep-exam-sidebar .gep-legend-dot  { width: 18px !important; height: 18px !important;
+        display: inline-flex !important; align-items: center !important; justify-content: center !important;
+        font-size: 10px !important; font-weight: 800 !important; color: #fff !important; }
+    .gep-exam-sidebar .gep-legend-dot.not-visited { color: #475569 !important; }
+
+    .gep-palette-grid-container {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;      /* lets the grid scroll instead of pushing Submit off-screen */
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 12px 14px !important;
+    }
+    .gep-palette-grid {
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)) !important;
+        gap: 8px !important;
+    }
+    .gep-palette-btn {
+        width: auto !important;
+        min-width: 0 !important;
+        height: auto !important;
+        aspect-ratio: 1 / 1 !important;
+        font-size: 13px !important;
+    }
+    /* Action bar is pinned: Submit is always fully on screen, never half-cut. */
+    .gep-sidebar-bottom-actions {
+        flex: 0 0 auto !important;
+        padding: 12px 14px calc(12px + env(safe-area-inset-bottom)) !important;
+        box-shadow: 0 -4px 16px rgba(15,23,42,0.10) !important;
+    }
+}
+
+
+/* ─── Question pane header — one compact band ─────────────────────────────
+   Number, section, marks and the language control share a single row so the
+   question text starts as high up the screen as possible. On a 360px phone this
+   recovered roughly 90px that used to be spent on three stacked chrome rows. */
+.gep-q-pane-header {
+    background: #f1f5f9;
+    padding: 8px 12px;
+    border-bottom: 1px solid #cbd5e1;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    row-gap: 6px;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.gep-q-pane-left,
+.gep-q-pane-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.gep-q-pane-label {
+    font-size: 13px;
+    font-weight: 850;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+/* The generic .en-text/.hi-text rule sets display:block, which would break the
+   header row; the active label has to stay inline within the flex row. */
+/* gap, not a literal space: making the label a flex container collapses the
+   whitespace between the word and the number, which rendered as "QUESTION17". */
+.gep-q-pane-label.en-text.active,
+.gep-q-pane-label.hi-text.active { display: inline-flex !important; align-items: center; gap: 5px; }
+.gep-q-pane-section {
+    font-size: 11px;
+    font-weight: 800;
+    color: #4338ca;
+    background: rgba(67, 56, 202, 0.10);
+    border-radius: 100px;
+    padding: 3px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 40vw;
+}
+.gep-q-pane-marks {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.gep-q-pane-marks .pos,
+.gep-q-pane-marks .neg {
+    font-size: 11px;
+    font-weight: 850;
+    padding: 3px 8px;
+    border-radius: 6px;
+    line-height: 1.3;
+}
+.gep-q-pane-marks .pos { color: #047857; background: rgba(4, 120, 87, 0.12); }
+.gep-q-pane-marks .neg { color: #b91c1c; background: rgba(185, 28, 28, 0.12); }
+.gep-q-pane-lang-lock {
+    font-size: 11px;
+    font-weight: 800;
+    color: #475569;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+.gep-q-pane-header .gep-nta-lang-select {
+    height: 30px;
+    padding: 0 6px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    font-weight: 700;
+    font-size: 12px;
+    color: #1e293b;
+    cursor: pointer;
+    outline: none;
+    max-width: 110px;
+}
+@media (max-width: 480px) {
+    .gep-q-pane-header { padding: 7px 10px; gap: 8px; }
+    .gep-q-pane-label  { font-size: 12px; }
+    .gep-q-pane-section { font-size: 10px; padding: 2px 8px; max-width: 32vw; }
+    .gep-q-pane-lang-lock { padding: 4px 7px; }
+}
+/* Below ~380px the row wraps to two lines with the word spelled out, which costs
+   more than the word explains — the padlock and its tooltip carry it from here. */
+@media (max-width: 379px) {
+    .gep-q-pane-lang-lock .gep-lock-word { display: none; }
+    .gep-q-pane-header .gep-nta-lang-select { max-width: 86px; font-size: 11px; }
+}
+
+

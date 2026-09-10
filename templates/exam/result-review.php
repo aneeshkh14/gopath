@@ -581,29 +581,59 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     padding: 6px 14px; font-size: 12px; font-weight: 700; color: #475569;
 }
 
-/* Question Review Cards — borderless, separated only by a hairline rule */
+/* Question Review Cards.
+   Scrolling a long solution paper, the eye needs an unmistakable answer to
+   "where does the next question start?". A 1px hairline did not give it, so each
+   question is now closed by a thick rule with real breathing room around it —
+   the page reads as a stack of separated questions rather than one long column. */
 .gep-qr-card {
     background: #fff;
     border-radius: 0;
     border: none;
-    border-bottom: 1px solid #eef2f6;
-    margin-bottom: 0;
-    padding-bottom: 6px;
+    border-bottom: 6px solid #cbd5e1;
+    margin-bottom: 22px;
+    padding-bottom: 20px;
     box-shadow: none;
 }
-.gep-qr-card:last-child { border-bottom: none; }
+.gep-qr-card:last-child { border-bottom: none; margin-bottom: 0; }
 
+/* The header carries the question number, so it stays pinned while the body of a
+   long question scrolls past — you can always see which question you are reading. */
 .gep-qr-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 0 8px;
-    border-bottom: none;
-    background: transparent;
+    padding: 12px 0 10px;
+    border-bottom: 1px solid #f1f5f9;
+    background: #fff;
+    /* Sticks below the portal's own sticky header. If a parent's overflow rules
+       stop sticky from engaging, the row simply renders in place — the layout is
+       correct either way, so this is an enhancement and never a dependency. */
+    position: sticky;
+    top: var(--gep-portal-header-h, 56px);
+    z-index: 5;
     /* Pills must wrap instead of overflowing sideways on narrow screens */
     flex-wrap: wrap;
     gap: 8px;
 }
-.gep-qr-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
-.gep-qr-num { font-size: 12px; font-weight: 800; color: #4338ca; text-transform: uppercase; letter-spacing: 0.5px; }
+.gep-qr-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; flex: 1 1 auto; }
+/* The result pill stays on the number's line and pinned right, however many
+   type/difficulty pills wrap underneath it. */
+.gep-qr-status { flex: 0 0 auto; align-self: flex-start; }
+
+/* Question number: a solid badge, not a caption — it is the landmark you scan for. */
+.gep-qr-num {
+    display: inline-flex; align-items: center;
+    font-size: 16px; font-weight: 900;
+    color: #fff; background: #4338ca;
+    padding: 6px 14px; border-radius: 8px;
+    letter-spacing: 0.3px;
+    line-height: 1.1;
+    box-shadow: 0 1px 3px rgba(67,56,202,0.28);
+}
+/* Badge picks up the result of the question, so status is readable at a glance. */
+.gep-qr-card.correct .gep-qr-num { background: #047857; box-shadow: 0 1px 3px rgba(4,120,87,0.28); }
+.gep-qr-card.wrong   .gep-qr-num { background: #b91c1c; box-shadow: 0 1px 3px rgba(185,28,28,0.28); }
+.gep-qr-card.skipped .gep-qr-num { background: #475569; box-shadow: 0 1px 3px rgba(71,85,105,0.28); }
+
 .gep-qr-type-pill {
     font-size: 10px; font-weight: 700; padding: 3px 10px;
     background: #f1f5f9; color: #475569; border-radius: 100px;
@@ -731,7 +761,13 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-result-wrap [style*="color: #10b981"] { color: #047857 !important; }
 .gep-result-wrap [style*="color: #f59e0b"] { color: #b45309 !important; }
 .gep-result-wrap [style*="color: #ef4444"] { color: #b91c1c !important; }
+/* The blanket slate override here was a contrast fix; keep it for the body text of
+   a weak-area row, but let the two things the row exists to say — which section,
+   and how badly — carry the warning colour. #b91c1c on the #fef2f2 card is 6.4:1,
+   so this stays comfortably past AA. */
 .gep-result-wrap .gep-weak-topic-row div { color: #475569 !important; }
+.gep-result-wrap .gep-weak-topic-row .gep-weak-topic-name { color: #991b1b !important; }
+.gep-result-wrap .gep-weak-topic-row .gep-weak-topic-pct  { color: #b91c1c !important; }
 .gep-result-wrap h4[style*="#ef4444"] { color: #b91c1c !important; }
 .gep-result-wrap .gep-score-cell .val[style*="#f59e0b"] { color: #b45309 !important; }
 .gep-result-wrap .gep-subject-nums .c { color: #047857; }
@@ -855,20 +891,41 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
         border-radius: 0 !important;
         margin-bottom: 8px !important;
     }
-    /* Question review cards stay flat/full-bleed on phones too */
+    /* Question review cards stay flat/full-bleed on phones — but they keep the
+       thick closing rule and the gap around it. On a phone the whole solution is
+       one long scroll, so the boundary between two questions matters more here
+       than anywhere else, not less. */
     .gep-qr-card {
-        padding: 0 0 6px !important;
+        padding: 0 0 16px !important;
         border-radius: 0 !important;
+        margin-bottom: 18px !important;
+        border-bottom-width: 6px !important;
+    }
+    .gep-qr-card:last-child {
         margin-bottom: 0 !important;
+        border-bottom: none !important;
     }
     /* FIX: this rule previously targeted `.gep-qr-card-header`, which does not
        exist in the markup — so the meta pill row never wrapped and overflowed
        sideways on narrow screens. The real class is `.gep-qr-header`. */
-    .gep-qr-header,
+    .gep-qr-header {
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        align-items: flex-start !important;
+    }
     .gep-qr-meta {
         flex-wrap: wrap !important;
         gap: 6px !important;
+        min-width: 0 !important;
     }
+    .gep-qr-status { white-space: nowrap !important; padding: 5px 10px !important; }
+    /* Keep the number badge prominent on the smallest screens — it is the
+       landmark the reader scans for while scrolling. */
+    .gep-qr-num {
+        font-size: 15px !important;
+        padding: 5px 12px !important;
+    }
+    .gep-qr-type-pill { font-size: 9px !important; padding: 3px 8px !important; }
     /* Action buttons: stacked full-width */
     .gep-result-actions {
         flex-direction: column !important;
@@ -1041,7 +1098,34 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
         $analytics = new GEP_Analytics();
         $attempt_analytics = $analytics->get_attempt_analytics( $attempt->id );
         $percentile = $analytics->get_percentile( $attempt->test_id, $attempt->score );
-        $weak_topics = $analytics->get_weak_topics( get_current_user_id(), 5 );
+        // Weak areas must describe THIS test. The lifetime helper summed every
+        // attempt the student had ever made, so a 16-question Ved section was
+        // reported as "0/176 correct" — a total that matched nothing else on the
+        // page. Scope it to the attempt, and derive the rows from the same
+        // $subject_stats the breakdown below renders so the two can never drift.
+        $weak_topics = array();
+        foreach ( $subject_stats as $wt_cat_id => $wt_stat ) {
+            if ( empty( $wt_stat['total'] ) ) continue;
+            $wt_pct = (int) round( ( $wt_stat['correct'] / $wt_stat['total'] ) * 100 );
+            if ( $wt_pct >= 60 ) continue; // 60%+ is not a weak area
+            $weak_topics[] = array(
+                'cat_id'       => $wt_cat_id,
+                'name'         => $wt_stat['name'],
+                'correct'      => $wt_stat['correct'],
+                'wrong'        => $wt_stat['wrong'],
+                'skipped'      => $wt_stat['skipped'],
+                'total'        => $wt_stat['total'],
+                'accuracy_pct' => $wt_pct,
+            );
+        }
+        // Weakest first; on a tie the section carrying more questions matters more.
+        usort( $weak_topics, function ( $a, $b ) {
+            if ( $a['accuracy_pct'] === $b['accuracy_pct'] ) {
+                return $b['total'] - $a['total'];
+            }
+            return $a['accuracy_pct'] - $b['accuracy_pct'];
+        } );
+        $weak_topics = array_slice( $weak_topics, 0, 5 );
         $section_scores_data = json_decode( isset($attempt->section_scores) ? $attempt->section_scores : '[]', true ) ?: array();
 
         // Build topic stats for chart
@@ -1137,14 +1221,22 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 
         <?php if (!empty($weak_topics)) : ?>
         <div style="margin-top:24px;">
-            <h4 style="font-size:12px;font-weight:800;color:#ef4444;text-transform:uppercase;letter-spacing:0.8px;margin:0 0 12px;">⚠️ Weak Areas — Focus Here</h4>
+            <h4 style="font-size:12px;font-weight:800;color:#b91c1c;text-transform:uppercase;letter-spacing:0.8px;margin:0 0 4px;">⚠️ Weak Areas — Focus Here</h4>
+            <p style="font-size:11px;color:#64748b;font-weight:600;margin:0 0 12px;">
+                Sections you scored under 60% in, out of the questions this test asked.
+            </p>
             <div class="gep-weak-topics-list">
                 <?php foreach ($weak_topics as $wt) :
                     if (empty($wt['name'])) continue; ?>
                 <div class="gep-weak-topic-row">
                     <div class="gep-weak-topic-name">📖 <?php echo esc_html($wt['name']); ?></div>
-                    <div style="font-size:12px;color:#94a3b8;font-weight:600;"><?php echo $wt['correct']; ?>/<?php echo $wt['total']; ?> correct</div>
-                    <div class="gep-weak-topic-pct"><?php echo $wt['accuracy_pct']; ?>%</div>
+                    <div class="gep-weak-topic-count">
+                        <strong><?php echo (int) $wt['correct']; ?>/<?php echo (int) $wt['total']; ?></strong> correct
+                        <?php if ( ! empty( $wt['skipped'] ) ) : ?>
+                            <span class="gep-weak-topic-sub">· <?php echo (int) $wt['skipped']; ?> skipped</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="gep-weak-topic-pct"><?php echo (int) $wt['accuracy_pct']; ?>%</div>
                 </div>
                 <?php endforeach; ?>
             </div>

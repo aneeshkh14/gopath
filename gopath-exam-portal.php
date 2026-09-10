@@ -3,7 +3,7 @@
  * Plugin Name:       GoPath Exam Portal
  * Plugin URI:        https://test.gopath.in/
  * Description:       A comprehensive, large-scale modular exam management system for WordPress.
- * Version:           1.9.0
+ * Version:           1.9.1
  * Author:            GoPath
  * Author URI:        https://test.gopath.in/
  * License:           GPL-2.0+
@@ -155,7 +155,7 @@ if ( ! defined( 'YEAR_IN_SECONDS' ) )   { define( 'YEAR_IN_SECONDS',   31536000 
 /**
  * Plugin version constant.
  */
-define( 'GEP_VERSION', '1.9.0' );
+define( 'GEP_VERSION', '1.9.1' );
 
 /**
  * Database version.
@@ -497,12 +497,152 @@ if ( ! function_exists( 'gep_clean_wpautop_tables' ) ) {
 }
 
 /**
- * Wrap every <table> in a horizontally scrollable container.
+ * Drop the sizing declarations from one inline style attribute, keeping the rest.
  *
- * This lets a table keep `display:table; width:100%` — so it stretches to fill the
- * available width and grows in full-screen layouts instead of staying small — while
- * any table that genuinely cannot fit scrolls inside its own box rather than making
- * the whole page scroll sideways.
+ * Used only for table-related tags. Percentage widths survive (they scale with the
+ * screen); absolute ones and `white-space: nowrap` do not, because either will pin
+ * a cell wider than a phone.
+ */
+if ( ! function_exists( 'gep_strip_table_sizing_css' ) ) {
+	function gep_strip_table_sizing_css( $css ) {
+		$kept = array();
+		foreach ( explode( ';', $css ) as $decl ) {
+			if ( trim( $decl ) === '' || strpos( $decl, ':' ) === false ) {
+				continue;
+			}
+			$prop = strtolower( trim( substr( $decl, 0, strpos( $decl, ':' ) ) ) );
+			$val  = trim( substr( $decl, strpos( $decl, ':' ) + 1 ) );
+
+			// Absolute widths/heights pin a cell wider than the screen; percentages
+			// are relative and safe, so those stay.
+			if ( in_array( $prop, array( 'width', 'min-width', 'height', 'min-height' ), true ) ) {
+				if ( substr( $val, -1 ) !== '%' ) {
+					continue;
+				}
+			}
+			// nowrap is the other way a cell refuses to shrink.
+			if ( $prop === 'white-space' && stripos( $val, 'nowrap' ) !== false ) {
+				continue;
+			}
+			$kept[] = $prop . ': ' . $val;
+		}
+		return implode( '; ', $kept );
+	}
+}
+
+/**
+ * Normalise author-supplied table markup so a table can actually shrink to the
+ * screen instead of forcing a horizontal scroll.
+ *
+ * Question banks are usually pasted in from Word / Google Docs / older HTML, and
+ * that markup carries hard sizing along for the ride: `width="600"`,
+ * `style="width:481.5pt"`, a legacy `nowrap` attribute, `<colgroup>` entries with
+ * pixel widths. Any single one of those pins a column wider than a phone screen,
+ * and the table then overflows no matter what the stylesheet asks for.
+ *
+ * So we strip only the *sizing* instructions from table-related tags. Text,
+ * alignment, colours, borders, colspan/rowspan and every other authored choice
+ * are left exactly as they were; percentage widths are kept because they scale.
+ *
+ * Attributes are walked one at a time rather than pattern-matched across the whole
+ * tag, so a value that merely contains the word "nowrap" (or "width") is never
+ * mistaken for the attribute itself.
+ */
+if ( ! function_exists( 'gep_make_tables_responsive' ) ) {
+	function gep_make_tables_responsive( $html ) {
+		if ( stripos( $html, '<table' ) === false ) {
+			return $html;
+		}
+
+		// <colgroup>/<col> exist only to size columns — drop them wholesale.
+		$html = preg_replace( '#<colgroup\b[^>]*>.*?</colgroup>#is', '', $html );
+		$html = preg_replace( '#</?col(group)?\b[^>]*>#i', '', $html );
+
+		// The attribute run is matched quote-aware rather than as [^>]*, so a value
+		// that legitimately contains '>' (title="a>b") does not end the tag early
+		// and leave the rest of it rewritten as text.
+		return preg_replace_callback(
+			'#<(table|tr|td|th|tbody|thead|tfoot)\b((?:[^>"\']|"[^"]*"|\'[^\']*\')*)>#i',
+			function ( $m ) {
+				$tag      = $m[1];
+				$attr_str = $m[2];
+
+				// An XHTML-style self-closing slash is not an attribute.
+				$self_close = '';
+				if ( substr( rtrim( $attr_str ), -1 ) === '/' ) {
+					$self_close = '/';
+					$attr_str   = substr( rtrim( $attr_str ), 0, -1 );
+				}
+
+				if ( trim( $attr_str ) === '' ) {
+					return '<' . $tag . $self_close . '>';
+				}
+
+				$rebuilt = '';
+				preg_match_all(
+					'/([-\w:.]+)(?:\s*=\s*("[^"]*"|\'[^\']*\'|[^\s"\'>]+))?/',
+					$attr_str,
+					$attrs,
+					PREG_SET_ORDER
+				);
+
+				foreach ( $attrs as $a ) {
+					$name     = strtolower( $a[1] );
+					$has_val  = isset( $a[2] ) && $a[2] !== '';
+					$raw_val  = $has_val ? $a[2] : '';
+					$quote    = ( $has_val && ( $raw_val[0] === '"' || $raw_val[0] === "'" ) ) ? $raw_val[0] : '"';
+					$value    = ( $has_val && ( $raw_val[0] === '"' || $raw_val[0] === "'" ) )
+						? substr( $raw_val, 1, -1 )
+						: $raw_val;
+
+					// Legacy sizing attributes: keep percentages, drop absolute values.
+					if ( 'width' === $name || 'height' === $name ) {
+						if ( ! $has_val || substr( trim( $value ), -1 ) !== '%' ) {
+							continue;
+						}
+					}
+
+					// Legacy nowrap attribute (valueless or nowrap="nowrap").
+					if ( 'nowrap' === $name ) {
+						continue;
+					}
+
+					if ( 'style' === $name && $has_val ) {
+						$value = gep_strip_table_sizing_css( $value );
+						if ( trim( $value ) === '' ) {
+							continue;
+						}
+					}
+
+					// A rewritten style value could in principle contain the quote we
+					// were going to wrap it in; pick the other one rather than emit
+					// a broken attribute.
+					if ( $has_val && strpos( $value, $quote ) !== false ) {
+						$quote = ( $quote === '"' ) ? "'" : '"';
+						if ( strpos( $value, $quote ) !== false ) {
+							continue; // both quote styles present: drop rather than corrupt the tag
+						}
+					}
+
+					$rebuilt .= ' ' . $a[1] . ( $has_val ? '=' . $quote . $value . $quote : '' );
+				}
+
+				return '<' . $tag . $rebuilt . $self_close . '>';
+			},
+			$html
+		);
+	}
+}
+
+/**
+ * Wrap every <table> in a container that fits the table to the available width.
+ *
+ * After gep_make_tables_responsive() has removed the hard-coded sizing, the table
+ * itself wraps its cell text and fits the screen, so the wrapper normally never
+ * scrolls. It stays a scroll container purely as a safety net for the rare table
+ * that genuinely cannot fit (many columns, a long unbreakable string) — and even
+ * then the overflow stays inside the box instead of making the whole page slide
+ * sideways.
  *
  * Nested tables stay balanced: every <table> gains an opening wrapper and every
  * </table> its matching close.
@@ -533,6 +673,7 @@ if ( ! function_exists( 'gep_format_rich_content' ) ) {
 			$html = wpautop( $html );
 		}
 		$html = gep_clean_wpautop_tables( $html );
+		$html = gep_make_tables_responsive( $html );
 		return gep_wrap_tables_scrollable( $html );
 	}
 }
