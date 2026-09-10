@@ -178,9 +178,10 @@ function gep_purchase_launch_url( $p ) {
     color: #f1f5f9;
 }
 
+/* Sits on the dark page background, where #64748b is 4.2:1. #94a3b8 is 7.8:1. */
 .purchases-title-block p {
     font-size: 13px;
-    color: #64748b;
+    color: #94a3b8;
     font-weight: 600;
     margin: 0;
 }

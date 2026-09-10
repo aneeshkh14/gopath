@@ -8,7 +8,7 @@ $is_logged_in = is_user_logged_in();
 <div class="gep-sovereign-dashboard">
     <div style="margin-bottom: 30px;">
         <h1 class="gep-text-gradient-primary" style="font-size: 32px; font-weight: 900; margin: 0 0 8px; letter-spacing: -1px;">Legal &amp; Policies</h1>
-        <p style="color: #64748b; font-weight: 600; margin: 0; font-size: 14px;">Review our terms of service, privacy, and refund policies.</p>
+        <p style="color: #94a3b8; font-weight: 600; margin: 0; font-size: 14px;">Review our terms of service, privacy, and refund policies.</p>
     </div>
 
     <div class="gep-policy-layout">
@@ -118,7 +118,8 @@ $is_logged_in = is_user_logged_in();
     border-radius: 14px;
     font-size: 13px;
     font-weight: 700;
-    color: #64748b;
+    /* Dark page background: #64748b is 4.2:1, #94a3b8 is 7.8:1. */
+    color: #94a3b8;
     text-decoration: none;
     background: transparent;
     border: 1px solid transparent;

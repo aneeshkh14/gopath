@@ -1277,7 +1277,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                     ?>
                     <span class="gep-qr-type-pill" style="background:<?php echo $q_diff_color; ?>15; color:<?php echo $q_diff_color; ?>; border: 1px solid <?php echo $q_diff_color; ?>30;"><?php echo esc_html(ucfirst($q_diff)); ?></span>
                     <?php if ( count( $correct_parts ) > 1 ) : ?>
-                        <span class="gep-qr-type-pill" style="background:rgba(99,102,241,0.08);color:#6366f1;">Multi-Select</span>
+                        <span class="gep-qr-type-pill" style="background:rgba(79,70,229,0.08);color:#4f46e5;">Multi-Select</span>
                     <?php endif; ?>
                     <!-- Question Source is shown once, below the Explanation (see gep-source-box below) — not duplicated here. -->
                 </div>

@@ -864,6 +864,16 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                 document.body.appendChild(toast);
                 setTimeout(() => toast.remove(), 3000);
             });
+        });
+        // ^ closes document.querySelectorAll('.gep-preset-btn').forEach(btn => {
+        //   This `});` was missing, so every statement below was parsed as part of
+        //   the forEach callback and the script ended mid-block with
+        //   "SyntaxError: Unexpected end of input". That killed the WHOLE
+        //   jQuery(document).ready() callback, so none of the test-editor
+        //   behaviour bound: Add Subject, remove section, the section-IDs →
+        //   question_ids sync, the category/subcategory dropdown, the
+        //   Single/Series toggle, the presets, the series builder and the
+        //   attempt-pricing tiers were all dead.
 
             // ─── Test Series Portfolio Builder ─────────────────────────────
             function updateSeriesIds() {
@@ -929,6 +939,8 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                     item.insertAfter(next);
                     updateSeriesIds();
                 }
+            });
+
             // Type Select Toggle
             $('select[name="type"]').on('change', function() {
                 var val = $(this).val();

@@ -511,8 +511,9 @@ $courses = $wpdb->get_results( $wpdb->prepare( $query, $skill_category_slugs ) )
     color: #000 !important;
 }
 
+/* White on #6366f1 is 4.47:1 — just under AA. #4f46e5 gives 6.29:1. */
 .btn-secondary {
-    background: #6366f1;
+    background: #4f46e5;
     color: #fff !important;
 }
 

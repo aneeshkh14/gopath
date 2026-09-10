@@ -190,7 +190,7 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
                         </tbody>
                     </table>
                 <?php else : ?>
-                    <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
+                    <div style="text-align: center; padding: 50px 20px; color: #64748b;">
                         <div style="font-size: 32px; margin-bottom: 10px;">📉</div>
                         <p style="margin: 0; font-size: 13px; font-weight: 600;"><?php _e( 'No sessions completed yet.', 'gopath-exam-portal' ); ?></p>
                     </div>

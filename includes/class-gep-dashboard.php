@@ -10,6 +10,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 class GEP_Dashboard {
 
 	public function get_dashboard_stats( $user_id ) {
+		// Memoised per request: portal-layout.php renders the sidebar stats and
+		// render_dashboard() renders the tiles, which ran this whole set twice.
+		static $cache = array();
+		if ( isset( $cache[ $user_id ] ) ) {
+			return $cache[ $user_id ];
+		}
 		global $wpdb;
 		$attempts_table = $wpdb->prefix . 'gep_attempts';
 		$orders_table = $wpdb->prefix . 'gep_orders';
@@ -26,7 +32,7 @@ class GEP_Dashboard {
 		$percentile = $this->get_user_percentile( $user_id );
 		$topics = $this->get_topic_performance( $user_id );
 
-		return array(
+		return $cache[ $user_id ] = array(
 			'total_attempts' => absint( $total_attempts ),
 			'passed_exams'   => absint( $passed_exams ),
 			'total_spent'    => floatval( $total_spent ),
@@ -96,21 +102,28 @@ class GEP_Dashboard {
 	public function get_user_rank( $user_id ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'gep_attempts';
-		
-		// Simple ranking based on total score of all users
-		$scores = $wpdb->get_results( 
-			"SELECT user_id, SUM(score) as total_score FROM $table WHERE status = 'submitted' GROUP BY user_id ORDER BY total_score DESC" 
-		);
 
-		$rank = 0;
-		foreach ( $scores as $index => $row ) {
-			if ( $row->user_id == $user_id ) {
-				$rank = $index + 1;
-				break;
-			}
+		// Rank = (number of students scoring more) + 1, computed in SQL.
+		// The previous version pulled one row per student into PHP and looped —
+		// on a portal with tens of thousands of students that is a full scan on
+		// every dashboard render.
+		$my_total = $wpdb->get_var( $wpdb->prepare(
+			"SELECT SUM(score) FROM $table WHERE user_id = %d AND status = 'submitted'",
+			$user_id
+		) );
+		if ( $my_total === null ) {
+			return '--';
 		}
 
-		return $rank ?: '--';
+		$ahead = $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM (
+				SELECT user_id, SUM(score) AS total_score
+				FROM $table WHERE status = 'submitted' GROUP BY user_id
+			) AS totals WHERE totals.total_score > %f",
+			(float) $my_total
+		) );
+
+		return (int) $ahead + 1;
 	}
 
 	public function get_user_percentile( $user_id ) {
@@ -398,16 +411,25 @@ class GEP_Dashboard {
 		$keywords = array_filter( (array) $keywords );
 		if ( empty( $keywords ) ) return array();
 
-		$like_clauses = array();
-		$like_params  = array();
-		foreach ( $keywords as $kw ) {
-			$like_clauses[] = 'name LIKE %s';
-			$like_params[]  = '%' . $wpdb->esc_like( $kw ) . '%';
+		// The same keyword set is looked up several times per page (single /
+		// multiple / random buckets); resolve the categories once per request.
+		static $cat_cache = array();
+		$cache_key = md5( implode( '|', $keywords ) );
+		if ( isset( $cat_cache[ $cache_key ] ) ) {
+			$cat_ids = $cat_cache[ $cache_key ];
+		} else {
+			$like_clauses = array();
+			$like_params  = array();
+			foreach ( $keywords as $kw ) {
+				$like_clauses[] = 'name LIKE %s';
+				$like_params[]  = '%' . $wpdb->esc_like( $kw ) . '%';
+			}
+			$cat_ids = $wpdb->get_col( $wpdb->prepare(
+				"SELECT id FROM {$wpdb->prefix}gep_categories WHERE " . implode( ' OR ', $like_clauses ),
+				$like_params
+			) );
+			$cat_cache[ $cache_key ] = $cat_ids;
 		}
-		$cat_ids = $wpdb->get_col( $wpdb->prepare(
-			"SELECT id FROM {$wpdb->prefix}gep_categories WHERE " . implode( ' OR ', $like_clauses ),
-			$like_params
-		) );
 		if ( empty( $cat_ids ) ) return array();
 
 		$cat_ids_str = implode( ',', array_map( 'absint', $cat_ids ) );
@@ -428,6 +450,18 @@ class GEP_Dashboard {
 	}
 
 	public function has_access( $user_id, $item_id, $item_type = 'test' ) {
+		// Memoised per request — dashboards call this once per rendered card and
+		// repeatedly hit the same rows.
+		static $access_cache = array();
+		$cache_key = $user_id . '|' . $item_type . '|' . $item_id;
+		if ( isset( $access_cache[ $cache_key ] ) ) {
+			return $access_cache[ $cache_key ];
+		}
+		$access_cache[ $cache_key ] = $this->compute_access( $user_id, $item_id, $item_type );
+		return $access_cache[ $cache_key ];
+	}
+
+	private function compute_access( $user_id, $item_id, $item_type = 'test' ) {
 		// ADMIN BYPASS: Only bypass for admins when using the admin impersonation (uid=) param
 		// BUG FIX: Do NOT auto-grant access to admins — admins must be able to test payment flow
 		if ( current_user_can( 'manage_options' ) && isset( $_GET['uid'] ) ) return true;

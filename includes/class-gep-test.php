@@ -246,6 +246,55 @@ class GEP_Test {
 		return absint( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $table WHERE test_id = %d", $test_id ) ) );
 	}
 
+	/**
+	 * Question counts for many tests in ONE query.
+	 *
+	 * Listing screens previously called get_question_count() inside the card loop,
+	 * so a page of 50 tests issued 50 extra queries.
+	 *
+	 * @param int[] $test_ids
+	 * @return array test_id => count
+	 */
+	public function get_question_counts( $test_ids ) {
+		global $wpdb;
+		$ids = array_filter( array_map( 'absint', (array) $test_ids ) );
+		if ( empty( $ids ) ) {
+			return array();
+		}
+		$ids_str = implode( ',', array_unique( $ids ) );
+		$rows = $wpdb->get_results(
+			"SELECT test_id, COUNT(*) AS c FROM {$wpdb->prefix}gep_test_questions WHERE test_id IN ($ids_str) GROUP BY test_id"
+		);
+		$map = array();
+		foreach ( $rows as $r ) {
+			$map[ (int) $r->test_id ] = (int) $r->c;
+		}
+		return $map;
+	}
+
+	/**
+	 * Series test counts for many series in ONE query (same N+1 problem).
+	 *
+	 * @param int[] $series_ids
+	 * @return array series_id => count
+	 */
+	public function get_series_test_counts( $series_ids ) {
+		global $wpdb;
+		$ids = array_filter( array_map( 'absint', (array) $series_ids ) );
+		if ( empty( $ids ) ) {
+			return array();
+		}
+		$ids_str = implode( ',', array_unique( $ids ) );
+		$rows = $wpdb->get_results(
+			"SELECT series_id, COUNT(*) AS c FROM {$wpdb->prefix}gep_test_series WHERE series_id IN ($ids_str) GROUP BY series_id"
+		);
+		$map = array();
+		foreach ( $rows as $r ) {
+			$map[ (int) $r->series_id ] = (int) $r->c;
+		}
+		return $map;
+	}
+
 	public function get_series_test_count( $series_id ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'gep_test_series';

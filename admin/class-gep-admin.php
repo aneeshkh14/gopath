@@ -319,12 +319,12 @@ class GEP_Admin {
 		$executed = true;
 
 		// ─── DEBUG: Log this function's entry on every POST to gep-questions ─
-		$log_file = GEP_PLUGIN_DIR . 'fatal_error.log';
+		$log_file = function_exists('gep_log_file') ? gep_log_file() : '';
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_GET['page'] ) && $_GET['page'] === 'gep-questions' ) {
 			$uid       = get_current_user_id();
 			$can_edit  = current_user_can( 'edit_posts' );
 			$cur_hook  = current_action();
-			file_put_contents( $log_file, sprintf(
+			gep_log_to( $log_file, sprintf(
 				"[%s] handle_admin_actions ENTERED | hook='%s' | user_id=%d | can_edit=%s\n",
 				date( 'Y-m-d H:i:s' ), $cur_hook, $uid, $can_edit ? 'YES' : 'NO'
 			), FILE_APPEND | LOCK_EX );

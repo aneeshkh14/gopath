@@ -407,7 +407,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                         <div style="font-size: 10px; color: #a1a1aa; font-weight: 700; text-transform: uppercase;">Score</div>
                     </div>
                     <div style="text-align: right; min-width: 60px;">
-                       <div style="font-size: 16px; font-weight: 900; color: #6366f1;"><?php echo round($att->percentage); ?>%</div>
+                       <div style="font-size: 16px; font-weight: 900; color: #818cf8;"><?php echo round($att->percentage); ?>%</div>
                        <div style="font-size: 10px; color: #a1a1aa; font-weight: 700; text-transform: uppercase;">Accuracy</div>
                     </div>
                     <?php endif; ?>

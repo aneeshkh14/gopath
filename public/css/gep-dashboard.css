@@ -1506,8 +1506,9 @@
     color: #fff;
 }
 
+/* On the dark panel the indigo token is 4.45:1; #818cf8 is 6.67:1. */
 .gep-profile-completeness .label-row .val {
-    color: var(--gep-primary);
+    color: #818cf8;
 }
 
 .gep-progress-bar {
@@ -1789,8 +1790,9 @@
     width: fit-content;
     border: 1px solid #e2e8f0;
 }
+/* Sits on a light #f8fafc chip: the indigo token is 4.27:1 there, #4f46e5 is 6.01:1. */
 .gep-neural-id code {
-    color: var(--gep-primary);
+    color: #4f46e5;
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
 }
@@ -1837,7 +1839,9 @@
     gap: 12px;
     padding: 14px;
     background: #fff;
-    color: #ef4444;
+    /* #ef4444 on white is 3.76:1 — below the 4.5:1 AA minimum for 14px text.
+       #dc2626 is 4.83:1 and keeps the same red identity. */
+    color: #dc2626;
     border: 1px solid #fee2e2;
     border-radius: 12px;
     font-weight: 800;
@@ -2228,9 +2232,17 @@ a[style*="background: #6366f1"],
 .gep-sovereign-active .gep-lecture-group h3,
 .gep-sovereign-active .gep-main-inner > div > h3 { color: #e5e7eb; }
 
-/* Muted meta text on white cards (results list, typing log). */
+/* Muted meta text on white cards (results list, typing log).
+   Scope these to actual light surfaces ONLY. A previous, broader version of this
+   rule matched `.gep-main-inner p/div`, but `.gep-main-inner` also holds copy that
+   sits directly on the dark page background (#09090b) — the dashboard hero
+   subtitle, "Explore all exams", the profile completeness tip. There #94a3b8 is
+   7.8:1 and #64748b only 4.2:1, so the "fix" was pushing readable text below AA.
+   Darkening muted text is correct on white and wrong on black; it must never be
+   applied by page region, only by surface. */
 .gep-premium-table [style*="color: #94a3b8"],
 .gep-typing-log [style*="color: #94a3b8"],
-.gep-main-inner p[style*="color: #94a3b8"],
-.gep-main-inner div[style*="color: #94a3b8"] { color: #64748b !important; }
+.gep-card [style*="color: #94a3b8"],
+.gep-white-card [style*="color: #94a3b8"],
+.gep-profile-card [style*="color: #94a3b8"] { color: #64748b !important; }
 .gep-main-inner [style*="color: #0ea5e9"] { color: #0369a1 !important; }

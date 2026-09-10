@@ -42,7 +42,7 @@ if ( ! empty( $courses ) ) {
             <h2 style="font-size: 36px; font-weight: 950; color: #0f172a; margin: 0 0 15px; letter-spacing: -1.5px; line-height: 1.1;">
                 Master New Skills, <span class="gep-text-gradient-primary" style="color: #6366f1;">Get Industry Ready.</span>
             </h2>
-            <p style="font-size: 16px; color: #64748b; font-weight: 600; line-height: 1.6; margin: 0 0 35px; max-width: 500px;">
+            <p style="font-size: 16px; color: #475569; font-weight: 600; line-height: 1.6; margin: 0 0 35px; max-width: 500px;">
                 Professional certification courses designed to help you land your first job in the tech or govt. sector.
             </p>
             <div class="gep-skill-stats" style="display: flex; gap: 30px;">
@@ -75,7 +75,7 @@ if ( ! empty( $courses ) ) {
         <div class="gep-skill-card active" data-track="all" style="background: #fff; border: 2px solid #6366f1; border-radius: 20px; padding: 25px; text-align: center; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.05);">
             <span class="icon" style="font-size: 32px; display: block; margin-bottom: 15px;">🌐</span>
             <div class="name" style="font-weight: 800; color: #0f172a; font-size: 15px; margin-bottom: 5px;">All Tracks</div>
-            <div class="count" style="font-size: 12px; color: #6366f1; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+            <div class="count" style="font-size: 12px; color: #4f46e5; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
                 <?php echo count($courses); ?> Courses
             </div>
         </div>
@@ -83,7 +83,7 @@ if ( ! empty( $courses ) ) {
         <div class="gep-skill-card" data-track="<?php echo esc_attr($slug); ?>" style="background: #fff; border: 2px solid #e2e8f0; border-radius: 20px; padding: 25px; text-align: center; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01);">
             <span class="icon" style="font-size: 32px; display: block; margin-bottom: 15px;"><?php echo $track['icon']; ?></span>
             <div class="name" style="font-weight: 800; color: #0f172a; font-size: 15px; margin-bottom: 5px;"><?php echo $track['name']; ?></div>
-            <div class="count" style="font-size: 12px; color: #6366f1; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+            <div class="count" style="font-size: 12px; color: #4f46e5; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
                 <?php echo $counts[$slug]; ?> Courses
             </div>
         </div>
@@ -93,7 +93,7 @@ if ( ! empty( $courses ) ) {
     <!-- Dynamic Courses list -->
     <div class="gep-section-header" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
         <h3 id="gep-track-title" style="font-size: 22px; font-weight: 900; color: #f3f4f6; margin: 0; letter-spacing: -0.5px;">All Skill Courses</h3>
-        <span style="font-size: 13px; color: #64748b; font-weight: 600;">Priced ₹499 to ₹999</span>
+        <span style="font-size: 13px; color: #94a3b8; font-weight: 600;">Priced ₹499 to ₹999</span>
     </div>
 
     <div id="gep-courses-container" class="gep-premium-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;">

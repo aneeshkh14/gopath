@@ -1268,7 +1268,19 @@ span.sa-text.active { display: inline; }
 }
 
 .gep-checkbox-container input {
-    display: none;
+    /* Visually hidden but still focusable — `display:none` removed the box from
+       the tab order entirely, so a keyboard-only student could never tick the
+       declaration and the "I am ready to begin" button stayed disabled. */
+    position: absolute;
+    opacity: 0;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    cursor: pointer;
+}
+.gep-checkbox-container input:focus-visible ~ .gep-checkmark {
+    outline: 3px solid var(--gep-primary, #2563eb);
+    outline-offset: 2px;
 }
 
 .gep-checkmark {

@@ -64,7 +64,7 @@ $is_active = $pass_expiry && strtotime( $pass_expiry ) > current_time( 'timestam
 
         <!-- Yearly Card (Recommended) -->
         <div class="gep-pricing-card" style="background: #fff; border: 2px solid #6366f1; border-radius: 24px; padding: 35px; display: flex; flex-direction: column; transition: all 0.3s; position: relative; box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.08);">
-            <div style="position: absolute; top: -15px; right: 25px; background: #6366f1; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; padding: 6px 12px; border-radius: 20px; border: 2px solid #fff;">
+            <div style="position: absolute; top: -15px; right: 25px; background: #4f46e5; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; padding: 6px 12px; border-radius: 20px; border: 2px solid #fff;">
                 <?php _e( 'Best Value', 'gopath-exam-portal' ); ?>
             </div>
             

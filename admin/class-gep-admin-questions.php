@@ -11,8 +11,8 @@ class GEP_Admin_Questions {
 
 	public function handle_question_actions() {
 		// ─── DEEP DEBUG LOGGER ──────────────────────────────────────────────────
-		// Writes to plugin root fatal_error.log — read via WP File Manager
-		$log_file  = GEP_PLUGIN_DIR . 'fatal_error.log';
+		// Writes to the protected log under wp-content/uploads/gopath-logs/.
+		$log_file  = function_exists('gep_log_file') ? gep_log_file() : '';
 		$is_post   = ( $_SERVER['REQUEST_METHOD'] === 'POST' );
 		$page_ok   = ( isset( $_GET['page'] ) && $_GET['page'] === 'gep-questions' );
 		$user_id   = get_current_user_id();
@@ -31,7 +31,7 @@ class GEP_Admin_Questions {
 				$nonce_ok   ? 'YES' : 'NO',
 				$post_keys
 			);
-			file_put_contents( $log_file, $log_line, FILE_APPEND | LOCK_EX );
+			gep_log_to( $log_file, $log_line, FILE_APPEND | LOCK_EX );
 		}
 		// ────────────────────────────────────────────────────────────────────────
 
@@ -56,7 +56,7 @@ class GEP_Admin_Questions {
 				"[%s] NONCE FAILED — raw_nonce='%s' user_id=%d hook='%s'\n",
 				date( 'Y-m-d H:i:s' ), $raw_nonce, $user_id, current_action()
 			);
-			file_put_contents( $log_file, $log_line, FILE_APPEND | LOCK_EX );
+			gep_log_to( $log_file, $log_line, FILE_APPEND | LOCK_EX );
 		}
 
 		if ( isset( $_POST['gep_import_nonce'] ) && wp_verify_nonce( $_POST['gep_import_nonce'], 'gep_bulk_import' ) ) {
@@ -156,11 +156,11 @@ class GEP_Admin_Questions {
 	public function handle_save_question() {
 		global $wpdb;
 		$table    = $wpdb->prefix . 'gep_questions';
-		$log_file = GEP_PLUGIN_DIR . 'fatal_error.log';
+		$log_file = function_exists('gep_log_file') ? gep_log_file() : '';
 
 		// ─── DEBUG: Confirm handle_save_question was entered ─────────────────
 		$raw_title_debug = isset( $_POST['question_title'] ) ? substr( wp_unslash( $_POST['question_title'] ), 0, 80 ) : '[NOT SET]';
-		@file_put_contents( $log_file, sprintf(
+		gep_log_to( $log_file, sprintf(
 			"[%s] handle_save_question ENTERED | title_raw='%s' | POST_count=%d\n",
 			date( 'Y-m-d H:i:s' ), $raw_title_debug, count( $_POST )
 		), FILE_APPEND | LOCK_EX );
@@ -383,7 +383,7 @@ class GEP_Admin_Questions {
 				$db_err = $wpdb->last_error;
 			}
 
-			@file_put_contents( $log_file, sprintf(
+			gep_log_to( $log_file, sprintf(
 				"[%s] DB UPDATE | question_id=%d | res=%s | last_error='%s'\n",
 				date( 'Y-m-d H:i:s' ), $question_id, var_export( $res, true ), $db_err
 			), FILE_APPEND | LOCK_EX );
@@ -413,7 +413,7 @@ class GEP_Admin_Questions {
 
 			$question_id = $wpdb->insert_id;
 
-			@file_put_contents( $log_file, sprintf(
+			gep_log_to( $log_file, sprintf(
 				"[%s] DB INSERT | res=%s | insert_id=%d | last_error='%s' | data_keys=[%s]\n",
 				date( 'Y-m-d H:i:s' ), var_export( $res, true ), $question_id, $db_err, $data_keys
 			), FILE_APPEND | LOCK_EX );
@@ -456,7 +456,7 @@ class GEP_Admin_Questions {
 			}
 		}
 
-		@file_put_contents( $log_file, sprintf(
+		gep_log_to( $log_file, sprintf(
 			"[%s] REDIRECTING | question_id=%d | to=gep-questions&message=saved\n",
 			date( 'Y-m-d H:i:s' ), $question_id
 		), FILE_APPEND | LOCK_EX );

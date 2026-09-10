@@ -37,13 +37,77 @@ if ( defined( 'GEP_VERSION' ) ) {
 	return;
 }
 
+/**
+ * Diagnostic log file, kept OUT of the web-served plugin directory.
+ *
+ * This log previously lived at wp-content/plugins/gopath-exam-portal/fatal_error.log,
+ * which any visitor could download over HTTP. It records PHP stack traces, absolute
+ * server paths and (from the question-save debug lines) question content — i.e. paid
+ * exam material. It now lives in an uploads subfolder guarded by .htaccess/index.php,
+ * and is capped so it cannot grow without bound.
+ */
+if ( ! function_exists( 'gep_log_file' ) ) {
+	function gep_log_file() {
+		$uploads = wp_get_upload_dir();
+		if ( empty( $uploads['basedir'] ) ) {
+			return '';
+		}
+		$dir = trailingslashit( $uploads['basedir'] ) . 'gopath-logs';
+		if ( ! is_dir( $dir ) ) {
+			wp_mkdir_p( $dir );
+		}
+		// Block direct web access (Apache, and a stub index for any server).
+		if ( is_dir( $dir ) ) {
+			if ( ! file_exists( $dir . '/.htaccess' ) ) {
+				@file_put_contents( $dir . '/.htaccess', "Require all denied\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>\n" );
+			}
+			if ( ! file_exists( $dir . '/index.php' ) ) {
+				@file_put_contents( $dir . '/index.php', "<?php // Silence is golden.\n" );
+			}
+		}
+		// The .htaccess above covers Apache/LiteSpeed. nginx ignores it, so the
+		// filename also carries a per-site random suffix: without it the log
+		// cannot be guessed even if the directory is served.
+		$secret = get_option( 'gep_log_secret' );
+		if ( ! $secret ) {
+			$secret = wp_generate_password( 16, false, false );
+			update_option( 'gep_log_secret', $secret, false );
+		}
+		return $dir . '/gep-diagnostics-' . $secret . '.log';
+	}
+}
+
+if ( ! function_exists( 'gep_log' ) ) {
+	function gep_log( $message ) {
+		$file = gep_log_file();
+		if ( ! $file ) {
+			return;
+		}
+		// Keep the log bounded (1 MB) so a repeating error cannot fill the disk.
+		if ( file_exists( $file ) && filesize( $file ) > 1048576 ) {
+			@unlink( $file );
+		}
+		@file_put_contents( $file, $message, FILE_APPEND );
+	}
+}
+
+if ( ! function_exists( 'gep_log_to' ) ) {
+	function gep_log_to( $file, $message, $flags = FILE_APPEND ) {
+		if ( empty( $file ) ) {
+			return;
+		}
+		if ( file_exists( $file ) && filesize( $file ) > 1048576 ) {
+			@unlink( $file );
+		}
+		@file_put_contents( $file, $message, $flags );
+	}
+}
+
 // Catch fatal errors and log them
 register_shutdown_function( function() {
 	$error = error_get_last();
 	if ( $error && in_array( $error['type'], array( E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ) ) ) {
-		$log = dirname( __FILE__ ) . '/fatal_error.log';
-		$msg = date('Y-m-d H:i:s') . ' FATAL: ' . $error['message'] . ' in ' . $error['file'] . ' line ' . $error['line'] . PHP_EOL;
-		file_put_contents( $log, $msg, FILE_APPEND );
+		gep_log( date('Y-m-d H:i:s') . ' FATAL: ' . $error['message'] . ' in ' . $error['file'] . ' line ' . $error['line'] . PHP_EOL );
 	}
 } );
 
@@ -121,8 +185,23 @@ if ( ! function_exists( 'activate_gep_exam_portal' ) ) {
 		require_once GEP_PLUGIN_DIR . 'includes/class-gep-activator.php';
 		GEP_Activator::activate();
 		update_option( 'gep_db_version', GEP_DB_VERSION );
+		gep_remove_legacy_public_log();
 	}
 }
+
+/**
+ * Delete the old publicly-downloadable crash log left in the plugin folder by
+ * earlier versions. It contained stack traces, server paths and question text.
+ */
+if ( ! function_exists( 'gep_remove_legacy_public_log' ) ) {
+	function gep_remove_legacy_public_log() {
+		$legacy = GEP_PLUGIN_DIR . 'fatal_error.log';
+		if ( file_exists( $legacy ) ) {
+			@unlink( $legacy );
+		}
+	}
+}
+add_action( 'admin_init', 'gep_remove_legacy_public_log' );
 
 add_action( 'admin_init', 'gep_auto_update_db' );
 if ( ! function_exists( 'gep_auto_update_db' ) ) {

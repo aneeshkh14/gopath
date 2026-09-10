@@ -11,6 +11,7 @@ $ui_strings = array(
         'multiple'      => "Multiple Subject",
         'combined'      => "Combined",
         'self_test'     => "Self Testing",
+        'random'        => "Create Your Own",
         'search_placeholder' => "Filter by subject or asset name...",
         'all_cats'      => "All Domains",
         'series_badge'  => "SERIES",
@@ -39,6 +40,7 @@ $ui_strings = array(
         'multiple'      => "बहु-विषय",
         'combined'      => "संयुक्त",
         'self_test'     => "स्व-परीक्षण",
+        'random'        => "स्वयं का टेस्ट बनाएँ",
         'search_placeholder' => "विषय या नाम से फ़िल्टर करें...",
         'all_cats'      => "सभी डोमेन",
         'series_badge'  => "सीरीज",
@@ -88,6 +90,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                 <option value="multiple"<?php selected( $_initial_type, 'multiple' ); ?>><?php echo esc_html($strings['multiple']); ?></option>
                 <option value="combined"<?php selected( $_initial_type, 'combined' ); ?>><?php echo esc_html($strings['combined']); ?></option>
                 <option value="self_test"<?php selected( $_initial_type, 'self_test' ); ?>><?php echo esc_html($strings['self_test']); ?></option>
+                <option value="random"<?php selected( $_initial_type, 'random' ); ?>><?php echo esc_html($strings['random']); ?></option>
             </select>
         </div>
         
@@ -103,6 +106,19 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
     <div class="gep-category-groups" id="gep-ajax-test-grid" style="width: 100%;">
         <?php 
         $test_logic = new GEP_Test();
+
+        // Batch the per-card counts up front — these used to be two queries per
+        // rendered card (N+1) inside the loops below.
+        $all_test_ids   = array();
+        $all_series_ids = array();
+        foreach ( $tests as $_t ) {
+            $all_test_ids[] = $_t->id;
+            if ( $_t->type === 'series' || $_t->type === 'bundle' ) {
+                $all_series_ids[] = $_t->id;
+            }
+        }
+        $q_count_map      = $test_logic->get_question_counts( $all_test_ids );
+        $series_count_map = $test_logic->get_series_test_counts( $all_series_ids );
 
         // Group tests by parent category
         global $wpdb;
@@ -158,8 +174,8 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                     <div class="gep-asset-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px;">
                         <?php foreach ( $grouped_tests[$cat->id] as $test ) : 
                             $is_series = ($test->type === 'series' || $test->type === 'bundle');
-                            $q_count = $test_logic->get_question_count( $test->id );
-                            $series_test_count = $is_series ? $test_logic->get_series_test_count($test->id) : 0;
+                            $q_count = isset( $q_count_map[ $test->id ] ) ? $q_count_map[ $test->id ] : 0;
+                            $series_test_count = $is_series && isset( $series_count_map[ $test->id ] ) ? $series_count_map[ $test->id ] : 0;
                             
                             $card_icon = '⚡';
                             $type_label = $strings['mock_badge'];
@@ -277,8 +293,8 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                     <div class="gep-asset-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px;">
                         <?php foreach ( $grouped_tests[0] as $test ) : 
                             $is_series = ($test->type === 'series' || $test->type === 'bundle');
-                            $q_count = $test_logic->get_question_count( $test->id );
-                            $series_test_count = $is_series ? $test_logic->get_series_test_count($test->id) : 0;
+                            $q_count = isset( $q_count_map[ $test->id ] ) ? $q_count_map[ $test->id ] : 0;
+                            $series_test_count = $is_series && isset( $series_count_map[ $test->id ] ) ? $series_count_map[ $test->id ] : 0;
                             
                             $card_icon = '⚡';
                             $type_label = $strings['mock_badge'];

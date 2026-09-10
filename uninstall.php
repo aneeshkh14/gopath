@@ -52,6 +52,7 @@ $options = array(
     'gep_slug_dashboard',
     'gep_slug_exam',
     'gep_slug_result',
+    'gep_log_secret',
     'gep_slug_checkout',
     'gep_slug_login',
     'gep_slug_register',

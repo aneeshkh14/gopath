@@ -218,7 +218,8 @@
 .section-title { font-size: 22px; font-weight: 800; color: #fff; margin: 0; }
 .line-decorator { height: 1px; flex-grow: 1; background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, transparent 100%); }
 
-.time-tag { font-size: 13px; font-weight: 600; color: #6366f1; }
+/* #6366f1 is only 3.97:1 on the dark card (#18181b); #818cf8 is 5.94:1. */
+.time-tag { font-size: 13px; font-weight: 600; color: #818cf8; }
 .btn-link-action { font-size: 13px; font-weight: 700; color: #fff; text-decoration: none; padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 8px; transition: background 0.2s; }
 .btn-link-action:hover { background: rgba(255,255,255,0.2); }
 
