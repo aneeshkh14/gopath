@@ -578,7 +578,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 }
 .gep-q-count-pill {
     background: #f1f5f9; border-radius: 100px;
-    padding: 6px 14px; font-size: 12px; font-weight: 700; color: #64748b;
+    padding: 6px 14px; font-size: 12px; font-weight: 700; color: #475569;
 }
 
 /* Question Review Cards — borderless, separated only by a hairline rule */
@@ -603,18 +603,18 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     gap: 8px;
 }
 .gep-qr-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
-.gep-qr-num { font-size: 12px; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 0.5px; }
+.gep-qr-num { font-size: 12px; font-weight: 800; color: #4338ca; text-transform: uppercase; letter-spacing: 0.5px; }
 .gep-qr-type-pill {
     font-size: 10px; font-weight: 700; padding: 3px 10px;
-    background: #f1f5f9; color: #64748b; border-radius: 100px;
+    background: #f1f5f9; color: #475569; border-radius: 100px;
     text-transform: uppercase; letter-spacing: 0.5px;
 }
 .gep-qr-status {
     font-size: 11px; font-weight: 800; padding: 5px 14px;
     border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px;
 }
-.gep-qr-status.correct { background: rgba(16,185,129,0.1); color: #059669; }
-.gep-qr-status.wrong   { background: rgba(239,68,68,0.1);  color: #dc2626; }
+.gep-qr-status.correct { background: rgba(4,120,87,0.10); color: #047857; }
+.gep-qr-status.wrong   { background: rgba(185,28,28,0.10);  color: #b91c1c; }
 .gep-qr-status.skipped { background: rgba(148,163,184,0.1); color: #64748b; }
  
 /* No side padding — the question/solution text runs edge to edge so more words
@@ -669,8 +669,8 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     display: inline-flex; align-items: center; gap: 6px;
     padding: 5px 12px; border-radius: 8px;
 }
-.gep-ans-chip.your { background: rgba(99,102,241,0.08); color: #6366f1; }
-.gep-ans-chip.correct-ans { background: rgba(16,185,129,0.08); color: #059669; }
+.gep-ans-chip.your { background: rgba(67,56,202,0.08); color: #4338ca; }
+.gep-ans-chip.correct-ans { background: rgba(4,120,87,0.08); color: #047857; }
 
 /* Explanation — plain white, minimal padding, full-strength (non-faded) text */
 .gep-explanation-box {
@@ -683,7 +683,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 }
 .gep-exp-header {
     display: flex; align-items: center; gap: 8px;
-    font-size: 12px; font-weight: 800; color: #6366f1;
+    font-size: 12px; font-weight: 800; color: #4338ca;
     text-transform: uppercase; letter-spacing: 0.8px;
     margin-bottom: 6px;
 }
@@ -711,6 +711,31 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     margin-bottom: 4px;
 }
 .gep-source-body { font-size: 13px; color: #0f172a; font-weight: 600; }
+
+/* ─── Contrast corrections for this page ───────────────────────────────────
+   The solution renders on white/near-white cards, but several semantic colours
+   here come from the dark-theme palette and only reached ~2.1–3.8:1 against
+   white. Each is swapped for the darker end of the same hue so the meaning
+   (green = easy/correct, amber = medium, red = hard/weak) is unchanged. */
+.gep-result-wrap .gep-metric-label,
+.gep-result-wrap .gep-score-cell .lbl,
+.gep-result-wrap .gep-score-cell small,
+.gep-result-wrap .gep-subject-nums .s {
+    color: #64748b !important;
+}
+.gep-result-wrap .gep-ring-center { color: #4338ca !important; }
+.gep-result-wrap .gep-grade-badge { color: #b45309 !important; }
+.gep-result-wrap .gep-result-status-pill { color: #047857 !important; }
+.gep-result-wrap .gep-badge-free { background: #047857 !important; color: #fff !important; }
+/* difficulty + weak-area accents */
+.gep-result-wrap [style*="color: #10b981"] { color: #047857 !important; }
+.gep-result-wrap [style*="color: #f59e0b"] { color: #b45309 !important; }
+.gep-result-wrap [style*="color: #ef4444"] { color: #b91c1c !important; }
+.gep-result-wrap .gep-weak-topic-row div { color: #475569 !important; }
+.gep-result-wrap h4[style*="#ef4444"] { color: #b91c1c !important; }
+.gep-result-wrap .gep-score-cell .val[style*="#f59e0b"] { color: #b45309 !important; }
+.gep-result-wrap .gep-subject-nums .c { color: #047857; }
+.gep-result-wrap .gep-subject-nums .w { color: #b91c1c; }
 
 /* Grade Badge */
 .gep-grade-badge {
@@ -960,7 +985,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
                     <?php 
                     $diff_labels = ['easy' => 'Easy', 'medium' => 'Medium', 'hard' => 'Hard'];
-                    $diff_colors = ['easy' => '#10b981', 'medium' => '#f59e0b', 'hard' => '#ef4444'];
+                    $diff_colors = ['easy' => '#047857', 'medium' => '#b45309', 'hard' => '#b91c1c'];
                     foreach($diff_labels as $d_key => $d_label): 
                         $d_stat = $diff_stats[$d_key];
                         $d_pct = $d_stat['total'] > 0 ? round(($d_stat['correct'] / $d_stat['total']) * 100) : 0;
@@ -1247,7 +1272,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                     <span class="gep-qr-type-pill"><?php echo esc_html( $type_label ); ?></span>
                     <?php 
                     $q_diff = isset($q->difficulty) ? $q->difficulty : 'medium';
-                    $q_diff_colors = ['easy' => '#10b981', 'medium' => '#f59e0b', 'hard' => '#ef4444'];
+                    $q_diff_colors = ['easy' => '#047857', 'medium' => '#b45309', 'hard' => '#b91c1c'];
                     $q_diff_color = isset($q_diff_colors[$q_diff]) ? $q_diff_colors[$q_diff] : '#f59e0b';
                     ?>
                     <span class="gep-qr-type-pill" style="background:<?php echo $q_diff_color; ?>15; color:<?php echo $q_diff_color; ?>; border: 1px solid <?php echo $q_diff_color; ?>30;"><?php echo esc_html(ucfirst($q_diff)); ?></span>
@@ -1294,7 +1319,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                             echo esc_html( $q->correct_answer );
                             if ( $qtype === 'numerical' ) {
                                 $tol = isset($q->numerical_tolerance) && $q->numerical_tolerance > 0 ? $q->numerical_tolerance : 0.01;
-                                echo ' <em style="color:#94a3b8;font-size:11px;">(±' . esc_html($tol) . ')</em>';
+                                echo ' <em style="color:#64748b;font-size:11px;">(±' . esc_html($tol) . ')</em>';
                             }
                             ?>
                         </strong></span>

@@ -116,7 +116,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                     <span class="gep-banner-tag-sovereign" style="background: rgba(16, 185, 129, 0.15); color: #a7f3d0; border: 1px solid rgba(16,185,129,0.3);">NATIONAL SCHOLARSHIP MOCK</span>
                     <h2 class="gep-carousel-title" style="background-image: linear-gradient(135deg, #34d399 0%, #059669 100%) !important; -webkit-background-clip: text !important; background-clip: text !important;"><?php echo esc_html($slide2_title); ?></h2>
                     <p class="gep-carousel-desc"><?php echo esc_html($slide2_desc); ?></p>
-                    <a href="<?php echo esc_url($slide2_url); ?>" class="gep-btn-sovereign-primary" style="padding: 12px 28px; font-size: 14px; border-radius: 14px; background: #10b981; color: #fff;">
+                    <a href="<?php echo esc_url($slide2_url); ?>" class="gep-btn-sovereign-primary" style="padding: 12px 28px; font-size: 14px; border-radius: 14px; background: #047857; color: #fff;">
                         <span><?php echo esc_html($slide2_btn); ?></span>
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                     </a>
@@ -133,7 +133,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                     <span class="gep-banner-tag-sovereign" style="background: rgba(168, 85, 247, 0.15); color: #e9d5ff; border: 1px solid rgba(168,85,247,0.3);">LIVE BATCHES</span>
                     <h2 class="gep-carousel-title" style="background-image: linear-gradient(135deg, #c084fc 0%, #7c3aed 100%) !important; -webkit-background-clip: text !important; background-clip: text !important;"><?php echo esc_html($slide3_title); ?></h2>
                     <p class="gep-carousel-desc"><?php echo esc_html($slide3_desc); ?></p>
-                    <a href="<?php echo esc_url($slide3_url); ?>" class="gep-btn-sovereign-primary" style="padding: 12px 28px; font-size: 14px; border-radius: 14px; background: #a855f7; color: #fff;">
+                    <a href="<?php echo esc_url($slide3_url); ?>" class="gep-btn-sovereign-primary" style="padding: 12px 28px; font-size: 14px; border-radius: 14px; background: #7e22ce; color: #fff;">
                         <span><?php echo esc_html($slide3_btn); ?></span>
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                     </a>
@@ -403,12 +403,12 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                 <div style="display: flex; align-items: center; gap: 24px;">
                     <?php if ( ! $is_ip ) : ?>
                     <div style="text-align: right;">
-                        <div style="font-size: 16px; font-weight: 900; color: #10b981;"><?php echo number_format($att->score, 1); ?> <small style="font-size: 11px; color: #64748b;">/<?php echo number_format($att->total_marks, 0); ?></small></div>
-                        <div style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase;">Score</div>
+                        <div style="font-size: 16px; font-weight: 900; color: #10b981;"><?php echo number_format($att->score, 1); ?> <small style="font-size: 11px; color: #a1a1aa;">/<?php echo number_format($att->total_marks, 0); ?></small></div>
+                        <div style="font-size: 10px; color: #a1a1aa; font-weight: 700; text-transform: uppercase;">Score</div>
                     </div>
                     <div style="text-align: right; min-width: 60px;">
                        <div style="font-size: 16px; font-weight: 900; color: #6366f1;"><?php echo round($att->percentage); ?>%</div>
-                       <div style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase;">Accuracy</div>
+                       <div style="font-size: 10px; color: #a1a1aa; font-weight: 700; text-transform: uppercase;">Accuracy</div>
                     </div>
                     <?php endif; ?>
                     <div>

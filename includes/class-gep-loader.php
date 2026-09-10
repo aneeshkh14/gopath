@@ -244,7 +244,22 @@ class GEP_Loader {
 		// Base Portal Styling (Always needed for the wrapper)
 		wp_enqueue_style( 'gep-public-css' );
 
-		if ( ( is_front_page() && is_user_logged_in() ) || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'gep_dashboard' ) ) ) {
+		// Every portal screen rendered through templates/portal-layout.php shows the
+		// dashboard chrome (sidebar + header), so it needs the dashboard stylesheet and
+		// script — not just the [gep_dashboard] page. Without this the result/checkout
+		// screens rendered an unstyled sidebar and a dead "Miscellaneous" menu.
+		$gep_chrome_shortcodes = array(
+			'gep_dashboard', 'gep_result', 'gep_checkout',
+			'gep_payment_success', 'gep_payment_failed', 'gep_home',
+		);
+		$gep_needs_chrome = ( is_front_page() && is_user_logged_in() );
+		if ( ! $gep_needs_chrome && is_a( $post, 'WP_Post' ) ) {
+			foreach ( $gep_chrome_shortcodes as $gep_sc ) {
+				if ( has_shortcode( $post->post_content, $gep_sc ) ) { $gep_needs_chrome = true; break; }
+			}
+		}
+
+		if ( $gep_needs_chrome ) {
 			wp_enqueue_style( 'gep-dashboard-css' );
 			wp_enqueue_style( 'gep-auth-css' ); // Dashboard needs Auth CSS for login fallback
 			wp_enqueue_script( 'gep-dashboard-js' );

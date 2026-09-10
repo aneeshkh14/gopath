@@ -68,7 +68,7 @@ if ( ! empty( $courses ) ) {
 
     <!-- Trending Skill Tracks -->
     <div class="gep-section-header" style="margin-bottom: 25px;">
-        <h3 style="font-size: 22px; font-weight: 900; color: #0f172a; margin: 0; letter-spacing: -0.5px;">Trending Skill Tracks</h3>
+        <h3 style="font-size: 22px; font-weight: 900; color: #f3f4f6; margin: 0; letter-spacing: -0.5px;">Trending Skill Tracks</h3>
     </div>
 
     <div class="gep-skill-track-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
@@ -92,7 +92,7 @@ if ( ! empty( $courses ) ) {
 
     <!-- Dynamic Courses list -->
     <div class="gep-section-header" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
-        <h3 id="gep-track-title" style="font-size: 22px; font-weight: 900; color: #0f172a; margin: 0; letter-spacing: -0.5px;">All Skill Courses</h3>
+        <h3 id="gep-track-title" style="font-size: 22px; font-weight: 900; color: #f3f4f6; margin: 0; letter-spacing: -0.5px;">All Skill Courses</h3>
         <span style="font-size: 13px; color: #64748b; font-weight: 600;">Priced ₹499 to ₹999</span>
     </div>
 

@@ -124,14 +124,29 @@
 .gep-badge-free { background: #10b981; color: white; }
 
 /* ─── Sidebar: grouped nav items (Test Series > sub-items, Miscellaneous) ─── */
+/* The toggle is a <button>, so it does NOT inherit the `.gep-dashboard-nav a`
+   rules — it must repeat them, otherwise it renders as black default button text
+   on the dark sidebar (effectively invisible) with no padding. */
 .gep-nav-group-toggle-btn {
+    display: flex !important;
+    align-items: center;
     width: 100%;
+    padding: 10px 20px !important;
     background: none;
     border: none;
     border-left: 3px solid transparent;
     cursor: pointer;
     text-align: left;
     font-family: inherit;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 1.2;
+    color: var(--gep-sidebar-text) !important;
+    transition: all 0.2s ease;
+}
+.gep-nav-group-toggle-btn:hover {
+    background: var(--gep-sidebar-hover);
+    color: #fff !important;
 }
 .gep-nav-group-toggle-btn::after {
     content: '▾';
@@ -181,8 +196,13 @@
 }
 
 /* Header Styling */
+/* The sidebar is always dark, and most portal views apply the dark "sovereign"
+   theme. The header used to be white by default and near-black on sovereign
+   views, so it flipped colour from page to page and left header controls
+   (Contact Us, search) unreadable on whichever theme they were not designed for.
+   It is now consistently dark everywhere, matching the sidebar. */
 .gep-dashboard-header {
-    background: #ffffff;
+    background: #111827;
     height: 56px;
     display: flex;
     align-items: center;
@@ -191,7 +211,8 @@
     position: sticky;
     top: 0;
     z-index: 900;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: #e5e7eb;
 }
  
 /* Hamburger / Mobile menu toggle */
@@ -199,7 +220,7 @@
     display: none;
     font-size: 22px;
     cursor: pointer;
-    color: var(--gep-text-main);
+    color: #e5e7eb;
     background: transparent;
     border: none;
     padding: 8px;
@@ -242,16 +263,18 @@
 .gep-header-search input {
     width: 100%;
     height: 40px;
-    background: #f3f4f6;
-    border: 1px solid transparent;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
     border-radius: 8px;
     padding: 0 16px;
     font-size: 14px;
+    color: #f3f4f6;
     transition: all 0.2s;
 }
+.gep-header-search input::placeholder { color: #9ca3af; }
 
 .gep-header-search input:focus {
-    background: #fff;
+    background: rgba(255,255,255,0.10);
     border-color: var(--gep-primary);
     outline: none;
     box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
@@ -278,9 +301,11 @@
 }
 
 .gep-btn-pass {
-    background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
+    /* darkened: white text on the old bright green was ~2.5:1 */
+    background: linear-gradient(135deg, #047857 0%, #059669 100%);
     color: #fff;
-    padding: 8px 18px;
+    min-height: 36px;
+    padding: 9px 18px;
     border-radius: 8px;
     font-weight: 800;
     font-size: 13px;
@@ -302,11 +327,12 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    color: var(--gep-sidebar-text, #94a3b8);
+    color: #cbd5e1;
     text-decoration: none !important;
     font-weight: 700;
     font-size: 13px;
-    padding: 6px 12px;
+    min-height: 36px;
+    padding: 8px 12px;
     border-radius: 10px;
     border: 1px solid rgba(255,255,255,0.08);
     background: rgba(255,255,255,0.03);
@@ -323,6 +349,7 @@
 .gep-header-avatar {
     width: 36px;
     height: 36px;
+    flex-shrink: 0;
     background: #3b82f6;
     border-radius: 50%;
     display: flex;
@@ -939,6 +966,15 @@
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+/* This sub-heading inherited the light-theme body colour (#1f2937) but sits on
+   the dark portal background, which made it all but unreadable. */
+.gep-predictor-header p {
+    color: #a1a1aa;
+    font-size: 15px;
+    max-width: 640px;
+    margin: 0 auto;
 }
 
 .gep-skill-hero {
@@ -1622,21 +1658,16 @@
     border: 1px solid #fecaca;
 }
 
+/* NOTE: a stale light-theme `.gep-profile-header { background:#fff }` used to sit
+   here. It overrode the dark-glass definition earlier in this file, turning the
+   profile hero card white while its <h1> kept `color:#fff` — so the student's own
+   name was invisible. Only the layout bits are kept; the dark card wins again. */
 .gep-profile-header {
-    background: #fff;
     padding: 24px 30px;
     border-radius: 24px;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    margin-bottom: 30px;
-    border: 1px solid var(--gep-border);
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     position: relative;
     overflow: hidden;
 }
-
-/* Removed large background gradient for a cleaner look */
 
 .gep-profile-avatar {
     position: relative;
@@ -1644,8 +1675,8 @@
     height: 90px;
     border-radius: 50%;
     padding: 4px;
-    background: #fff;
-    box-shadow: 0 0 0 3px #f1f5f9;
+    background: rgba(255,255,255,0.06);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
 }
 
 .gep-profile-avatar img {
@@ -2041,3 +2072,165 @@
     .gep-stat-card { padding: 10px !important; }
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONTRAST & THEME CORRECTIONS
+   Added after auditing every portal screen at 360–1920px in a real browser.
+   The palette's semantic colours (emerald / amber / sky / slate / indigo) were
+   picked for dark surfaces but are also used as text on white cards, where they
+   fell well below the WCAG AA 4.5:1 minimum. Each rule below pairs a colour with
+   the surface it actually sits on.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* --- Dark surfaces: muted text was too dim (≈4.2:1) --------------------------- */
+.gep-sovereign-active .pill-label,
+.gep-sovereign-active .gep-metric-label,
+.gep-sovereign-active .lbl {
+    color: #a1a1aa !important;
+}
+
+/* --- Dark surfaces: form labels were near-black on near-black ----------------- */
+.gep-profile-wrapper .gep-form-group label {
+    color: #e2e8f0;
+}
+.gep-sovereign-active .gep-info-text,
+.gep-sovereign-active small.gep-info-text {
+    color: #a1a1aa !important;
+}
+
+/* --- Indigo on dark: lift to the 300-weight so it reads as a link ------------- */
+.gep-sovereign-active .asset-badge-micro {
+    color: #a5b4fc !important;
+    border-color: rgba(165,180,252,0.45) !important;
+}
+
+/* --- White-on-colour buttons: darken the fill so white text passes AA --------- */
+.gep-btn-mini,
+.gep-btn-strip {
+    background: #047857 !important;
+    border-color: #065f46 !important;
+    color: #fff !important;
+}
+.gep-btn-mini:hover,
+.gep-btn-strip:hover { background: #065f46 !important; }
+.gep-popular-tab-btn.active,
+.gep-pyq-tab-btn.active {
+    background: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+}
+
+/* --- Indigo primary buttons: #6366f1 gave white text only 4.47:1 ------------- */
+.gep-btn-primary,
+button[style*="background: #6366f1"],
+a[style*="background: #6366f1"],
+[style*="background: linear-gradient(135deg,#6366f1"],
+[style*="background: linear-gradient(135deg, #6366f1"] {
+    background: #4f46e5 !important;
+}
+
+/* --- Coloured text on LIGHT cards: use the dark end of each ramp -------------- */
+.gep-badge-free { background: #047857; color: #fff !important; }
+.gep-hcard-badge { background: #047857 !important; color: #fff !important; }
+.gep-grade-badge { color: #b45309 !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE SAFETY NET
+   Many portal templates set their grid columns in inline `style` attributes,
+   which no ordinary stylesheet rule can override — so on phones those grids
+   stayed 3- and 4-across and the extra columns were pushed outside the content
+   box (which clips, so they became completely unreachable — e.g. 2 of the 3
+   pricing plans on Get Pass). These attribute-substring rules collapse exactly
+   those inline grids at small widths, without touching desktop layout.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Tablet portrait and below: 4+ column grids become 2 columns */
+@media (max-width: 900px) {
+    .gep-main-inner [style*="grid-template-columns: repeat(6"],
+    .gep-main-inner [style*="grid-template-columns: repeat(4"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .gep-main-inner [style*="grid-template-columns: 1.8fr"],
+    .gep-main-inner [style*="grid-template-columns: 1.2fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Phones: every multi-column inline grid becomes a single column */
+@media (max-width: 640px) {
+    .gep-main-inner [style*="grid-template-columns: repeat(6"],
+    .gep-main-inner [style*="grid-template-columns: repeat(4"],
+    .gep-main-inner [style*="grid-template-columns: repeat(3"],
+    .gep-main-inner [style*="grid-template-columns: repeat(2"],
+    .gep-main-inner [style*="grid-template-columns: 1fr 1fr"],
+    .gep-main-inner [style*="grid-template-columns: 1.8fr"],
+    .gep-main-inner [style*="grid-template-columns: 1.2fr"] {
+        grid-template-columns: 1fr !important;
+    }
+    /* Inline flex rows (button groups, stat rows) must wrap rather than clip */
+    .gep-main-inner [style*="display: flex"]:not(.gep-hscroll-row) {
+        flex-wrap: wrap;
+    }
+    /* Generous side padding is wasteful on a 360px screen */
+    .gep-main-inner [style*="padding: 40px"] { padding: 20px !important; }
+    .gep-main-inner [style*="padding: 35px"] { padding: 18px !important; }
+    .gep-main-inner [style*="padding: 30px"] { padding: 16px !important; }
+}
+
+/* Data tables: scroll inside their own box instead of being clipped */
+@media (max-width: 768px) {
+    .gep-main-inner table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Nothing in the portal content may push the page sideways */
+.gep-main-inner img,
+.gep-main-inner video,
+.gep-main-inner iframe { max-width: 100%; }
+
+/* Hero stat blocks sit on white cards, so their emerald/slate values need the
+   darker end of the ramp (they were 2.4:1 against white). */
+.gep-skill-hero .val[style*="#10b981"],
+.gep-skill-stats .val[style*="#10b981"] { color: #047857 !important; }
+.gep-skill-hero .label,
+.gep-skill-stats .label { color: #475569 !important; }
+
+/* Rank/Question Predictor feature strip sits directly on the dark page
+   background, so its headings inherited the light-theme text colour. */
+.gep-predictor-features h4 { color: #e5e7eb; }
+.gep-predictor-features span { color: #e5e7eb; }
+
+/* ── Page headings that sit directly on the dark portal background ──────────
+   These inherit --gep-text-main (#1f2937), which was chosen for the old light
+   theme and is unreadable on the near-black page. Cards that set their own
+   background are unaffected. */
+.gep-sovereign-active .gep-page-header h1,
+.gep-sovereign-active .gep-page-header h2,
+.gep-sovereign-active .gep-page-header h3 { color: #f3f4f6; }
+.gep-sovereign-active .gep-page-header p  { color: #a1a1aa; }
+
+/* Muted copy inside WHITE cards: #94a3b8 is only ~2.5:1 on white. */
+.gep-support-container [style*="color: #94a3b8"],
+.gep-pricing-card [style*="color: #94a3b8"],
+.gep-pricing-card li,
+.gep-pricing-card span,
+.gep-support-container p,
+.gep-support-container div[style*="#94a3b8"] { color: #64748b !important; }
+.gep-pricing-card [style*="color: #10b981"] { color: #047857 !important; }
+
+/* Video Lectures: section headings sit on the dark page background but kept the
+   light-theme slate colour. */
+.gep-sovereign-active .section-title,
+.gep-sovereign-active h2.section-title { color: #f3f4f6 !important; }
+.gep-sovereign-active .gep-lecture-group h3,
+.gep-sovereign-active .gep-main-inner > div > h3 { color: #e5e7eb; }
+
+/* Muted meta text on white cards (results list, typing log). */
+.gep-premium-table [style*="color: #94a3b8"],
+.gep-typing-log [style*="color: #94a3b8"],
+.gep-main-inner p[style*="color: #94a3b8"],
+.gep-main-inner div[style*="color: #94a3b8"] { color: #64748b !important; }
+.gep-main-inner [style*="color: #0ea5e9"] { color: #0369a1 !important; }

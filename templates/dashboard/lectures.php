@@ -53,7 +53,7 @@
 
                     <?php foreach ($subcats as $subcat_name => $lecs): ?>
                         <div class="gep-lecture-subcategory-group" style="margin-bottom: 30px; padding-left: 20px; border-left: 3px solid #e2e8f0;">
-                            <h3 style="font-size: 20px; font-weight: 800; color: #475569; margin-bottom: 20px;"><?php echo esc_html($subcat_name); ?></h3>
+                            <h3 style="font-size: 20px; font-weight: 800; color: #cbd5e1; margin-bottom: 20px;"><?php echo esc_html($subcat_name); ?></h3>
                             
                             <div class="gep-premium-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
                                 <?php foreach ($lecs as $lec): ?>
