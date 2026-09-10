@@ -212,10 +212,24 @@ foreach ( $section_counters as $cat_key => $val ) {
                     <div class="gep-q-pane-right">
                         <!-- Marks for the active question, kept in sync by gep-exam.js -->
                         <span class="gep-q-pane-marks" id="gep-q-pane-marks" aria-live="polite"></span>
-                        <?php if ( ! empty( $is_lang_locked ) ) : ?>
-                            <span class="gep-q-pane-lang-lock" title="This test uses a fixed language and cannot be switched.">🔒 <span class="gep-lock-word">Fixed</span></span>
-                        <?php else : ?>
-                            <select class="gep-nta-lang-select" aria-label="View question in">
+                        <?php
+                        /* Language control. Both states are rendered and gep-exam.js shows
+                           whichever fits the section you are in, because one test can hold
+                           both: UGC NET Sanskrit is a bilingual Paper 1 followed by a
+                           Sanskrit Paper 2. A section with no translation shows the lock —
+                           a selector there would change nothing. */
+                        ?>
+                        <?php
+                        // Paint the right control for the question that loads first, so the
+                        // header is correct before any script runs.
+                        $first_q = reset( $questions );
+                        $first_section_locked = ! empty( $is_lang_locked ) || (
+                            $first_q && ! empty( $section_lang_locked[ strval( $first_q->category_id ) ] )
+                        );
+                        ?>
+                        <span class="gep-q-pane-lang-lock" id="gep-q-pane-lang-lock" title="This section is printed in one language only."<?php echo $first_section_locked ? '' : ' hidden'; ?>>🔒 <span class="gep-lock-word">Fixed</span></span>
+                        <?php if ( empty( $is_lang_locked ) ) : ?>
+                            <select class="gep-nta-lang-select" id="gep-q-pane-lang-select" aria-label="View question in"<?php echo $first_section_locked ? ' hidden' : ''; ?>>
                                 <option value="en"<?php selected($current_lang, 'en'); ?>>English</option>
                                 <option value="hi"<?php selected($current_lang, 'hi'); ?>>Hindi</option>
                             </select>
@@ -227,7 +241,7 @@ foreach ( $section_counters as $cat_key => $val ) {
                 <?php foreach ( $questions as $index => $q ) : 
                     $pid = isset($q->passage_id) ? absint($q->passage_id) : 0;
                 ?>
-                <div class="gep-question-block" data-id="<?php echo $q->id; ?>" data-cat-id="<?php echo esc_attr($q->category_id); ?>" data-cat-name="<?php echo esc_attr( isset($sections_map[strval($q->category_id)]) ? $sections_map[strval($q->category_id)] : '' ); ?>" data-marks="<?php echo esc_attr( $q->marks ); ?>" data-neg="<?php echo esc_attr( $q->negative_marks ); ?>" data-type="<?php echo esc_attr( isset($q->question_type) ? $q->question_type : 'mcq' ); ?>" data-passage-id="<?php echo $pid; ?>" data-has-translation="<?php echo (isset($q->translation_enabled) && $q->translation_enabled) ? '1' : '0'; ?>" id="q-block-<?php echo $index; ?>" style="display: none;">
+                <div class="gep-question-block" data-id="<?php echo $q->id; ?>" data-cat-id="<?php echo esc_attr($q->category_id); ?>" data-cat-name="<?php echo esc_attr( isset($sections_map[strval($q->category_id)]) ? $sections_map[strval($q->category_id)] : '' ); ?>" data-lang-lock="<?php echo ( ! empty( $section_lang_locked[strval($q->category_id)] ) || ! empty( $is_lang_locked ) ) ? '1' : '0'; ?>" data-marks="<?php echo esc_attr( $q->marks ); ?>" data-neg="<?php echo esc_attr( $q->negative_marks ); ?>" data-type="<?php echo esc_attr( isset($q->question_type) ? $q->question_type : 'mcq' ); ?>" data-passage-id="<?php echo $pid; ?>" data-has-translation="<?php echo (isset($q->translation_enabled) && $q->translation_enabled) ? '1' : '0'; ?>" id="q-block-<?php echo $index; ?>" style="display: none;">
                     <div class="gep-question-card">
                         <?php 
                             $qtype = isset($q->question_type) ? $q->question_type : 'mcq';

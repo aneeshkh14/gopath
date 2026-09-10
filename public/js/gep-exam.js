@@ -186,9 +186,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Fixed-language ("Sanskrit paper") tests: the selector is already removed from the
-    // DOM server-side, but harden here too — never honor a stale sessionStorage language,
-    // and don't wire up any switch controls that might still exist.
+    // A test that is single-language throughout: the selector is already absent from
+    // the DOM server-side, but harden here too — never honor a stale sessionStorage
+    // language, and don't wire up any switch controls that might still exist.
+    // A test with a mix of sections is NOT locked here; each section decides for
+    // itself in loadQuestion().
     if (examData.lang_locked) {
         sessionStorage.removeItem('gep_current_lang');
         switchLanguage(examData.lang || 'en');
@@ -436,6 +438,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const paletteSectionEl = document.getElementById('gep-palette-section-name');
             if (paletteSectionEl) paletteSectionEl.textContent = catName;
+
+            // Language control follows the section. One test can hold both kinds:
+            // a bilingual general paper and a single-language one. Offering a
+            // selector on a section with no translation would promise a switch
+            // that changes nothing.
+            const sectionLocked = headerBlock.dataset.langLock === '1';
+            const lockChip  = document.getElementById('gep-q-pane-lang-lock');
+            const langPicker = document.getElementById('gep-q-pane-lang-select');
+            if (lockChip)   lockChip.hidden = !sectionLocked;
+            if (langPicker) langPicker.hidden = sectionLocked;
         }
 
         paletteButtons.forEach((btn, i) => btn.classList.toggle('active', i === index));

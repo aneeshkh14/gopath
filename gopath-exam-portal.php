@@ -3,7 +3,7 @@
  * Plugin Name:       GoPath Exam Portal
  * Plugin URI:        https://test.gopath.in/
  * Description:       A comprehensive, large-scale modular exam management system for WordPress.
- * Version:           1.9.1
+ * Version:           1.9.2
  * Author:            GoPath
  * Author URI:        https://test.gopath.in/
  * License:           GPL-2.0+
@@ -155,7 +155,7 @@ if ( ! defined( 'YEAR_IN_SECONDS' ) )   { define( 'YEAR_IN_SECONDS',   31536000 
 /**
  * Plugin version constant.
  */
-define( 'GEP_VERSION', '1.9.1' );
+define( 'GEP_VERSION', '1.9.2' );
 
 /**
  * Database version.
@@ -715,15 +715,86 @@ if ( ! function_exists( 'gep_safe_json_decode' ) ) {
 	}
 }
 
-// ─── Fixed-Language ("Sanskrit paper") detection ────────────────────────────
-// The current schema has no dedicated column marking a test as fixed-language.
-// Rather than hardcode one fragile category ID, we robustly detect this from
-// test/category metadata: an explicit opt-in flag in translated_data (future-
-// proof, backward compatible) or a category/subcategory whose name mentions
-// Sanskrit. This is intentionally conservative — it only locks the language
-// selector; it never changes stored answers, marks, or evaluation logic.
+// ─── Fixed-Language detection ───────────────────────────────────────────────
+// A "fixed language" paper is one that exists in a single language, so offering an
+// English/Hindi switch would be a lie — the switch would change nothing.
+//
+// This is decided PER SECTION, not per test, because a paper is not the unit that
+// has a language. UGC NET Sanskrit is one test containing two: Paper 1 is the
+// general paper and is published in English and Hindi; Paper 2 is in Sanskrit.
+// Locking the whole test took the switch away from Paper 1 as well.
+//
+// The signal is the content itself — does this section actually carry a second
+// language? — never the name of the test or its category. Name matching failed
+// twice over: it locked a bilingual Paper 1 for sitting under a "Sanskrit"
+// category, and it silently missed sections whose name is spelled differently
+// ("Sansrit") from the word it was looking for. An explicit admin flag still wins
+// over the content check where one is set.
+//
+// This only ever governs the language selector; it never touches stored answers,
+// marks, or evaluation.
+
+/**
+ * Does this question carry a usable second language?
+ */
+if ( ! function_exists( 'gep_question_has_translation' ) ) {
+	function gep_question_has_translation( $q ) {
+		if ( empty( $q ) || empty( $q->translated_data ) ) {
+			return false;
+		}
+		$trans = gep_safe_json_decode( $q->translated_data, true );
+		if ( ! is_array( $trans ) ) {
+			return false;
+		}
+		// A title in the other language is what makes a question switchable; a
+		// translated option alone still leaves the question itself untranslated.
+		return ! empty( $trans['title'] ) && trim( (string) $trans['title'] ) !== '';
+	}
+}
+
+/**
+ * Is this section single-language?
+ *
+ * @param array  $questions   All questions in the test (filtered by section here).
+ * @param string $section_key The section's id, matched against $q->category_id.
+ * @param array  $section_cfg That section's config from the test's translated_data.
+ */
+if ( ! function_exists( 'gep_section_requires_fixed_language' ) ) {
+	function gep_section_requires_fixed_language( $questions, $section_key, $section_cfg = array() ) {
+		// An explicit admin choice wins over anything inferred from content.
+		if ( is_array( $section_cfg ) && isset( $section_cfg['fixed_language'] ) ) {
+			return (bool) $section_cfg['fixed_language'];
+		}
+
+		$found_question = false;
+		foreach ( (array) $questions as $q ) {
+			if ( (string) $q->category_id !== (string) $section_key ) {
+				continue;
+			}
+			$found_question = true;
+			if ( gep_question_has_translation( $q ) ) {
+				return false; // one translated question is enough to make the switch real
+			}
+		}
+
+		// No question carries a translation: the switch would do nothing. An empty
+		// section is not evidence of anything, so leave it unlocked.
+		return $found_question;
+	}
+}
+
+/**
+ * Is the WHOLE test single-language?
+ *
+ * True only when every section is. A test with one bilingual section keeps its
+ * language selector — the exam window then locks the individual sections that
+ * cannot honour it.
+ *
+ * @param object $test      The test row.
+ * @param array  $questions Optional; without them only an explicit admin flag can lock.
+ */
 if ( ! function_exists( 'gep_test_requires_fixed_language' ) ) {
-	function gep_test_requires_fixed_language( $test ) {
+	function gep_test_requires_fixed_language( $test, $questions = null ) {
 		if ( empty( $test ) ) {
 			return false;
 		}
@@ -735,23 +806,18 @@ if ( ! function_exists( 'gep_test_requires_fixed_language' ) ) {
 			return (bool) $td['fixed_language'];
 		}
 
-		// 2. Fall back to category / subcategory name containing "sanskrit" (case-insensitive).
-		global $wpdb;
-		$cat_ids = array_filter( array(
-			isset( $test->subcategory_id ) ? absint( $test->subcategory_id ) : 0,
-			isset( $test->category_id ) ? absint( $test->category_id ) : 0,
-		) );
-		if ( empty( $cat_ids ) ) {
+		// 2. Otherwise decide from the questions themselves, when we have them.
+		//    No questions to inspect means no evidence — and a guess here is what
+		//    took the language switch away from Paper 1, so we do not guess.
+		if ( ! is_array( $questions ) || empty( $questions ) ) {
 			return false;
 		}
-		$ids_str = implode( ',', $cat_ids );
-		$names = $wpdb->get_col( "SELECT name FROM {$wpdb->prefix}gep_categories WHERE id IN ($ids_str)" );
-		foreach ( $names as $name ) {
-			if ( stripos( $name, 'sanskrit' ) !== false || stripos( $name, 'संस्कृत' ) !== false ) {
-				return true;
+		foreach ( $questions as $q ) {
+			if ( gep_question_has_translation( $q ) ) {
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 }
 

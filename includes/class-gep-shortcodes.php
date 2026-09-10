@@ -365,8 +365,10 @@ class GEP_Shortcodes {
 			// Initialize session if not already started
 			if ( ! session_id() ) session_start();
 
-			// Fixed-language ("Sanskrit paper") tests always use the default content slot —
-			// never let a stale session/user preference switch them to a translated language.
+			// The instructions page sets a preference for the whole paper, so it only
+			// hides the selector when an admin has explicitly marked the test
+			// single-language. Sections that cannot honour the choice show their own
+			// lock inside the exam window.
 			$is_lang_locked = gep_test_requires_fixed_language( $test );
 			if ( $is_lang_locked ) {
 				$_SESSION['gep_lang'] = 'en';
@@ -595,12 +597,35 @@ class GEP_Shortcodes {
 		$elapsed_seconds  = time() - $start_time;
 		$remaining_seconds = max( 0, $duration_seconds - $elapsed_seconds );
 
-		// Fixed-language ("Sanskrit paper") tests always render in the default content slot —
-		// never let a stale session/sessionStorage value switch them to a translated language.
+		// ─── Per-section language locking ──────────────────────────────────────
+		// A section that carries no translation cannot honour a language switch, so
+		// it shows a lock instead of a selector. This is decided section by section:
+		// a UGC NET Sanskrit test holds a bilingual Paper 1 and a Sanskrit Paper 2,
+		// and locking the whole test took the switch away from Paper 1 too.
 		if ( ! session_id() ) session_start();
-		$is_lang_locked = gep_test_requires_fixed_language( $test );
+
+		// Whole test first: an explicit admin flag, else "no question anywhere carries
+		// a translation". Only then is it right to pin the session language.
+		$is_lang_locked = gep_test_requires_fixed_language( $test, $questions );
 		if ( $is_lang_locked ) {
 			$_SESSION['gep_lang'] = 'en';
+		}
+
+		// Then section by section, so a mixed test locks only the parts that need it.
+		$section_lang_locked = array();
+		foreach ( $sections_map as $sec_id => $sec_name ) {
+			if ( $is_lang_locked ) {
+				$section_lang_locked[ $sec_id ] = true;
+				continue;
+			}
+			$sec_cfg = array();
+			if ( strpos( (string) $sec_id, 'sec_' ) === 0 ) {
+				$sec_idx = (int) substr( (string) $sec_id, 4 );
+				if ( isset( $trans['sections'][ $sec_idx ] ) ) {
+					$sec_cfg = $trans['sections'][ $sec_idx ];
+				}
+			}
+			$section_lang_locked[ $sec_id ] = gep_section_requires_fixed_language( $questions, $sec_id, $sec_cfg );
 		}
 
 		wp_enqueue_style( 'gep-exam-css' );
@@ -618,6 +643,7 @@ class GEP_Shortcodes {
 			'startTime'         => time(),
 			'lang'              => isset( $_SESSION['gep_lang'] ) ? $_SESSION['gep_lang'] : 'en',
 			'lang_locked'       => $is_lang_locked,
+			'section_lang_locked' => $section_lang_locked,
 			'saved_answers'     => $saved_answers,
 			'sections_data'     => isset( $trans['sections'] ) ? $trans['sections'] : array(),
 			'dashboard_url'     => gep_get_url('dashboard')

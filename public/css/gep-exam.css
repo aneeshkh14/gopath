@@ -4377,6 +4377,9 @@ span.sa-text.active { display: inline; }
 }
 .gep-q-pane-marks .pos { color: #047857; background: rgba(4, 120, 87, 0.12); }
 .gep-q-pane-marks .neg { color: #b91c1c; background: rgba(185, 28, 28, 0.12); }
+/* The header carries both language controls and shows one; make sure no rule here
+   accidentally un-hides the other. */
+.gep-q-pane-right [hidden] { display: none !important; }
 .gep-q-pane-lang-lock {
     font-size: 11px;
     font-weight: 800;

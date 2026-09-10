@@ -270,9 +270,12 @@ $ui_strings = array(
     )
 );
 $_gep_lang = (isset($_SESSION['gep_lang']) ? $_SESSION['gep_lang'] : (get_user_meta(get_current_user_id(), 'gep_preferred_lang', true) ?: 'en'));
-// Fixed-language ("Sanskrit paper") tests: always review in the default content slot,
-// regardless of session/user language preference — matches the exam-time lock.
-if ( gep_test_requires_fixed_language( $test ) ) {
+// A test that is single-language throughout reviews in the default content slot,
+// regardless of session/user preference — matching the exam-time lock. Passing the
+// questions lets that be decided from the content; a mixed test (a bilingual Paper 1
+// followed by a Sanskrit Paper 2) keeps the reader's language, and the untranslated
+// questions fall back to their own text as they always have.
+if ( gep_test_requires_fixed_language( $test, $questions ) ) {
     $_gep_lang = 'en';
 }
 $strings   = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_strings['en'];
