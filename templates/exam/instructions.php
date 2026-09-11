@@ -2,7 +2,7 @@
 // BUG-13 FIX: Ensure PHP session is active before reading $_SESSION for language
 if ( ! session_id() ) session_start();
 if ( ! defined( 'ABSPATH' ) ) exit;
-$_gep_lang = isset($_SESSION['gep_lang']) ? $_SESSION['gep_lang'] : 'en';
+$_gep_lang = gep_get_exam_lang(); // the paper's reading language, not the portal's
 
 $test_logic = new GEP_Test();
 ?>
@@ -33,11 +33,13 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
     <div class="gep-instructions-header" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 25px 40px; color: #fff; display: flex; justify-content: space-between; align-items: center;">
         <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #fff;"><?php echo esc_html( $strings['title'] ); ?></h1>
         <div class="gep-lang-status">
-            <?php if ( ! empty( $is_lang_locked ) ) : ?>
-                <div style="display: flex; align-items: center; gap: 8px;" title="This test uses a fixed language and cannot be switched.">
-                    <span style="font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.12); padding: 6px 12px; border-radius: 8px; letter-spacing: 0.3px;">🔒 Fixed Language</span>
-                </div>
-            <?php else : ?>
+            <?php
+            /* A test printed in one language shows no language control at all.
+               The "🔒 Fixed Language" chip that used to stand here announced the
+               absence of a choice the student never had, and on a phone it was
+               the widest thing in the header. */
+            ?>
+            <?php if ( empty( $is_lang_locked ) ) : ?>
             <div style="display: flex; align-items: center; gap: 8px;">
                 <label style="font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7);"><?php echo esc_html( $strings['lang'] ); ?></label>
                 <select id="gep-inst-lang-select" style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: #fff; font-weight: 700; cursor: pointer; outline: none;">

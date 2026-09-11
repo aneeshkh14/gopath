@@ -82,9 +82,12 @@ class GEP_AJAX {
 
 		$attempt_id = absint( $_POST['attempt_id'] );
 		
+		// The language the paper was read in, remembered so the solution page opens
+		// the same way. It is NOT the portal language — writing it to gep_lang here
+		// is what switched the student's dashboard to whatever they last read a
+		// question in.
 		if ( isset( $_POST['lang'] ) ) {
-			if ( ! session_id() ) session_start();
-			$_SESSION['gep_lang'] = sanitize_text_field( $_POST['lang'] );
+			gep_set_exam_lang( sanitize_text_field( $_POST['lang'] ) );
 		}
 		
 		global $wpdb;
@@ -513,6 +516,10 @@ class GEP_AJAX {
 			// Sync with session immediately
 			if ( ! session_id() ) session_start();
 			$_SESSION['gep_lang'] = $lang;
+			// This is the one place the student states a language preference for the
+			// portal as a whole, so let the next paper they open follow it rather
+			// than whatever the last one happened to be read in.
+			unset( $_SESSION['gep_exam_lang'] );
 		}
 
 		wp_send_json_success( array( 'message' => 'Profile updated successfully' ) );
@@ -879,8 +886,9 @@ class GEP_AJAX {
 			wp_send_json_error( array( 'message' => 'Invalid language' ) );
 			return; // BUG-lang FIX: missing return caused duplicate $lang reassignment below
 		}
-		if ( ! session_id() ) session_start();
-		$_SESSION['gep_lang'] = $lang; // reuse already-validated $lang, no need to re-read POST
+		// Instructions screen: this chooses the language of the paper about to be
+		// taken, not the language of the portal.
+		gep_set_exam_lang( $lang ); // reuse already-validated $lang, no need to re-read POST
 		wp_send_json_success( array( 'lang' => $lang ) );
 	}
 

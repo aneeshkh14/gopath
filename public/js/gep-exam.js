@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let timerInterval;
     let remainingSeconds = examData.remaining_seconds;
     let questionStartTime = Date.now(); // NTA-style per-Q time tracking
-    let currentFontSize = 14; // Text zoom support — matches reduced default question font size (--gep-zoom-font-size)
+    let currentFontSize = 16; // Text zoom support — must match --gep-zoom-font-size in gep-exam.css
     
     // --- Sectional Timings ---
     let sectionalTimings = [];
@@ -397,13 +397,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         questions.forEach((q, i) => { q.style.display = (i === index) ? 'block' : 'none'; });
 
-        // Mobile: scroll outer container to top when question changes
-        // (On mobile we use outer-scroll strategy — .gep-exam-main scrolls, not inner div)
+        // Land on the top of the new question whichever element is doing the
+        // scrolling: the inner pane on the desktop grid, the page on a phone.
         const examMain = document.getElementById('gep-exam-main-container');
         if (examMain) examMain.scrollTop = 0;
-        // Also scroll inner display in case desktop inner-scroll is active
         const qDisp = document.getElementById('gep-question-display');
         if (qDisp) qDisp.scrollTop = 0;
+        const pageScroller = document.scrollingElement || document.documentElement;
+        if (pageScroller) pageScroller.scrollTop = 0;
         currentQuestionIndex = index;
         
         // Update header question number dynamically
@@ -442,11 +443,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Language control follows the section. One test can hold both kinds:
             // a bilingual general paper and a single-language one. Offering a
             // selector on a section with no translation would promise a switch
-            // that changes nothing.
+            // that changes nothing, so on such a section the control is simply
+            // absent — the "🔒 Fixed" chip that used to take its place said
+            // nothing the student could act on and cost header width on a phone.
             const sectionLocked = headerBlock.dataset.langLock === '1';
-            const lockChip  = document.getElementById('gep-q-pane-lang-lock');
             const langPicker = document.getElementById('gep-q-pane-lang-select');
-            if (lockChip)   lockChip.hidden = !sectionLocked;
             if (langPicker) langPicker.hidden = sectionLocked;
         }
 
@@ -1136,7 +1137,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ─── Text Zoom ───────────────────────────────────────────────────────────
     // A chosen text size should survive a reload — a proctoring lock or a dropped
     // connection mid-paper should not hand the student back a size they rejected.
-    const ZOOM_MIN = 12, ZOOM_MAX = 24, ZOOM_KEY = 'gep_zoom_font_size';
+    const ZOOM_MIN = 13, ZOOM_MAX = 27, ZOOM_KEY = 'gep_zoom_font_size';
     try {
         const savedZoom = parseInt(sessionStorage.getItem(ZOOM_KEY), 10);
         if (!isNaN(savedZoom) && savedZoom >= ZOOM_MIN && savedZoom <= ZOOM_MAX) {
@@ -1169,41 +1170,85 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // On a phone the controls sit in a 48px header and one 2px step is easy to
+    // miss, so a tap that did change the size says so. Without this the honest
+    // report is "A- / A+ don't work".
+    let zoomToastTimer;
+    function showZoomToast() {
+        let toast = document.getElementById('gep-zoom-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'gep-zoom-toast';
+            toast.className = 'gep-zoom-toast';
+            toast.setAttribute('role', 'status');
+            toast.setAttribute('aria-live', 'polite');
+            document.body.appendChild(toast);
+        }
+        const steps = Math.round((ZOOM_MAX - ZOOM_MIN) / 2) + 1;
+        const step  = Math.round((currentFontSize - ZOOM_MIN) / 2) + 1;
+        toast.textContent = 'Text size ' + step + ' / ' + steps;
+        toast.classList.add('visible');
+        clearTimeout(zoomToastTimer);
+        zoomToastTimer = setTimeout(function() { toast.classList.remove('visible'); }, 1100);
+    }
+
     zoomBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             const action = this.dataset.zoom;
+            const before = currentFontSize;
             if (action === 'in'  && currentFontSize < ZOOM_MAX) currentFontSize += 2;
             if (action === 'out' && currentFontSize > ZOOM_MIN) currentFontSize -= 2;
             applyZoom(this);
+            if (currentFontSize !== before) showZoomToast();
         });
     });
     applyZoom(null);
 
     // ─── Scrolling Logic for Question Options and Floating Up/Down Buttons ───
+    // Which element actually scrolls depends on the layout: the desktop grid
+    // scrolls #gep-question-display internally, while the phone layout drops the
+    // grid and scrolls the page. Pointing these controls at the pane
+    // unconditionally made every one of them a no-op on a phone.
     const scrollDisplayPane = document.getElementById('gep-question-display');
     const scrollButtonsWrapper = document.getElementById('gep-floating-scroll-btns');
     let scrollButtonTimeout;
 
-    if (scrollDisplayPane && scrollButtonsWrapper) {
-        scrollDisplayPane.addEventListener('scroll', function() {
+    function questionScroller() {
+        if (scrollDisplayPane && scrollDisplayPane.scrollHeight > scrollDisplayPane.clientHeight + 1) {
+            return scrollDisplayPane;
+        }
+        return document.scrollingElement || document.documentElement;
+    }
+
+    function scrollQuestionTo(top) {
+        const scroller = questionScroller();
+        scroller.scrollTo({ top: top, behavior: 'smooth' });
+    }
+
+    if (scrollButtonsWrapper) {
+        const revealScrollButtons = function() {
             scrollButtonsWrapper.classList.add('visible');
             clearTimeout(scrollButtonTimeout);
             scrollButtonTimeout = setTimeout(function() {
                 scrollButtonsWrapper.classList.remove('visible');
             }, 1500);
-        });
+        };
+        if (scrollDisplayPane) {
+            scrollDisplayPane.addEventListener('scroll', revealScrollButtons, { passive: true });
+        }
+        window.addEventListener('scroll', revealScrollButtons, { passive: true });
 
         const floatScrollUpBtn = document.getElementById('gep-float-scroll-up');
         if (floatScrollUpBtn) {
             floatScrollUpBtn.addEventListener('click', function() {
-                scrollDisplayPane.scrollTo({ top: 0, behavior: 'smooth' });
+                scrollQuestionTo(0);
             });
         }
 
         const floatScrollDownBtn = document.getElementById('gep-float-scroll-down');
         if (floatScrollDownBtn) {
             floatScrollDownBtn.addEventListener('click', function() {
-                scrollDisplayPane.scrollTo({ top: scrollDisplayPane.scrollHeight, behavior: 'smooth' });
+                scrollQuestionTo(questionScroller().scrollHeight);
             });
         }
     }
@@ -1212,24 +1257,29 @@ document.addEventListener('DOMContentLoaded', function() {
     if (scrollToOptionsButton) {
         scrollToOptionsButton.addEventListener('click', function() {
             const activeQuestionBlock = document.querySelector('.gep-question-block[style*="display: block"]');
-            if (activeQuestionBlock) {
-                const optionsList = activeQuestionBlock.querySelector('.gep-options-container');
-                if (optionsList && scrollDisplayPane) {
-                    scrollDisplayPane.scrollTo({
-                        top: optionsList.offsetTop - 20,
-                        behavior: 'smooth'
-                    });
-                }
+            if (!activeQuestionBlock) return;
+            const optionsList = activeQuestionBlock.querySelector('.gep-options-container');
+            if (!optionsList) return;
+
+            const scroller = questionScroller();
+            if (scroller === scrollDisplayPane) {
+                scroller.scrollTo({ top: optionsList.offsetTop - 20, behavior: 'smooth' });
+            } else {
+                // Page scroll: offsetTop is relative to the card, not the document,
+                // so measure against the viewport instead.
+                const headerH = parseInt(
+                    getComputedStyle(document.documentElement).getPropertyValue('--gep-header-h'), 10
+                ) || 48;
+                const top = optionsList.getBoundingClientRect().top + scroller.scrollTop - headerH - 12;
+                scroller.scrollTo({ top: top, behavior: 'smooth' });
             }
         });
     }
 
     // ─── MOBILE FIXES ────────────────────────────────────────────────────────
 
-    // 1. Scroll reference — used for pull-to-refresh prevention below
-    //    NOTE: MutationObserver removed — it caused infinite scroll loop.
+    // 1. NOTE: MutationObserver removed — it caused infinite scroll loop.
     //    Scroll-to-top on question nav is now done directly inside loadQuestion().
-    const questionDisplay = document.getElementById('gep-question-display');
 
     // 2. iOS Safari viewport height fix
     //    CSS 100vh on iOS includes the address bar. This JS sets the real height.
@@ -1243,13 +1293,10 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(setMobileViewportHeight, 300);
     });
 
-    // 3. Prevent double-tap zoom on option cards (iOS/Android)
-    document.querySelectorAll('.gep-option-card').forEach(function(card) {
-        card.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            card.click();
-        }, { passive: false });
-    });
+    // 3. Double-tap zoom on option cards is suppressed by `touch-action:
+    //    manipulation` in the stylesheet. The synthetic click that used to be
+    //    fired from touchend here also fired when the finger had been dragged
+    //    across the card to scroll, so scrolling from an option selected it.
 
     // 4. Wake Lock — keep screen on during exam (Chrome/Android)
     if ('wakeLock' in navigator) {
@@ -1267,15 +1314,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 5. Prevent pull-to-refresh during exam (stops accidental page reload)
-    document.body.addEventListener('touchmove', function(e) {
-        if (document.documentElement.scrollTop === 0 && e.touches[0].clientY > 0) {
-            // Only prevent if at top and pulling down outside question display
-            if (!questionDisplay || !questionDisplay.contains(e.target)) {
-                e.preventDefault();
-            }
-        }
-    }, { passive: false });
+    // 5. Pull-to-refresh is blocked by `overscroll-behavior-y: contain` in the
+    //    stylesheet, which the browser applies without touching normal scrolling.
+    //    The JS guard that used to live here cancelled *every* touchmove whose
+    //    target sat outside #gep-question-display while
+    //    document.documentElement.scrollTop was 0 — and on a phone the exam
+    //    scrolls the body, so that scrollTop is always 0 and clientY > 0 is true
+    //    of any touch anywhere. The result was that the page, the passage pane
+    //    and the palette could not be scrolled at all. Nothing replaces it.
 
 });
 

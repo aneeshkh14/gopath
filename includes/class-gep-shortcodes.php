@@ -371,10 +371,13 @@ class GEP_Shortcodes {
 			// lock inside the exam window.
 			$is_lang_locked = gep_test_requires_fixed_language( $test );
 			if ( $is_lang_locked ) {
-				$_SESSION['gep_lang'] = 'en';
+				// Pin the READING language for this paper only. This used to write
+				// gep_lang, so opening a single-language test reset the student's
+				// whole portal to English and left it there.
+				gep_set_exam_lang( 'en' );
 			}
 
-			$current_lang = (isset($_SESSION['gep_lang']) ? $_SESSION['gep_lang'] : (get_user_meta(get_current_user_id(), 'gep_preferred_lang', true) ?: 'en'));
+			$current_lang = gep_get_exam_lang();
 			$instructions = $test->instructions;
 
 			if ( ! $is_lang_locked && $current_lang === 'hi' && ! empty( $test->translated_data ) ) {
@@ -608,7 +611,7 @@ class GEP_Shortcodes {
 		// a translation". Only then is it right to pin the session language.
 		$is_lang_locked = gep_test_requires_fixed_language( $test, $questions );
 		if ( $is_lang_locked ) {
-			$_SESSION['gep_lang'] = 'en';
+			gep_set_exam_lang( 'en' ); // reading language for this paper, not the portal's
 		}
 
 		// Then section by section, so a mixed test locks only the parts that need it.
@@ -641,7 +644,7 @@ class GEP_Shortcodes {
 			'remaining_seconds' => $remaining_seconds,
 			'elapsed_seconds'   => $elapsed_seconds,
 			'startTime'         => time(),
-			'lang'              => isset( $_SESSION['gep_lang'] ) ? $_SESSION['gep_lang'] : 'en',
+			'lang'              => gep_get_exam_lang(),
 			'lang_locked'       => $is_lang_locked,
 			'section_lang_locked' => $section_lang_locked,
 			'saved_answers'     => $saved_answers,

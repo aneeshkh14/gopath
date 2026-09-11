@@ -4,10 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 if ( ! session_id() ) {
     @session_start();
 }
-$current_lang = isset($_SESSION['gep_lang']) ? $_SESSION['gep_lang'] : 'en';
-if ($current_lang !== 'en' && $current_lang !== 'hi') {
-    $current_lang = 'en';
-}
+// The reading language of this paper — not the portal's UI language. See
+// gep_get_exam_lang() in gopath-exam-portal.php.
+$current_lang = gep_get_exam_lang();
 
 // Ensure sections_map is set (computed in class-gep-shortcodes.php)
 if ( ! isset($sections_map) || empty($sections_map) ) {
@@ -158,18 +157,14 @@ foreach ( $section_counters as $cat_key => $val ) {
 
 
 
-        <style>
-            #gep-active-passage-pane::-webkit-scrollbar,
-            #gep-question-display::-webkit-scrollbar {
-                width: 0;
-                display: none;
-            }
-            #gep-active-passage-pane,
-            #gep-question-display {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-            }
-        </style>
+        <?php
+        /* A block here used to hide the scrollbars of the passage and question
+           panes. A pane that scrolls with no scrollbar looks like a pane whose
+           text has simply been cut off, which is how the passage box read on a
+           phone. The stylesheet styles those scrollbars as a slim 6px track
+           instead — see "Custom scrollbars for scrollable panes" in
+           public/css/gep-exam.css. */
+        ?>
         <div id="gep-exam-split-wrapper" style="display:flex; flex: 1; min-height: 0; min-width: 0; gap: 20px; margin-bottom: 10px;">
 
             <!-- Passage Pane (Left Column) -->
@@ -185,7 +180,13 @@ foreach ( $section_counters as $cat_key => $val ) {
                     </span>
                     <span class="gep-passage-toggle-icon" aria-hidden="true">▾</span>
                 </button>
-                <div id="gep-passage-body" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px; font-size: 15px; line-height: 1.6; color: #1e293b;">
+                <?php
+                /* Size and leading come from the stylesheet, not from here: an
+                   inline font-size beats the A+/A- variable and an inline
+                   line-height beat the spacing rules, so the passage stayed small
+                   and tight no matter what the student pressed. */
+                ?>
+                <div id="gep-passage-body" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px; color: #1e293b;">
 
                     <!-- Dynamically populated from #gep-passages-container -->
                 </div>
@@ -213,11 +214,13 @@ foreach ( $section_counters as $cat_key => $val ) {
                         <!-- Marks for the active question, kept in sync by gep-exam.js -->
                         <span class="gep-q-pane-marks" id="gep-q-pane-marks" aria-live="polite"></span>
                         <?php
-                        /* Language control. Both states are rendered and gep-exam.js shows
-                           whichever fits the section you are in, because one test can hold
-                           both: UGC NET Sanskrit is a bilingual Paper 1 followed by a
-                           Sanskrit Paper 2. A section with no translation shows the lock —
-                           a selector there would change nothing. */
+                        /* Language control. It is rendered once and gep-exam.js shows or
+                           hides it per section, because one test can hold both kinds:
+                           UGC NET Sanskrit is a bilingual Paper 1 followed by a Sanskrit
+                           Paper 2. On a section with no translation the control is simply
+                           not shown. It used to be replaced by a "🔒 Fixed" chip, which
+                           told the student nothing they could do anything about and ate
+                           header width on a phone — an empty space says the same thing. */
                         ?>
                         <?php
                         // Paint the right control for the question that loads first, so the
@@ -227,7 +230,6 @@ foreach ( $section_counters as $cat_key => $val ) {
                             $first_q && ! empty( $section_lang_locked[ strval( $first_q->category_id ) ] )
                         );
                         ?>
-                        <span class="gep-q-pane-lang-lock" id="gep-q-pane-lang-lock" title="This section is printed in one language only."<?php echo $first_section_locked ? '' : ' hidden'; ?>>🔒 <span class="gep-lock-word">Fixed</span></span>
                         <?php if ( empty( $is_lang_locked ) ) : ?>
                             <select class="gep-nta-lang-select" id="gep-q-pane-lang-select" aria-label="View question in"<?php echo $first_section_locked ? ' hidden' : ''; ?>>
                                 <option value="en"<?php selected($current_lang, 'en'); ?>>English</option>

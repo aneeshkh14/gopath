@@ -269,7 +269,7 @@ $ui_strings = array(
         'short'       => 'लघु उत्तर',
     )
 );
-$_gep_lang = (isset($_SESSION['gep_lang']) ? $_SESSION['gep_lang'] : (get_user_meta(get_current_user_id(), 'gep_preferred_lang', true) ?: 'en'));
+$_gep_lang = gep_get_exam_lang(); // the language the paper was read in
 // A test that is single-language throughout reviews in the default content slot,
 // regardless of session/user preference — matching the exam-time lock. Passing the
 // questions lets that be decided from the content; a mixed test (a bilingual Paper 1
@@ -653,8 +653,8 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 /* No side padding — the question/solution text runs edge to edge so more words
    fit on a single line. */
 .gep-qr-body { padding: 4px 0 14px; }
-.gep-qr-text { font-size: 15px; font-weight: 500; color: #0f172a; line-height: 1.6; margin-bottom: 12px; }
-.gep-qr-text p { margin: 0 0 8px; }
+.gep-qr-text { font-size: 16.5px; font-weight: 500; color: #0f172a; line-height: 1.75; margin-bottom: 12px; }
+.gep-qr-text p { margin: 0 0 12px; }
 .gep-qr-text p:last-child { margin-bottom: 0; }
 
 /* Option Rows — thinner, lighter, with the letter badge vertically centred */
@@ -687,7 +687,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 }
 .gep-opt-row.is-correct .gep-opt-letter { background: #10b981; color: #fff; }
 .gep-opt-row.is-wrong-user .gep-opt-letter { background: #ef4444; color: #fff; }
-.gep-opt-text { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 400; color: #0f172a; line-height: 1.5; }
+.gep-opt-text { flex: 1; min-width: 0; font-size: 15px; font-weight: 400; color: #0f172a; line-height: 1.6; }
 .gep-opt-text p { margin: 0; }
 .gep-opt-icon { font-size: 14px; flex-shrink: 0; align-self: center; margin-top: 0; }
 
@@ -721,14 +721,24 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     margin-bottom: 6px;
 }
 .gep-exp-body {
-    font-size: 14px;
+    font-size: 15.5px;
     color: #0f172a;       /* was a faded slate grey — now full-strength near-black */
     opacity: 1;
-    line-height: 1.65;
+    line-height: 1.75;
     font-weight: 400;
 }
-.gep-exp-body p { margin: 0 0 8px; }
+.gep-exp-body p { margin: 0 0 12px; }
 .gep-exp-body p:last-child { margin-bottom: 0; }
+/* Solutions are mostly bulleted notes pasted from source books. Without spacing
+   between the items the whole box read as one grey slab. */
+.gep-exp-body ul,
+.gep-exp-body ol,
+.gep-qr-text ul,
+.gep-qr-text ol { margin: 0 0 12px; padding-left: 22px; }
+.gep-exp-body li,
+.gep-qr-text li { margin-bottom: 8px; line-height: 1.75; }
+.gep-exp-body li:last-child,
+.gep-qr-text li:last-child { margin-bottom: 0; }
 
 /* Question Source — its own box at the very end of the solution */
 .gep-source-box {

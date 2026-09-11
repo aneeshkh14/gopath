@@ -821,6 +821,52 @@ if ( ! function_exists( 'gep_test_requires_fixed_language' ) ) {
 	}
 }
 
+/**
+ * The language a paper is being READ in.
+ *
+ * This is deliberately not $_SESSION['gep_lang']. That key is the language of
+ * the portal itself — the dashboard, the results list, the navigation — and it
+ * follows the student's saved profile preference. The reading language is a
+ * per-paper choice made on the instructions screen or in the exam header, and it
+ * used to be written straight into gep_lang: picking Hindi to read one question,
+ * or merely opening a single-language paper (which pinned the key to 'en'),
+ * re-language the student's whole dashboard behind their back.
+ *
+ * Falls back to the portal language, so a Hindi-reading student still opens a
+ * paper in Hindi by default.
+ */
+if ( ! function_exists( 'gep_get_exam_lang' ) ) {
+	function gep_get_exam_lang() {
+		if ( ! session_id() && ! headers_sent() ) {
+			@session_start();
+		}
+		if ( isset( $_SESSION['gep_exam_lang'] ) ) {
+			$lang = $_SESSION['gep_exam_lang'];
+		} elseif ( isset( $_SESSION['gep_lang'] ) ) {
+			$lang = $_SESSION['gep_lang'];
+		} else {
+			$lang = get_user_meta( get_current_user_id(), 'gep_preferred_lang', true );
+		}
+		return in_array( $lang, array( 'en', 'hi' ), true ) ? $lang : 'en';
+	}
+}
+
+/**
+ * Set the reading language for the current paper. Never touches gep_lang.
+ */
+if ( ! function_exists( 'gep_set_exam_lang' ) ) {
+	function gep_set_exam_lang( $lang ) {
+		if ( ! in_array( $lang, array( 'en', 'hi' ), true ) ) {
+			return false;
+		}
+		if ( ! session_id() && ! headers_sent() ) {
+			@session_start();
+		}
+		$_SESSION['gep_exam_lang'] = $lang;
+		return true;
+	}
+}
+
 // Dynamic & Physical XML Sitemap Generator for Google / Bing Search Engines
 if ( ! function_exists( 'gep_write_physical_sitemap' ) ) {
 	function gep_write_physical_sitemap() {

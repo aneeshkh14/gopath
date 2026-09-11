@@ -54,6 +54,48 @@ body.gep-exam-locked {
     }
 }
 
+/* Pull-to-refresh would reload the page mid-paper, so it has to be stopped —
+   but stopping it by cancelling touchmove in script cancels ordinary scrolling
+   with it, which is what left the exam unscrollable on phones. The browser can
+   do exactly this one thing on its own. `contain` also keeps a scroll that
+   reaches the end of the passage pane or the palette from chaining out to the
+   page behind them. */
+html:has(body.gep-exam-locked),
+body.gep-exam-locked {
+    overscroll-behavior-y: contain;
+}
+#gep-question-display,
+#gep-active-passage-pane,
+#gep-passage-body,
+.gep-palette-grid-container,
+.gep-exam-sidebar {
+    overscroll-behavior: contain;
+}
+
+/* Every pane the student scrolls with a finger needs momentum scrolling and a
+   touch-action that lets the browser handle the pan itself. */
+#gep-question-display,
+#gep-active-passage-pane,
+#gep-passage-body,
+.gep-palette-grid-container,
+.gep-exam-sidebar,
+.gep-popup-modal-body {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+
+/* Tap targets that must not double-tap-zoom or wait out the 300ms click delay.
+   This replaces a touchend handler that synthesised the click in script, which
+   also fired when the finger had merely been dragged across a card to scroll. */
+.gep-option-card,
+.gep-palette-btn,
+.gep-exam-footer .gep-btn,
+.gep-zoom-btn,
+.gep-palette-toggle,
+.gep-passage-pane-header {
+    touch-action: manipulation;
+}
+
 
 .gep-exam-layout {
     display: grid;
@@ -2644,12 +2686,52 @@ span.sa-text.active { display: inline; }
 .gep-ar-reason > p:last-child { margin-bottom: 0 !important; }
 .gep-q-text-wrapper > .gep-table-scroll:last-child { margin-bottom: 0 !important; }
 
+/* ─── Breathing room inside question and passage text ──────────────────────
+   Removing the trailing margin above is about the gap *after* the question.
+   Between its own sentences the text had none: multi-line Sanskrit and Hindi
+   questions ran together into one block with no separation between clauses,
+   while the instructions screen — same portal, same content — was comfortably
+   spaced at line-height 1.7 with 10px between list items. Match it here. */
+.gep-q-text-wrapper,
+.gep-q-content,
+.gep-ar-assertion,
+.gep-ar-reason,
+#gep-active-passage-pane,
+.gep-passage-content {
+    line-height: 1.75 !important;
+}
+.gep-q-text-wrapper > p,
+.gep-q-content > p,
+.gep-ar-assertion > p,
+.gep-ar-reason > p,
+.gep-passage-content p,
+#gep-passage-body p {
+    margin: 0 0 12px !important;
+}
+/* Numbered/lettered lists carry most of the matching and "which of the
+   following" questions, and were the tightest part of the block. */
+.gep-q-text-wrapper li,
+.gep-q-content li,
+.gep-passage-content li,
+#gep-passage-body li {
+    margin-bottom: 8px !important;
+    line-height: 1.75 !important;
+}
+.gep-q-text-wrapper li:last-child,
+.gep-q-content li:last-child { margin-bottom: 0 !important; }
+
+/* Options need the same treatment for the long ones, but an option is a single
+   answer rather than prose — keep its internal paragraphs tight and let the gap
+   between option cards do the separating. */
+.gep-opt-content { line-height: 1.6 !important; }
+
 
 /* ─── Text Zoom via CSS Variable ─────────────────────────────────────────── */
-/* Default lowered from 16px so the main question text takes noticeably less
-   vertical space by default while staying readable; A+/A- still zoom from here. */
+/* 14px was chosen to save vertical space, but it read as small on a phone and
+   the paper it has to mirror is set larger than that. 16px is the base; A+/A-
+   move from here, and a student who wants the compact view can still get it. */
 :root {
-    --gep-zoom-font-size: 14px;
+    --gep-zoom-font-size: 16px;
 }
 
 /* Base Question Text zoom */
@@ -3059,26 +3141,40 @@ span.sa-text.active { display: inline; }
     }
 }
 
-/* Custom scrollbars for scrollable panes inside exam window */
+/* Custom scrollbars for scrollable panes inside exam window.
+   These must stay visible: hiding them is what made the passage box look like a
+   pane whose text had been cut off rather than one that scrolls. */
 #gep-active-passage-pane::-webkit-scrollbar,
+#gep-passage-body::-webkit-scrollbar,
 #gep-question-display::-webkit-scrollbar {
     width: 6px !important;
     height: 6px !important;
     display: block !important;
 }
 #gep-active-passage-pane::-webkit-scrollbar-track,
+#gep-passage-body::-webkit-scrollbar-track,
 #gep-question-display::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.03) !important;
     border-radius: 10px !important;
 }
 #gep-active-passage-pane::-webkit-scrollbar-thumb,
+#gep-passage-body::-webkit-scrollbar-thumb,
 #gep-question-display::-webkit-scrollbar-thumb {
     background: rgba(100, 116, 139, 0.4) !important;
     border-radius: 10px !important;
 }
 #gep-active-passage-pane::-webkit-scrollbar-thumb:hover,
+#gep-passage-body::-webkit-scrollbar-thumb:hover,
 #gep-question-display::-webkit-scrollbar-thumb:hover {
     background: rgba(100, 116, 139, 0.6) !important;
+}
+/* Firefox has no ::-webkit-scrollbar; it needs the standard property instead,
+   and its default is "none" nowhere — the old inline block set it to none. */
+#gep-active-passage-pane,
+#gep-passage-body,
+#gep-question-display {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.45) rgba(0, 0, 0, 0.03);
 }
 
 /* E2E CSS rule assertions matching */
@@ -3590,12 +3686,14 @@ span.sa-text.active { display: inline; }
     #gep-exam-split-wrapper:not(.has-passage) #gep-active-passage-pane {
         display: none !important;
     }
+    /* The pane itself does not scroll — its header stays put and #gep-passage-body
+       scrolls underneath it (see the ≤992px block near the end of this file). A
+       second scroll container here would put a scrollbar on the header too. */
     #gep-exam-split-wrapper.has-passage #gep-active-passage-pane {
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
         width: 100% !important;
-        max-height: 200px !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
+        overflow: hidden !important;
         border-right: none !important;
         border-bottom: 2px solid #e2e8f0 !important;
         border-radius: 10px 10px 0 0 !important;
@@ -3604,11 +3702,9 @@ span.sa-text.active { display: inline; }
         margin-bottom: 0 !important;
     }
     #gep-passage-body {
-        height: auto !important;
-        overflow: visible !important;
         padding: 12px !important;
         font-size: var(--gep-zoom-font-size) !important;
-        line-height: 1.6 !important;
+        line-height: 1.75 !important;
     }
 
     /* ── 8. Question wrapper: simple block, no height limit ── */
@@ -3856,6 +3952,50 @@ span.sa-text.active { display: inline; }
     box-shadow: 0 0 0 1px rgba(255,255,255,0.15) inset;
 }
 
+/* Confirmation that a tap on A+/A- landed. A single 2px step on a phone is
+   easy to miss, and a control that looks inert reads as a broken one. */
+.gep-zoom-toast {
+    position: fixed;
+    left: 50%;
+    top: calc(var(--gep-header-h) + 12px);
+    transform: translate(-50%, -8px);
+    z-index: 9998;
+    padding: 8px 16px;
+    border-radius: 100px;
+    background: rgba(15, 23, 42, 0.92);
+    color: #f8fafc;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.gep-zoom-toast.visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+@media (prefers-reduced-motion: reduce) {
+    .gep-zoom-toast { transition: none; }
+}
+
+/* The A+/A- buttons carried 2px of padding and no minimum box, which on a phone
+   is a target well under the 44px guideline sitting between the timer and EXIT —
+   missing it and hitting a neighbour is what "A- A+ doesn't work" looks like. */
+@media (hover: none) and (pointer: coarse) {
+    .gep-exam-header .gep-zoom-btn {
+        min-width: 34px !important;
+        min-height: 34px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 13px !important;
+        touch-action: manipulation;
+    }
+    .gep-exam-header .gep-zoom-controls { gap: 3px !important; }
+}
+
 /* ─── Responsive tables — fit the screen, do not scroll ────────────────────
    Match-the-following tables were the worst offender on phones: the reader had
    to swipe sideways inside the question just to see column II. Three things had
@@ -4034,7 +4174,14 @@ span.sa-text.active { display: inline; }
     .gep-exam-header .gep-header-meta { max-width: 66px !important; }
     .gep-exam-header .gep-test-title  { max-width: 66px !important; font-size: 10px !important; }
     .gep-exam-header .gep-exam-timer  { font-size: 11px !important; }
-    .gep-exam-header .gep-zoom-controls .gep-zoom-btn { padding: 2px 4px !important; font-size: 11px !important; }
+    /* Still the largest target the 320-360px header has room for alongside the
+       timer, the palette toggle and EXIT. */
+    .gep-exam-header .gep-zoom-controls .gep-zoom-btn {
+        padding: 2px 4px !important;
+        font-size: 11px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+    }
     .gep-exam-header .gep-exit-btn { padding: 6px 7px !important; font-size: 10px !important; margin-left: 2px !important; }
 }
 
@@ -4193,12 +4340,25 @@ span.sa-text.active { display: inline; }
         position: sticky; top: 0; z-index: 2;   /* the label stays while the passage scrolls */
     }
     #gep-exam-split-wrapper.has-passage #gep-passage-body {
+        flex: 1 1 auto !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
         min-height: 0 !important;
     }
     #gep-exam-split-wrapper.has-passage #gep-active-passage-pane.collapsed {
         max-height: none !important;
+    }
+
+    /* A passage taller than its box is the normal case and the student has to be
+       able to tell. The scrollbar says so now that it is no longer hidden (see
+       "Custom scrollbars for scrollable panes"), so give it enough width to be
+       seen at arm's length on a phone rather than a 6px hairline. */
+    #gep-exam-split-wrapper.has-passage #gep-passage-body::-webkit-scrollbar {
+        width: 8px !important;
+    }
+    #gep-exam-split-wrapper.has-passage #gep-passage-body::-webkit-scrollbar-thumb {
+        background: rgba(100, 116, 139, 0.5) !important;
+        border-radius: 10px !important;
     }
 }
 
@@ -4377,19 +4537,9 @@ span.sa-text.active { display: inline; }
 }
 .gep-q-pane-marks .pos { color: #047857; background: rgba(4, 120, 87, 0.12); }
 .gep-q-pane-marks .neg { color: #b91c1c; background: rgba(185, 28, 28, 0.12); }
-/* The header carries both language controls and shows one; make sure no rule here
-   accidentally un-hides the other. */
+/* The language control is hidden per section rather than swapped for a chip;
+   make sure no rule here accidentally un-hides it. */
 .gep-q-pane-right [hidden] { display: none !important; }
-.gep-q-pane-lang-lock {
-    font-size: 11px;
-    font-weight: 800;
-    color: #475569;
-    background: #fff;
-    border: 1px solid #cbd5e1;
-    padding: 4px 8px;
-    border-radius: 6px;
-    white-space: nowrap;
-}
 .gep-q-pane-header .gep-nta-lang-select {
     height: 30px;
     padding: 0 6px;
@@ -4407,12 +4557,8 @@ span.sa-text.active { display: inline; }
     .gep-q-pane-header { padding: 7px 10px; gap: 8px; }
     .gep-q-pane-label  { font-size: 12px; }
     .gep-q-pane-section { font-size: 10px; padding: 2px 8px; max-width: 32vw; }
-    .gep-q-pane-lang-lock { padding: 4px 7px; }
 }
-/* Below ~380px the row wraps to two lines with the word spelled out, which costs
-   more than the word explains — the padlock and its tooltip carry it from here. */
 @media (max-width: 379px) {
-    .gep-q-pane-lang-lock .gep-lock-word { display: none; }
     .gep-q-pane-header .gep-nta-lang-select { max-width: 86px; font-size: 11px; }
 }
 
