@@ -211,6 +211,26 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, shrink-to-fit=no">
 
+    <?php
+    /* Theme, applied before the first paint.
+       This has to be an inline, synchronous script in <head>: a stored choice
+       applied from a deferred bundle would let the page paint in the wrong
+       palette first, and a white flash in a dark room is exactly what someone
+       turning dark mode on is trying to avoid. With no stored choice the
+       attribute is left off entirely, which lets the prefers-color-scheme block
+       in gep-theme.css follow the device. */
+    ?>
+    <script>
+    (function () {
+        try {
+            var t = localStorage.getItem('gep-theme');
+            if (t === 'dark' || t === 'light') {
+                document.documentElement.setAttribute('data-gep-theme', t);
+            }
+        } catch (e) { /* storage blocked — fall back to the OS preference */ }
+    })();
+    </script>
+
     <title><?php echo esc_html( $seo_title ); ?></title>
     <meta name="description" content="<?php echo esc_attr( $seo_desc ); ?>">
     <meta name="keywords" content="<?php echo esc_attr( $seo_keywords ); ?>">
@@ -301,51 +321,67 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
 
 
         
-        /* Sovereign Active Theme overrides */
+        /* Portal surfaces.
+           These used to be a "sovereign" block that painted #09090b on the
+           routes named in $is_sovereign_view and left the other four light —
+           under the same permanently dark sidebar and header. Colour is now a
+           theme the student chooses rather than a property of the route, so the
+           rules read from the tokens in public/css/gep-theme.css and every view
+           gets the same treatment. The selector keeps the sovereign class only
+           so it still wins over the older per-view rules in gep-dashboard.css. */
+        .gep-dashboard-container,
         .gep-dashboard-container.gep-sovereign-active {
-            background: #09090b !important;
+            background: var(--gep-c-bg) !important;
         }
+        .gep-dashboard-container .gep-dashboard-content,
         .gep-dashboard-container.gep-sovereign-active .gep-dashboard-content {
-            background: #09090b !important;
+            background: var(--gep-c-bg) !important;
             overflow-x: hidden !important;
         }
+        .gep-dashboard-container .gep-main-inner,
         .gep-dashboard-container.gep-sovereign-active .gep-main-inner {
-            background: #09090b !important;
+            background: var(--gep-c-bg) !important;
         }
+        .gep-dashboard-container .gep-dashboard-header,
         .gep-dashboard-container.gep-sovereign-active .gep-dashboard-header {
-            background: #09090b !important;
-            border-bottom-color: rgba(255,255,255,0.08) !important;
-            color: #fff !important;
+            background: var(--gep-c-header) !important;
+            border-bottom-color: var(--gep-c-header-border) !important;
+            color: var(--gep-c-header-text) !important;
         }
+        .gep-dashboard-container .gep-header-search input,
         .gep-dashboard-container.gep-sovereign-active .gep-header-search input {
-            background: rgba(255, 255, 255, 0.05) !important;
-            border-color: rgba(255, 255, 255, 0.1) !important;
-            color: #fff !important;
+            background: var(--gep-c-field) !important;
+            border-color: var(--gep-c-field-border) !important;
+            color: var(--gep-c-field-text) !important;
         }
+        .gep-dashboard-container .gep-header-search input:focus,
         .gep-dashboard-container.gep-sovereign-active .gep-header-search input:focus {
-            background: rgba(255, 255, 255, 0.08) !important;
-            border-color: rgba(99, 102, 241, 0.5) !important;
+            border-color: var(--gep-c-accent) !important;
         }
+        .gep-dashboard-container .gep-mobile-toggle,
         .gep-dashboard-container.gep-sovereign-active .gep-mobile-toggle {
-            color: #fff !important;
+            color: var(--gep-c-header-text) !important;
         }
+        .gep-dashboard-container .gep-header-streak,
         .gep-dashboard-container.gep-sovereign-active .gep-header-streak {
-            color: #fff !important;
+            color: var(--gep-c-header-text) !important;
             background: transparent !important;
             border: none !important;
         }
+        .gep-dashboard-container .gep-header-avatar,
         .gep-dashboard-container.gep-sovereign-active .gep-header-avatar {
-            background: rgba(255,255,255,0.1) !important;
-            color: #fff !important;
-            border: 1px solid rgba(255,255,255,0.2) !important;
+            background: var(--gep-c-surface-3) !important;
+            color: var(--gep-c-text) !important;
+            border: 1px solid var(--gep-c-border-strong) !important;
         }
+        .gep-dashboard-container .gep-watch-breadcrumbs .active,
         .gep-dashboard-container.gep-sovereign-active .gep-watch-breadcrumbs .active {
-            color: #fff !important;
+            color: var(--gep-c-text) !important;
         }
+        .gep-dashboard-container .gep-watch-breadcrumbs a,
         .gep-dashboard-container.gep-sovereign-active .gep-watch-breadcrumbs a {
-            color: #94a3b8 !important;
+            color: var(--gep-c-text-muted) !important;
         }
-        /* Portal footer dark theme — handled by gep-dashboard.css */
         
         /* Mobile menu layout fixes */
         @media (max-width: 1024px) {
@@ -543,6 +579,17 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                     <div class="gep-header-streak" title="Daily Streak">
                         🔥 <?php echo isset($user_stats) ? $user_stats['streak'] : 0; ?>
                     </div>
+                    <?php
+                    /* Light / dark switch. Students revise late at night, and the
+                       portal used to decide its own complexion per route with no
+                       say from them. The button only flips data-gep-theme on
+                       <html>; the palettes live in public/css/gep-theme.css. */
+                    ?>
+                    <button type="button" class="gep-theme-toggle" id="gep-theme-toggle"
+                            aria-label="Switch between light and dark theme" title="Light / dark theme">
+                        <span class="gep-theme-icon-light" aria-hidden="true">🌙</span>
+                        <span class="gep-theme-icon-dark" aria-hidden="true">☀️</span>
+                    </button>
                     <a href="<?php echo add_query_arg('view', 'get-pass', (string) gep_get_url('dashboard')); ?>" class="gep-btn-pass">Get Pass</a>
                     <a href="<?php echo add_query_arg('view', 'profile', (string) gep_get_url('dashboard')); ?>" class="gep-header-avatar" title="View Profile">
                         <?php 

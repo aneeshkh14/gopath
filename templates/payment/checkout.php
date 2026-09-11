@@ -134,7 +134,7 @@ if ( ! isset($item) || ! $item ) {
 <style>
 .gep-sovereign-checkout-wrap {
     position: relative;
-    background: #f8fafc;
+    background: var(--gep-c-surface-2);
     min-height: 100vh;
     padding: 80px 20px;
     overflow: hidden;
@@ -179,13 +179,13 @@ if ( ! isset($item) || ! $item ) {
 .gep-checkout-header h1 {
     font-size: 48px;
     font-weight: 950;
-    color: #0f172a;
+    color: var(--gep-c-text);
     letter-spacing: -2px;
     margin-bottom: 15px;
 }
 
 .gep-checkout-header p {
-    color: #64748b;
+    color: var(--gep-c-text-muted);
     font-size: 18px;
     font-weight: 500;
 }
@@ -198,7 +198,7 @@ if ( ! isset($item) || ! $item ) {
 }
 
 .gep-checkout-card {
-    background: #fff;
+    background: var(--gep-c-surface);
     border-radius: 32px;
     border: 1px solid rgba(0,0,0,0.05);
     padding: 40px;
@@ -215,22 +215,22 @@ if ( ! isset($item) || ! $item ) {
 .card-header h3 {
     font-size: 20px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--gep-c-text);
 }
 
 .item-count {
     font-size: 12px;
     font-weight: 700;
-    background: #f1f5f9;
+    background: var(--gep-c-surface-3);
     padding: 4px 10px;
     border-radius: 8px;
-    color: #64748b;
+    color: var(--gep-c-text-muted);
 }
 
 .item-preview {
     display: flex;
     gap: 20px;
-    background: #f8fafc;
+    background: var(--gep-c-surface-2);
     padding: 20px;
     border-radius: 20px;
     margin-bottom: 30px;
@@ -239,7 +239,7 @@ if ( ! isset($item) || ! $item ) {
 .item-icon {
     width: 60px;
     height: 60px;
-    background: #fff;
+    background: var(--gep-c-surface);
     border-radius: 16px;
     display: flex;
     align-items: center;
@@ -251,14 +251,14 @@ if ( ! isset($item) || ! $item ) {
 .item-info .item-type {
     font-size: 10px;
     font-weight: 900;
-    color: #94a3b8;
+    color: var(--gep-c-text-muted);
     letter-spacing: 1px;
 }
 
 .item-info .item-title {
     font-size: 18px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--gep-c-text);
     margin-top: 4px;
 }
 
@@ -268,12 +268,12 @@ if ( ! isset($item) || ! $item ) {
     margin-bottom: 15px;
     font-size: 15px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--gep-c-text-muted);
 }
 
 .summary-divider {
     height: 1px;
-    background: #f1f5f9;
+    background: var(--gep-c-surface-3);
     margin: 25px 0;
 }
 
@@ -284,7 +284,7 @@ if ( ! isset($item) || ! $item ) {
 .summary-row.total .label {
     font-size: 18px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--gep-c-text);
 }
 
 .final-price-wrap {
@@ -312,7 +312,7 @@ if ( ! isset($item) || ! $item ) {
 
 .gep-coupon-section-modern .input-wrap {
     display: flex;
-    background: #f1f5f9;
+    background: var(--gep-c-surface-3);
     padding: 6px;
     border-radius: 16px;
     border: 1px solid transparent;
@@ -320,7 +320,7 @@ if ( ! isset($item) || ! $item ) {
 }
 
 .gep-coupon-section-modern .input-wrap:focus-within {
-    background: #fff;
+    background: var(--gep-c-surface);
     border-color: #2563eb;
     box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
@@ -332,7 +332,7 @@ if ( ! isset($item) || ! $item ) {
     padding: 10px 15px;
     font-weight: 700;
     font-size: 13px;
-    color: #1e293b;
+    color: var(--gep-c-text);
     outline: none !important;
 }
 
@@ -393,7 +393,7 @@ if ( ! isset($item) || ! $item ) {
     align-items: center;
     margin-top: 30px;
     padding-top: 25px;
-    border-top: 1px dashed #e2e8f0;
+    border-top: 1px dashed var(--gep-c-border);
 }
 
 .secure-badge {
@@ -408,7 +408,7 @@ if ( ! isset($item) || ! $item ) {
 .payment-methods {
     font-size: 11px;
     font-weight: 700;
-    color: #94a3b8;
+    color: var(--gep-c-text-muted);
 }
 
 .checkout-info-column {
@@ -435,7 +435,7 @@ if ( ! isset($item) || ! $item ) {
 .info-icon {
     width: 44px;
     height: 44px;
-    background: #fff;
+    background: var(--gep-c-surface);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -448,13 +448,13 @@ if ( ! isset($item) || ! $item ) {
 .info-text h5 {
     font-size: 16px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--gep-c-text);
     margin-bottom: 4px;
 }
 
 .info-text p {
     font-size: 14px;
-    color: #64748b;
+    color: var(--gep-c-text-muted);
     line-height: 1.4;
     margin: 0;
 }
@@ -481,8 +481,8 @@ if ( ! isset($item) || ! $item ) {
     .item-info .item-title { font-size: 15px; }
     .final-price-wrap .value { font-size: 28px; }
     .gep-coupon-section-modern .input-wrap { flex-direction: column; gap: 8px; background: transparent; padding: 0; }
-    .gep-coupon-section-modern input { background: #f1f5f9; border-radius: 12px; width: 100%; border: 1.5px solid transparent; }
-    .gep-coupon-section-modern input:focus { background: #fff; border-color: #2563eb; }
+    .gep-coupon-section-modern input { background: var(--gep-c-surface-3); border-radius: 12px; width: 100%; border: 1.5px solid transparent; }
+    .gep-coupon-section-modern input:focus { background: var(--gep-c-surface); border-color: #2563eb; }
     .gep-coupon-section-modern button { width: 100%; height: 44px; border-radius: 12px; }
     .btn-pay-sovereign { padding: 15px; font-size: 16px; border-radius: 14px; }
     .secure-footer { flex-direction: column; gap: 12px; text-align: center; }

@@ -413,7 +413,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
    use the whole screen instead of sitting in a 1400px column with black gutters. */
 .gep-dashboard-container.gep-sovereign-active .gep-dashboard-content,
 .gep-dashboard-container.gep-sovereign-active .gep-main-inner {
-    background: #f4f6f9 !important;
+    background: var(--gep-c-bg) !important;
 }
 .gep-result-wrap {
     max-width: 100%;
@@ -427,9 +427,9 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 
 /* Hero Summary Card */
 .gep-result-hero {
-    background: #fff;
+    background: var(--gep-c-surface);
     border-radius: 32px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--gep-c-border);
     overflow: hidden;
     margin-bottom: 28px;
     box-shadow: 0 4px 32px rgba(0,0,0,0.06);
@@ -460,7 +460,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-result-title {
     font-size: 22px;
     font-weight: 900;
-    color: #0f172a;
+    color: var(--gep-c-text);
     letter-spacing: -0.5px;
     margin: 0 0 24px;
     line-height: 1.2;
@@ -476,8 +476,8 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 @media(max-width:700px) { .gep-metrics-row { grid-template-columns: repeat(2,1fr); } }
 
 .gep-metric-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--gep-c-surface-2);
+    border: 1px solid var(--gep-c-border);
     border-radius: 12px;
     padding: 16px 12px;
     text-align: center;
@@ -494,7 +494,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-metric-label {
     font-size: 11px;
     font-weight: 700;
-    color: #94a3b8;
+    color: var(--gep-c-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.8px;
 }
@@ -513,18 +513,18 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1px;
-    background: #e2e8f0;
+    background: var(--gep-c-surface-3);
     border-radius: 16px;
     overflow: hidden;
     margin-bottom: 36px;
 }
 .gep-score-cell {
-    background: #f8fafc;
+    background: var(--gep-c-surface-2);
     padding: 20px 16px;
     text-align: center;
 }
-.gep-score-cell .val { font-size: 26px; font-weight: 900; color: #0f172a; letter-spacing: -1px; display: block; }
-.gep-score-cell .lbl { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-top: 4px; }
+.gep-score-cell .val { font-size: 26px; font-weight: 900; color: var(--gep-c-text); letter-spacing: -1px; display: block; }
+.gep-score-cell .lbl { font-size: 11px; font-weight: 700; color: var(--gep-c-text-muted); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-top: 4px; }
 
 /* Action Buttons */
 .gep-result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
@@ -539,44 +539,44 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-btn-result-primary:hover { transform: translateY(-2px); filter: brightness(1.1); color: #fff; text-decoration: none; }
 .gep-btn-result-secondary {
     padding: 14px 32px;
-    background: #f1f5f9;
-    color: #475569; border: 1px solid #e2e8f0; border-radius: 14px;
+    background: var(--gep-c-surface-3);
+    color: var(--gep-c-text-muted); border: 1px solid var(--gep-c-border); border-radius: 14px;
     font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none;
     display: inline-flex; align-items: center; gap: 8px;
     transition: all 0.2s;
 }
-.gep-btn-result-secondary:hover { background: #e2e8f0; color: #334155; text-decoration: none; }
+.gep-btn-result-secondary:hover { background: var(--gep-c-surface-3); color: var(--gep-c-text); text-decoration: none; }
 
 /* Subject Grid */
 .gep-subject-section {
-    background: #fff;
+    background: var(--gep-c-surface);
     border-radius: 24px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--gep-c-border);
     padding: 32px;
     margin-bottom: 28px;
     box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .gep-section-title {
-    font-size: 16px; font-weight: 900; color: #0f172a;
+    font-size: 16px; font-weight: 900; color: var(--gep-c-text);
     letter-spacing: -0.3px; margin: 0 0 24px;
     display: flex; align-items: center; gap: 10px;
 }
 .gep-subject-row {
     display: flex; align-items: center; gap: 16px;
     padding: 12px 0;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--gep-c-border);
 }
 .gep-subject-row:last-child { border-bottom: none; }
-.gep-subject-name { flex: 1; font-size: 14px; font-weight: 700; color: #334155; }
-.gep-subject-bar-wrap { flex: 2; height: 8px; background: #f1f5f9; border-radius: 100px; overflow: hidden; }
+.gep-subject-name { flex: 1; font-size: 14px; font-weight: 700; color: var(--gep-c-text); }
+.gep-subject-bar-wrap { flex: 2; height: 8px; background: var(--gep-c-surface-3); border-radius: 100px; overflow: hidden; }
 .gep-subject-bar-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg,#6366f1,#8b5cf6); transition: width 1s ease; }
 .gep-subject-nums { display: flex; gap: 8px; font-size: 12px; font-weight: 700; white-space: nowrap; }
-.gep-subject-nums .c { color: #10b981; } .gep-subject-nums .w { color: #ef4444; } .gep-subject-nums .s { color: #94a3b8; }
+.gep-subject-nums .c { color: #10b981; } .gep-subject-nums .w { color: #ef4444; } .gep-subject-nums .s { color: var(--gep-c-text-muted); }
 
 /* Question Analysis — deliberately flat & full-bleed so the solution text gets
    the entire screen width (no card border, minimal margin/padding). */
 .gep-analysis-section {
-    background: #fff;
+    background: var(--gep-c-surface);
     border-radius: 0;
     border: none;
     padding: 12px 14px 20px;
@@ -590,8 +590,8 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     gap: 8px;
 }
 .gep-q-count-pill {
-    background: #f1f5f9; border-radius: 100px;
-    padding: 6px 14px; font-size: 12px; font-weight: 700; color: #475569;
+    background: var(--gep-c-surface-3); border-radius: 100px;
+    padding: 6px 14px; font-size: 12px; font-weight: 700; color: var(--gep-c-text-muted);
 }
 
 /* Question Review Cards.
@@ -600,10 +600,10 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
    question is now closed by a thick rule with real breathing room around it —
    the page reads as a stack of separated questions rather than one long column. */
 .gep-qr-card {
-    background: #fff;
+    background: var(--gep-c-surface);
     border-radius: 0;
     border: none;
-    border-bottom: 6px solid #cbd5e1;
+    border-bottom: 6px solid var(--gep-c-border-strong);
     margin-bottom: 22px;
     padding-bottom: 20px;
     box-shadow: none;
@@ -615,8 +615,8 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-qr-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 12px 0 10px;
-    border-bottom: 1px solid #f1f5f9;
-    background: #fff;
+    border-bottom: 1px solid var(--gep-c-border);
+    background: var(--gep-c-surface);
     /* Sticks below the portal's own sticky header. If a parent's overflow rules
        stop sticky from engaging, the row simply renders in place — the layout is
        correct either way, so this is an enhancement and never a dependency. */
@@ -663,7 +663,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 /* No side padding — the question/solution text runs edge to edge so more words
    fit on a single line. */
 .gep-qr-body { padding: 4px 0 14px; }
-.gep-qr-text { font-size: 16.5px; font-weight: 500; color: #0f172a; line-height: 1.75; margin-bottom: 12px; }
+.gep-qr-text { font-size: 16.5px; font-weight: 500; color: var(--gep-c-text); line-height: 1.75; margin-bottom: 12px; }
 .gep-qr-text p { margin: 0 0 12px; }
 .gep-qr-text p:last-child { margin-bottom: 0; }
 
@@ -672,7 +672,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-opt-row {
     display: flex; align-items: center; gap: 10px;
     padding: 4px 10px; border-radius: 6px;
-    border: 1px solid #e8edf3; background: #fff;
+    border: 1px solid var(--gep-c-border); background: var(--gep-c-surface);
     transition: all 0.15s;
 }
 .gep-opt-row.is-correct {
@@ -692,12 +692,12 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 700;
-    background: #f1f5f9; color: #64748b;
+    background: var(--gep-c-surface-3); color: var(--gep-c-text-muted);
     align-self: center; /* stays vertically centred next to multi-line options */
 }
 .gep-opt-row.is-correct .gep-opt-letter { background: #10b981; color: #fff; }
 .gep-opt-row.is-wrong-user .gep-opt-letter { background: #ef4444; color: #fff; }
-.gep-opt-text { flex: 1; min-width: 0; font-size: 15px; font-weight: 400; color: #0f172a; line-height: 1.6; }
+.gep-opt-text { flex: 1; min-width: 0; font-size: 15px; font-weight: 400; color: var(--gep-c-text); line-height: 1.6; }
 .gep-opt-text p { margin: 0; }
 .gep-opt-icon { font-size: 14px; flex-shrink: 0; align-self: center; margin-top: 0; }
 
@@ -705,7 +705,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-ans-summary {
     display: flex; gap: 12px; flex-wrap: wrap;
     margin-top: 10px; padding-top: 10px;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--gep-c-border);
     font-size: 13px; font-weight: 600;
 }
 .gep-ans-chip {
@@ -718,9 +718,9 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 /* Explanation — plain white, minimal padding, full-strength (non-faded) text */
 .gep-explanation-box {
     margin-top: 12px;
-    background: #ffffff;
+    background: var(--gep-c-surface);
     border: none;
-    border-left: 2px solid #e2e8f0;
+    border-left: 2px solid var(--gep-c-border);
     border-radius: 0;
     padding: 2px 0 2px 12px;
 }
@@ -732,7 +732,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 }
 .gep-exp-body {
     font-size: 15.5px;
-    color: #0f172a;       /* was a faded slate grey — now full-strength near-black */
+    color: var(--gep-c-text);       /* was a faded slate grey — now full-strength near-black */
     opacity: 1;
     line-height: 1.75;
     font-weight: 400;
@@ -753,17 +753,17 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 /* Question Source — its own box at the very end of the solution */
 .gep-source-box {
     margin-top: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--gep-c-border);
     border-radius: 10px;
     padding: 10px 14px;
     background: #fbfcfe;
 }
 .gep-source-header {
-    font-size: 11px; font-weight: 800; color: #64748b;
+    font-size: 11px; font-weight: 800; color: var(--gep-c-text-muted);
     text-transform: uppercase; letter-spacing: 0.8px;
     margin-bottom: 4px;
 }
-.gep-source-body { font-size: 13px; color: #0f172a; font-weight: 600; }
+.gep-source-body { font-size: 13px; color: var(--gep-c-text); font-weight: 600; }
 
 /* ─── Contrast corrections for this page ───────────────────────────────────
    The solution renders on white/near-white cards, but several semantic colours
@@ -774,7 +774,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-result-wrap .gep-score-cell .lbl,
 .gep-result-wrap .gep-score-cell small,
 .gep-result-wrap .gep-subject-nums .s {
-    color: #64748b !important;
+    color: var(--gep-c-text-muted) !important;
 }
 .gep-result-wrap .gep-ring-center { color: #4338ca !important; }
 .gep-result-wrap .gep-grade-badge { color: #b45309 !important; }
@@ -788,7 +788,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
    a weak-area row, but let the two things the row exists to say — which section,
    and how badly — carry the warning colour. #b91c1c on the #fef2f2 card is 6.4:1,
    so this stays comfortably past AA. */
-.gep-result-wrap .gep-weak-topic-row div { color: #475569 !important; }
+.gep-result-wrap .gep-weak-topic-row div { color: var(--gep-c-text-muted) !important; }
 .gep-result-wrap .gep-weak-topic-row .gep-weak-topic-name { color: #991b1b !important; }
 .gep-result-wrap .gep-weak-topic-row .gep-weak-topic-pct  { color: #b91c1c !important; }
 .gep-result-wrap h4[style*="#ef4444"] { color: #b91c1c !important; }
@@ -815,7 +815,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     }
     .gep-qr-passage-column {
         border-right: none !important;
-        border-bottom: 2px solid #e2e8f0 !important;
+        border-bottom: 2px solid var(--gep-c-border) !important;
         padding-right: 0 !important;
         padding-bottom: 20px !important;
     }

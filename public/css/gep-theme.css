@@ -1,0 +1,877 @@
+/* ==========================================================================
+   GoPath — theme layer (light / dark)
+   ──────────────────────────────────────────────────────────────────────────
+   Loaded after every other portal stylesheet so it has the last word on
+   colour without those files needing to be rewritten.
+
+   Why this exists
+   ---------------
+   The portal used to decide its colours per route: a hardcoded list of
+   "sovereign" views painted the content area near-black, and the four views
+   left off that list (results, notifications, get-pass, typing practice)
+   stayed white — under the same permanently dark sidebar and header. So the
+   page changed complexion as the student moved through it, and neither
+   scheme was a choice they could make.
+
+   Colour is now expressed as semantic tokens with two palettes. The route no
+   longer decides anything; `data-gep-theme` on <html> does, defaulting to the
+   student's OS preference. Every view gets the same treatment, so the
+   inconsistency disappears in both directions.
+
+   Adding colour to a new component
+   --------------------------------
+   Use the tokens, never a literal: --gep-c-bg for the page, --gep-c-surface
+   for a card, --gep-c-text / --gep-c-text-muted for copy, --gep-c-border for
+   rules and outlines. They are defined for both palettes, so a component
+   written this way needs no dark-mode rule of its own.
+   ========================================================================== */
+
+/* ── Light palette (default) ─────────────────────────────────────────────── */
+:root {
+    --gep-c-bg:            #f3f7fa;   /* page behind everything */
+    --gep-c-surface:       #ffffff;   /* cards, panels, table bodies */
+    --gep-c-surface-2:     #f8fafc;   /* subtly raised / striped rows */
+    --gep-c-surface-3:     #eef2f7;   /* inputs, wells, hover fills */
+    --gep-c-text:          #0f172a;
+    --gep-c-text-muted:    #52627a;   /* 4.6:1 on --gep-c-surface */
+    --gep-c-text-faint:    #64748b;
+    --gep-c-border:        #e2e8f0;
+    --gep-c-border-strong: #cbd5e1;
+
+    /* Chrome. The sidebar stays dark in both themes — it is the portal's
+       identity and it reads as a navigation rail rather than page content —
+       but the header follows the theme so it does not float over a light page
+       as a black bar. */
+    --gep-c-rail:          #111827;
+    --gep-c-rail-text:     #cbd5e1;
+    --gep-c-rail-text-dim: #94a3b8;
+    --gep-c-rail-hover:    #1f2937;
+    --gep-c-header:        #ffffff;
+    --gep-c-header-text:   #0f172a;
+    --gep-c-header-border: #e2e8f0;
+    --gep-c-field:         #f1f5f9;
+    --gep-c-field-text:    #0f172a;
+    --gep-c-field-border:  #d7dee8;
+
+    --gep-c-accent:        #4f46e5;
+    --gep-c-accent-text:   #ffffff;
+    --gep-c-shadow:        0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.06);
+
+    color-scheme: light;
+}
+
+/* ── Dark palette ────────────────────────────────────────────────────────── */
+/* Applied when the student has chosen dark, and — unless they have explicitly
+   chosen light — when their device asks for it. */
+:root[data-gep-theme="dark"],
+:root[data-gep-theme="dark"] body {
+    --gep-c-bg:            #0b0f19;
+    --gep-c-surface:       #141a27;
+    --gep-c-surface-2:     #1a2130;
+    --gep-c-surface-3:     #222b3c;
+    --gep-c-text:          #f1f5f9;
+    --gep-c-text-muted:    #a3b0c2;   /* 7.3:1 on --gep-c-surface */
+    --gep-c-text-faint:    #8492a6;
+    --gep-c-border:        #26304180;
+    --gep-c-border-strong: #33405a;
+
+    --gep-c-rail:          #0d121c;
+    --gep-c-rail-text:     #cbd5e1;
+    --gep-c-rail-text-dim: #94a3b8;
+    --gep-c-rail-hover:    #1a2130;
+    --gep-c-header:        #0d121c;
+    --gep-c-header-text:   #f1f5f9;
+    --gep-c-header-border: #26304180;
+    --gep-c-field:         #1a2130;
+    --gep-c-field-text:    #f1f5f9;
+    --gep-c-field-border:  #33405a;
+
+    --gep-c-accent:        #818cf8;
+    --gep-c-accent-text:   #0b0f19;
+    --gep-c-shadow:        0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+
+    color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-gep-theme="light"]) {
+        --gep-c-bg:            #0b0f19;
+        --gep-c-surface:       #141a27;
+        --gep-c-surface-2:     #1a2130;
+        --gep-c-surface-3:     #222b3c;
+        --gep-c-text:          #f1f5f9;
+        --gep-c-text-muted:    #a3b0c2;
+        --gep-c-text-faint:    #8492a6;
+        --gep-c-border:        #26304180;
+        --gep-c-border-strong: #33405a;
+
+        --gep-c-rail:          #0d121c;
+        --gep-c-rail-text:     #cbd5e1;
+        --gep-c-rail-text-dim: #94a3b8;
+        --gep-c-rail-hover:    #1a2130;
+        --gep-c-header:        #0d121c;
+        --gep-c-header-text:   #f1f5f9;
+        --gep-c-header-border: #26304180;
+        --gep-c-field:         #1a2130;
+        --gep-c-field-text:    #f1f5f9;
+        --gep-c-field-border:  #33405a;
+
+        --gep-c-accent:        #818cf8;
+        --gep-c-accent-text:   #0b0f19;
+        --gep-c-shadow:        0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+
+        color-scheme: dark;
+    }
+}
+
+/* ── Page and shell ──────────────────────────────────────────────────────── */
+html body {
+    background: var(--gep-c-bg);
+    color: var(--gep-c-text);
+}
+
+.gep-dashboard-container,
+.gep-dashboard-container.gep-sovereign-active,
+.gep-dashboard-content,
+.gep-dashboard-container.gep-sovereign-active .gep-dashboard-content,
+.gep-main-inner,
+.gep-dashboard-container.gep-sovereign-active .gep-main-inner {
+    background: var(--gep-c-bg) !important;
+    color: var(--gep-c-text);
+}
+
+/* ── Navigation rail ─────────────────────────────────────────────────────── */
+.gep-dashboard-sidebar {
+    background: var(--gep-c-rail) !important;
+    color: var(--gep-c-rail-text) !important;
+    border-right: 1px solid var(--gep-c-border);
+}
+.gep-dashboard-nav a,
+.gep-dashboard-nav .gep-nav-group-toggle {
+    color: var(--gep-c-rail-text) !important;
+}
+.gep-dashboard-nav a:hover,
+.gep-dashboard-nav .gep-nav-group-toggle:hover {
+    background: var(--gep-c-rail-hover) !important;
+    color: #ffffff !important;
+}
+.gep-nav-subitems a { color: var(--gep-c-rail-text-dim) !important; }
+.gep-nav-subitems a:hover,
+.gep-nav-subitems a.active { color: #ffffff !important; }
+.gep-sidebar-user-stats .gep-stat-mini {
+    background: var(--gep-c-rail-hover) !important;
+    color: var(--gep-c-rail-text) !important;
+    border-color: transparent !important;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.gep-dashboard-header,
+.gep-dashboard-container.gep-sovereign-active .gep-dashboard-header {
+    background: var(--gep-c-header) !important;
+    color: var(--gep-c-header-text) !important;
+    border-bottom: 1px solid var(--gep-c-header-border) !important;
+}
+.gep-dashboard-header a,
+.gep-dashboard-header button,
+.gep-mobile-toggle,
+.gep-sovereign-active .gep-mobile-toggle,
+.gep-dashboard-container.gep-sovereign-active .gep-mobile-toggle,
+.gep-header-streak,
+.gep-dashboard-container.gep-sovereign-active .gep-header-streak {
+    color: var(--gep-c-header-text) !important;
+}
+.gep-header-search input,
+.gep-dashboard-container.gep-sovereign-active .gep-header-search input {
+    background: var(--gep-c-field) !important;
+    border: 1px solid var(--gep-c-field-border) !important;
+    color: var(--gep-c-field-text) !important;
+}
+.gep-header-search input::placeholder { color: var(--gep-c-text-faint) !important; }
+.gep-header-avatar,
+.gep-dashboard-container.gep-sovereign-active .gep-header-avatar {
+    background: var(--gep-c-surface-3) !important;
+    color: var(--gep-c-text) !important;
+    border: 1px solid var(--gep-c-border-strong) !important;
+}
+
+/* ── Cards and panels ────────────────────────────────────────────────────── */
+.gep-glass,
+.gep-glass-dark,
+.gep-glass-subtle,
+.gep-card-elite,
+.gep-about-card,
+.gep-pricing-card,
+.gep-policy-section,
+.gep-curated-section,
+.gep-empty-state,
+.gep-form-section,
+.gep-telemetry-card-micro,
+.gep-exam-category-card,
+.gep-cyo-card,
+.gep-marketplace-premium,
+.gep-skill-stat-item {
+    background: var(--gep-c-surface) !important;
+    border: 1px solid var(--gep-c-border) !important;
+    color: var(--gep-c-text) !important;
+    box-shadow: var(--gep-c-shadow) !important;
+    backdrop-filter: none !important;
+}
+
+/* ── Typography ──────────────────────────────────────────────────────────── */
+.gep-main-inner h1, .gep-main-inner h2, .gep-main-inner h3,
+.gep-main-inner h4, .gep-main-inner h5,
+.gep-page-header h1, .gep-page-header h2, .gep-page-header h3,
+.gep-sovereign-active .gep-page-header h1,
+.gep-sovereign-active .gep-page-header h2,
+.gep-sovereign-active .gep-page-header h3,
+.section-title, h2.section-title,
+.gep-sovereign-active .section-title,
+.gep-sovereign-active h2.section-title {
+    color: var(--gep-c-text) !important;
+}
+.gep-page-header p,
+.gep-sovereign-active .gep-page-header p,
+.gep-info-text, small.gep-info-text,
+.gep-sovereign-active .gep-info-text,
+.gep-sovereign-active small.gep-info-text,
+.pill-label, .gep-metric-label, .lbl,
+.gep-sovereign-active .pill-label,
+.gep-sovereign-active .gep-metric-label,
+.gep-sovereign-active .lbl {
+    color: var(--gep-c-text-muted) !important;
+}
+
+/* ── Form controls ───────────────────────────────────────────────────────── */
+.gep-input,
+.gep-form-group input,
+.gep-form-group select,
+.gep-form-group textarea {
+    background: var(--gep-c-field) !important;
+    border: 1px solid var(--gep-c-field-border) !important;
+    color: var(--gep-c-field-text) !important;
+}
+.gep-input::placeholder,
+.gep-form-group input::placeholder,
+.gep-form-group textarea::placeholder { color: var(--gep-c-text-faint) !important; }
+.gep-input:focus,
+.gep-form-group input:focus,
+.gep-form-group select:focus,
+.gep-form-group textarea:focus {
+    border-color: var(--gep-c-accent) !important;
+    outline: 2px solid color-mix(in srgb, var(--gep-c-accent) 35%, transparent);
+    outline-offset: 1px;
+}
+
+/* Tables that carry results and scorecards. */
+.gep-main-inner table { background: var(--gep-c-surface) !important; color: var(--gep-c-text) !important; }
+.gep-main-inner table th { background: var(--gep-c-surface-3) !important; color: var(--gep-c-text) !important; }
+.gep-main-inner table td,
+.gep-main-inner table th { border-color: var(--gep-c-border) !important; }
+
+/* ── The theme toggle itself ─────────────────────────────────────────────── */
+.gep-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    padding: 0;
+    border-radius: 12px;
+    border: 1px solid var(--gep-c-border-strong);
+    background: var(--gep-c-surface-3);
+    color: var(--gep-c-text);
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.gep-theme-toggle:hover { background: var(--gep-c-surface-2); }
+.gep-theme-toggle:focus-visible {
+    outline: 2px solid var(--gep-c-accent);
+    outline-offset: 2px;
+}
+/* One glyph per theme; the script only flips the attribute on <html>. */
+.gep-theme-toggle .gep-theme-icon-dark  { display: none; }
+:root[data-gep-theme="dark"] .gep-theme-toggle .gep-theme-icon-light { display: none; }
+:root[data-gep-theme="dark"] .gep-theme-toggle .gep-theme-icon-dark  { display: inline; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-gep-theme="light"]) .gep-theme-toggle .gep-theme-icon-light { display: none; }
+    :root:not([data-gep-theme="light"]) .gep-theme-toggle .gep-theme-icon-dark  { display: inline; }
+}
+
+/* ── Exam window ─────────────────────────────────────────────────────────── */
+/* The paper itself stays a light sheet in light mode. In dark mode it becomes a
+   dark sheet rather than a white rectangle glaring out of a dark room — which is
+   the whole point of dark mode for someone revising at night. */
+:root[data-gep-theme="dark"] .gep-exam-fullscreen-container,
+:root[data-gep-theme="dark"] .gep-exam-main,
+:root[data-gep-theme="dark"] #gep-question-display,
+:root[data-gep-theme="dark"] #gep-question-display-wrapper {
+    background: var(--gep-c-surface) !important;
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] body.gep-exam-locked { background: var(--gep-c-bg); }
+:root[data-gep-theme="dark"] .gep-q-text-wrapper,
+:root[data-gep-theme="dark"] .gep-q-content,
+:root[data-gep-theme="dark"] .gep-opt-content,
+:root[data-gep-theme="dark"] .gep-ar-assertion,
+:root[data-gep-theme="dark"] .gep-ar-reason,
+:root[data-gep-theme="dark"] #gep-passage-body {
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] #gep-active-passage-pane {
+    background: var(--gep-c-surface-2) !important;
+    border-color: var(--gep-c-border-strong) !important;
+}
+:root[data-gep-theme="dark"] #gep-question-display-wrapper,
+:root[data-gep-theme="dark"] .gep-pane-header {
+    border-color: var(--gep-c-border-strong) !important;
+}
+:root[data-gep-theme="dark"] .gep-pane-header {
+    background: var(--gep-c-surface-3) !important;
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] .gep-option-card {
+    background: var(--gep-c-surface-2) !important;
+    border-color: var(--gep-c-border-strong) !important;
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] .gep-option-card.selected {
+    background: color-mix(in srgb, var(--gep-c-accent) 22%, var(--gep-c-surface-2)) !important;
+    border-color: var(--gep-c-accent) !important;
+}
+:root[data-gep-theme="dark"] .gep-exam-footer {
+    background: var(--gep-c-surface-2) !important;
+    border-top-color: var(--gep-c-border-strong) !important;
+}
+:root[data-gep-theme="dark"] .gep-exam-sidebar {
+    background: var(--gep-c-surface) !important;
+    border-left-color: var(--gep-c-border-strong) !important;
+}
+:root[data-gep-theme="dark"] .gep-palette-legend {
+    background: var(--gep-c-surface-2) !important;
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] .gep-legend-item { color: var(--gep-c-text-muted) !important; }
+:root[data-gep-theme="dark"] .gep-palette-btn.not-visited {
+    background: var(--gep-c-surface-3) !important;
+    color: var(--gep-c-text) !important;
+    border-color: var(--gep-c-border-strong) !important;
+}
+:root[data-gep-theme="dark"] .gep-q-content table th {
+    background: var(--gep-c-surface-3) !important;
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] .gep-q-content table,
+:root[data-gep-theme="dark"] .gep-q-text-wrapper table,
+:root[data-gep-theme="dark"] .gep-q-content table td,
+:root[data-gep-theme="dark"] .gep-q-content table th,
+:root[data-gep-theme="dark"] .gep-q-text-wrapper table td,
+:root[data-gep-theme="dark"] .gep-q-text-wrapper table th {
+    background-color: transparent !important;
+    border-color: var(--gep-c-border-strong) !important;
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] .gep-nta-lang-select {
+    background: var(--gep-c-field) !important;
+    color: var(--gep-c-field-text) !important;
+    border-color: var(--gep-c-field-border) !important;
+}
+
+/* Instructions screen and the solution page follow the same tokens. */
+:root[data-gep-theme="dark"] .gep-exam-instructions-container,
+:root[data-gep-theme="dark"] .gep-instructions-content,
+:root[data-gep-theme="dark"] .gep-default-instructions,
+:root[data-gep-theme="dark"] .gep-qr-card,
+:root[data-gep-theme="dark"] .gep-explanation-box {
+    background: var(--gep-c-surface) !important;
+    color: var(--gep-c-text) !important;
+    border-color: var(--gep-c-border) !important;
+}
+:root[data-gep-theme="dark"] .gep-instructions-scroll-wrapper { background: var(--gep-c-bg) !important; }
+:root[data-gep-theme="dark"] .gep-instructions-footer {
+    background: var(--gep-c-surface-2) !important;
+    border-top-color: var(--gep-c-border) !important;
+}
+:root[data-gep-theme="dark"] .gep-qr-text,
+:root[data-gep-theme="dark"] .gep-exp-body,
+:root[data-gep-theme="dark"] .gep-opt-text,
+:root[data-gep-theme="dark"] .gep-default-instructions,
+:root[data-gep-theme="dark"] .gep-default-instructions li,
+:root[data-gep-theme="dark"] .gep-instructions-content { color: var(--gep-c-text) !important; }
+:root[data-gep-theme="dark"] .gep-opt-row {
+    background: var(--gep-c-surface-2) !important;
+    border-color: var(--gep-c-border-strong) !important;
+}
+
+/* Secure-mode gate: its card is painted with inline styles, which a stylesheet
+   can only reach with !important. */
+:root[data-gep-theme="dark"] .gep-secure-init-card {
+    background: var(--gep-c-surface) !important;
+    border-color: var(--gep-c-border-strong) !important;
+}
+:root[data-gep-theme="dark"] .gep-secure-init-card h2,
+:root[data-gep-theme="dark"] .gep-secure-init-card p,
+:root[data-gep-theme="dark"] .gep-secure-init-card li,
+:root[data-gep-theme="dark"] .gep-secure-init-card h4 { color: var(--gep-c-text) !important; }
+:root[data-gep-theme="dark"] .gep-secure-init-card > div[style*="background"] {
+    background: var(--gep-c-surface-2) !important;
+    border-color: var(--gep-c-border) !important;
+}
+
+/* ── Inline-styled surfaces in the dashboard views ───────────────────────── */
+/* Several views paint their cards with inline `background:#fff` / `background:
+   #f8fafc`, which no class selector can reach. Matching on the attribute is the
+   only way to bring them into the theme without rewriting every template. */
+:root[data-gep-theme="dark"] .gep-main-inner [style*="background: #fff"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="background:#fff"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="background: #ffffff"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="background:#ffffff"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="background: white"] {
+    background: var(--gep-c-surface) !important;
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] .gep-main-inner [style*="background: #f8fafc"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="background:#f8fafc"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="background: #f1f5f9"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="background: #f9fafb"] {
+    background: var(--gep-c-surface-2) !important;
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] .gep-main-inner [style*="color: #0f172a"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="color: #1e293b"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="color: #111827"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="color: #1f2937"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="color:#0f172a"] {
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] .gep-main-inner [style*="color: #64748b"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="color: #475569"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="color: #6b7280"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="color: #94a3b8"] {
+    color: var(--gep-c-text-muted) !important;
+}
+:root[data-gep-theme="dark"] .gep-main-inner [style*="border: 1px solid #e2e8f0"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="border: 1.5px solid #e2e8f0"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="border: 2px solid #e2e8f0"],
+:root[data-gep-theme="dark"] .gep-main-inner [style*="border: 1px solid #f1f5f9"] {
+    border-color: var(--gep-c-border-strong) !important;
+}
+
+/* The mirror of the above: views that were built for the dark "sovereign"
+   surface hardcode white text, which vanishes on a light page. */
+/* :not([style*="background"]) matters here. An element that paints its own
+   background — a badge, a pill, a coloured button — keeps white text correctly
+   under either theme, and recolouring it put near-black text on indigo. Only
+   copy sitting directly on the page surface should follow the theme. */
+:root[data-gep-theme="light"] .gep-main-inner [style*="color: #fff"]:not([style*="background"]),
+:root[data-gep-theme="light"] .gep-main-inner [style*="color:#fff"]:not([style*="background"]),
+:root[data-gep-theme="light"] .gep-main-inner [style*="color: #ffffff"]:not([style*="background"]),
+:root[data-gep-theme="light"] .gep-main-inner [style*="color: #f1f5f9"]:not([style*="background"]),
+:root[data-gep-theme="light"] .gep-main-inner [style*="color: #e5e7eb"]:not([style*="background"]),
+:root[data-gep-theme="light"] .gep-main-inner [style*="color: #f3f4f6"]:not([style*="background"]) {
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="light"] .gep-main-inner [style*="color: #a1a1aa"]:not([style*="background"]),
+:root[data-gep-theme="light"] .gep-main-inner [style*="color: #9ca3af"]:not([style*="background"]),
+:root[data-gep-theme="light"] .gep-main-inner [style*="color: #cbd5e1"]:not([style*="background"]),
+:root[data-gep-theme="light"] .gep-main-inner [style*="color: #94a3b8"]:not([style*="background"]),
+:root[data-gep-theme="light"] .gep-main-inner [style*="color: #71717a"]:not([style*="background"]),
+:root[data-gep-theme="light"] .gep-main-inner [style*="color:#94a3b8"]:not([style*="background"]) {
+    color: var(--gep-c-text-muted) !important;
+}
+/* Surfaces painted near-black from an inline attribute: light mode needs the
+   card to move with its text, exactly as for the class-based ones above. */
+:root[data-gep-theme="light"] .gep-main-inner [style*="background: #0f172a"],
+:root[data-gep-theme="light"] .gep-main-inner [style*="background:#0f172a"],
+:root[data-gep-theme="light"] .gep-main-inner [style*="background: #18181b"],
+:root[data-gep-theme="light"] .gep-main-inner [style*="background: #09090b"],
+:root[data-gep-theme="light"] .gep-main-inner [style*="background: #1e293b"],
+:root[data-gep-theme="light"] .gep-main-inner [style*="background: #111827"] {
+    background: var(--gep-c-surface) !important;
+    color: var(--gep-c-text) !important;
+    border-color: var(--gep-c-border) !important;
+}
+/* …but not inside a deliberately dark panel such as the hero carousel, which
+   carries its own background wherever it goes. `color: unset` was wrong here:
+   colour is an inherited property, so unset means inherit, which pulled the
+   page's near-black text onto the dark carousel. Name the colour instead. */
+:root[data-gep-theme="light"] .gep-carousel-slide,
+:root[data-gep-theme="light"] .gep-carousel-slide h1,
+:root[data-gep-theme="light"] .gep-carousel-slide h2,
+:root[data-gep-theme="light"] .gep-carousel-slide h3,
+:root[data-gep-theme="light"] .gep-carousel-slide p,
+:root[data-gep-theme="light"] .gep-carousel-slide span,
+:root[data-gep-theme="light"] .gep-carousel-slide a {
+    color: #f8fafc !important;
+}
+:root[data-gep-theme="light"] .gep-carousel-desc { color: rgba(255,255,255,0.88) !important; }
+/* The titles are gradient-filled text; a colour would be painted over by the
+   gradient anyway, but -webkit-text-fill-color must stay transparent for it. */
+:root[data-gep-theme="light"] .gep-carousel-title { -webkit-text-fill-color: transparent !important; }
+
+
+/* ── Copy inside the dashboard views ─────────────────────────────────────────
+   These selectors live in <style> blocks inside the templates themselves and
+   hardcode near-white text, which was correct back when the content area was
+   always near-black. Pointing them at the tokens is right in both themes at
+   once: --gep-c-text is near-white on dark and near-black on light, so each of
+   these keeps the appearance it was designed for and gains the other one.
+
+   The list is generated from those template <style> blocks rather than written
+   by hand, so it matches what is actually in the markup. Buttons, badges, pills
+   and the hero carousel are deliberately excluded — they carry their own dark
+   or coloured background, so their white text is correct under either theme. */
+
+:root .gep-main-inner .asset-main h4,
+:root .gep-main-inner .asset-valuation .val,
+:root .gep-main-inner .attempts-value strong,
+:root .gep-main-inner .card-body h4,
+:root .gep-main-inner .card-price,
+:root .gep-main-inner .card-title,
+:root .gep-main-inner .card-title-sm,
+:root .gep-main-inner .gep-about-wrap,
+:root .gep-main-inner .gep-browse-header h3,
+:root .gep-main-inner .gep-browse-header select,
+:root .gep-main-inner .gep-cyo-card h4,
+:root .gep-main-inner .gep-empty-state h3,
+:root .gep-main-inner .gep-exam-card-name,
+:root .gep-main-inner .gep-hcard-body h4,
+:root .gep-main-inner .gep-hero,
+:root .gep-main-inner .gep-live-sovereign,
+:root .gep-main-inner .gep-policy-body h4,
+:root .gep-main-inner .gep-policy-section-header h3,
+:root .gep-main-inner .gep-purchases-empty h3,
+:root .gep-main-inner .gep-pyqs-sovereign,
+:root .gep-main-inner .gep-qr-num,
+:root .gep-main-inner .gep-sovereign-dashboard,
+:root .gep-main-inner .gep-supercoaching-sovereign,
+:root .gep-main-inner .gep-telemetry-card-micro .val,
+:root .gep-main-inner .header-content h3,
+:root .gep-main-inner .live-title,
+:root .gep-main-inner .matrix-item span,
+:root .gep-main-inner .price-elite .amount,
+:root .gep-main-inner .purchase-title,
+:root .gep-main-inner .purchases-title-block h2,
+:root .gep-main-inner .section-title,
+:root .gep-main-inner .strip-info h5 {
+    color: var(--gep-c-text) !important;
+}
+
+:root .gep-main-inner .asset-telemetry,
+:root .gep-main-inner .asset-valuation .cur,
+:root .gep-main-inner .card-instructor,
+:root .gep-main-inner .gep-about-card p,
+:root .gep-main-inner .gep-about-hero p,
+:root .gep-main-inner .gep-cyo-card p,
+:root .gep-main-inner .gep-empty-state p,
+:root .gep-main-inner .gep-exam-card-arrow,
+:root .gep-main-inner .gep-hcard-meta,
+:root .gep-main-inner .gep-hero p,
+:root .gep-main-inner .gep-metric-label,
+:root .gep-main-inner .gep-policy-body,
+:root .gep-main-inner .gep-policy-nav-link,
+:root .gep-main-inner .gep-score-cell .lbl,
+:root .gep-main-inner .gep-score-label,
+:root .gep-main-inner .gep-subject-nums .s,
+:root .gep-main-inner .gep-telemetry-card-micro .lbl,
+:root .gep-main-inner .hero-desc-premium,
+:root .gep-main-inner .instructor-name,
+:root .gep-main-inner .item-info .item-type,
+:root .gep-main-inner .lesson-meta-row,
+:root .gep-main-inner .notif-category,
+:root .gep-main-inner .notif-timestamp,
+:root .gep-main-inner .p-index,
+:root .gep-main-inner .p-meta,
+:root .gep-main-inner .payment-methods,
+:root .gep-main-inner .perks-row,
+:root .gep-main-inner .price-elite .currency,
+:root .gep-main-inner .purchases-title-block p,
+:root .gep-main-inner .sidebar-empty-state p,
+:root .gep-main-inner .sp-labels,
+:root .gep-main-inner .stat,
+:root .gep-main-inner .strip-meta,
+:root .gep-main-inner .view-all-link {
+    color: var(--gep-c-text-muted) !important;
+}
+
+/* ── Card and page surfaces declared inside the templates ────────────────────
+   The matching half of the block above: these selectors hardcode a near-black
+   background in their own <style> block. Recolouring only their text left light
+   mode with dark cards carrying newly-dark text — unreadable. Both halves have
+   to move together, so the surfaces read from the tokens as well.
+
+   Deliberately excluded: .media-overlay and .player-aspect-lock (the black
+   behind a video frame, correct in both themes), and the pill/button selectors
+   that carry their own colour. */
+:root .gep-main-inner .gep-about-card,
+:root .gep-main-inner .gep-asset-card,
+:root .gep-main-inner .gep-card-elite,
+:root .gep-main-inner .gep-curated-card,
+:root .gep-main-inner .gep-cyo-card,
+:root .gep-main-inner .gep-hcard,
+:root .gep-main-inner .gep-hero,
+:root .gep-main-inner .gep-telemetry-card-micro {
+    background: var(--gep-c-surface) !important;
+    border-color: var(--gep-c-border) !important;
+    color: var(--gep-c-text) !important;
+}
+.gep-live-sovereign,
+.gep-pyqs-sovereign,
+.gep-sovereign-dashboard,
+.gep-supercoaching-sovereign,
+:root .gep-main-inner .gep-live-sovereign,
+:root .gep-main-inner .gep-pyqs-sovereign,
+:root .gep-main-inner .gep-sovereign-dashboard,
+:root .gep-main-inner .gep-supercoaching-sovereign {
+    background: var(--gep-c-bg) !important;
+    color: var(--gep-c-text) !important;
+}
+
+/* ── Standalone pages: instructions, checkout, solutions ─────────────────────
+   These three render outside .gep-dashboard-container and were authored as
+   light documents — white cards, near-black copy. In dark mode the text token
+   turned their copy near-white while their own white cards stayed white, which
+   is the single largest source of unreadable text in the dark audit. Theme the
+   surfaces to match the copy. The `[style*=...]` selectors are the only way to
+   reach cards that are painted from inline attributes. */
+:root[data-gep-theme="dark"] .gep-exam-instructions-container,
+:root[data-gep-theme="dark"] .gep-checkout-wrap,
+:root[data-gep-theme="dark"] .gep-result-wrap,
+:root[data-gep-theme="dark"] .gep-qr-card,
+:root[data-gep-theme="dark"] .gep-summary-card,
+:root[data-gep-theme="dark"] .gep-checkout-card,
+:root[data-gep-theme="dark"] .gep-order-summary,
+:root[data-gep-theme="dark"] .gep-instructions-inner [style*="background"],
+:root[data-gep-theme="dark"] .gep-exam-instructions-container [style*="background: #fff"],
+:root[data-gep-theme="dark"] .gep-result-wrap [style*="background: #fff"],
+:root[data-gep-theme="dark"] .gep-result-wrap [style*="background:#fff"],
+:root[data-gep-theme="dark"] .gep-checkout-wrap [style*="background: #fff"],
+:root[data-gep-theme="dark"] .gep-checkout-wrap [style*="background:#fff"],
+:root[data-gep-theme="dark"] .gep-result-wrap [style*="background: #f8fafc"],
+:root[data-gep-theme="dark"] .gep-checkout-wrap [style*="background: #f8fafc"],
+:root[data-gep-theme="dark"] .gep-exam-instructions-container [style*="background: #f8fafc"] {
+    background: var(--gep-c-surface) !important;
+    border-color: var(--gep-c-border) !important;
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] .gep-exam-instructions-container *,
+:root[data-gep-theme="dark"] .gep-result-wrap *,
+:root[data-gep-theme="dark"] .gep-checkout-wrap * {
+    border-color: var(--gep-c-border) ;
+}
+/* Copy on those pages that names its own near-black colour inline. */
+:root[data-gep-theme="dark"] .gep-exam-instructions-container [style*="color: #334155"],
+:root[data-gep-theme="dark"] .gep-exam-instructions-container [style*="color: #0f172a"],
+:root[data-gep-theme="dark"] .gep-exam-instructions-container [style*="color: #1e293b"],
+:root[data-gep-theme="dark"] .gep-result-wrap [style*="color: #0f172a"],
+:root[data-gep-theme="dark"] .gep-result-wrap [style*="color: #1e293b"],
+:root[data-gep-theme="dark"] .gep-checkout-wrap [style*="color: #0f172a"],
+:root[data-gep-theme="dark"] .gep-checkout-wrap [style*="color: #1e293b"],
+:root[data-gep-theme="dark"] .gep-checkout-wrap [style*="color: #111827"] {
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="dark"] .gep-exam-instructions-container [style*="color: #64748b"],
+:root[data-gep-theme="dark"] .gep-exam-instructions-container [style*="color: #475569"],
+:root[data-gep-theme="dark"] .gep-result-wrap [style*="color: #64748b"],
+:root[data-gep-theme="dark"] .gep-result-wrap [style*="color: #94a3b8"],
+:root[data-gep-theme="dark"] .gep-checkout-wrap [style*="color: #64748b"],
+:root[data-gep-theme="dark"] .gep-checkout-wrap [style*="color: #94a3b8"] {
+    color: var(--gep-c-text-muted) !important;
+}
+
+/* ── Semantic accent colours ─────────────────────────────────────────────────
+   Success / warning / danger / info were each tuned against one background: the
+   dark greens and ambers read on a white card and disappear on a dark one, and
+   the light indigos do the reverse. Give each a value per theme and point the
+   literals at it. The literals are matched on the inline `style` attribute
+   because that is where most of them live in these templates. */
+:root {
+    --gep-c-success: #047857;
+    --gep-c-warning: #b45309;
+    --gep-c-danger:  #b91c1c;
+    --gep-c-info:    #4338ca;
+}
+:root[data-gep-theme="dark"] {
+    --gep-c-success: #34d399;
+    --gep-c-warning: #fbbf24;
+    --gep-c-danger:  #f87171;
+    --gep-c-info:    #a5b4fc;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-gep-theme="light"]) {
+        --gep-c-success: #34d399;
+        --gep-c-warning: #fbbf24;
+        --gep-c-danger:  #f87171;
+        --gep-c-info:    #a5b4fc;
+    }
+}
+
+:root [style*="color: #10b981"]:not([style*="background"]),
+:root [style*="color:#10b981"]:not([style*="background"]),
+:root [style*="color: #047857"]:not([style*="background"]),
+:root [style*="color: #059669"]:not([style*="background"]),
+:root [style*="color: #00c853"]:not([style*="background"]),
+:root .gep-c-success { color: var(--gep-c-success) !important; }
+
+:root [style*="color: #f59e0b"]:not([style*="background"]),
+:root [style*="color: #b45309"]:not([style*="background"]),
+:root [style*="color: #d97706"]:not([style*="background"]),
+:root .gep-grade-badge:not([style*="background"]) { color: var(--gep-c-warning) !important; }
+
+:root [style*="color: #ef4444"]:not([style*="background"]),
+:root [style*="color: #b91c1c"]:not([style*="background"]),
+:root [style*="color: #dc2626"]:not([style*="background"]) { color: var(--gep-c-danger) !important; }
+
+:root [style*="color: #6366f1"]:not([style*="background"]),
+:root [style*="color: #4338ca"]:not([style*="background"]),
+:root [style*="color: #818cf8"]:not([style*="background"]),
+:root [style*="color: #a5b4fc"]:not([style*="background"]),
+:root .asset-badge-micro:not([style*="background"]) { color: var(--gep-c-info) !important; }
+
+/* Tabs and filter chips read as navigation, not as buttons: they have no fill
+   of their own, so their label has to follow the page. */
+:root .gep-popular-tab-btn:not(.active),
+:root .gep-pyq-tab-btn:not(.active),
+:root .filter-btn:not(.active),
+:root .domain-chip:not(.active),
+:root .t-btn:not(.active),
+:root .pill-label,
+:root .view-all-link { color: var(--gep-c-text-muted) !important; }
+:root .gep-popular-tab-btn.active,
+:root .gep-pyq-tab-btn.active,
+:root .filter-btn.active,
+:root .t-btn.active { color: var(--gep-c-text) !important; }
+
+/* The instructions screen is built entirely from inline styles, so its copy can
+   only be reached this way. */
+:root[data-gep-theme="dark"] .gep-exam-instructions-container [style*="background: #f0fdf4"],
+:root[data-gep-theme="dark"] .gep-exam-instructions-container [style*="background: #fffbeb"],
+:root[data-gep-theme="dark"] .gep-instructions-content [style*="background"],
+:root[data-gep-theme="dark"] .gep-instructions-footer [style*="background"] {
+    background: var(--gep-c-surface-2) !important;
+    border-color: var(--gep-c-border) !important;
+}
+:root[data-gep-theme="dark"] .gep-exam-instructions-container [style*="color: #334155"],
+:root[data-gep-theme="dark"] .gep-exam-instructions-container [style*="color: #0f172a"],
+:root[data-gep-theme="dark"] .gep-default-instructions,
+:root[data-gep-theme="dark"] .gep-default-instructions *,
+:root[data-gep-theme="dark"] .gep-instructions-content,
+:root[data-gep-theme="dark"] .gep-instructions-content li,
+:root[data-gep-theme="dark"] .gep-agreement,
+:root[data-gep-theme="dark"] .gep-agreement * { color: var(--gep-c-text) !important; }
+:root[data-gep-theme="dark"] .gep-secure-init-card ul,
+:root[data-gep-theme="dark"] .gep-secure-init-card ul * { color: var(--gep-c-text) !important; }
+
+/* ── Exam window: the smaller chrome ─────────────────────────────────────────
+   The pane header, its question number, the section name and the marks chips
+   each set their own colour for a white sheet. On the dark sheet they were
+   near-black on near-black. */
+:root[data-gep-theme="dark"] .gep-q-pane-label,
+:root[data-gep-theme="dark"] .gep-q-pane-label *,
+:root[data-gep-theme="dark"] .gep-header-q-num,
+:root[data-gep-theme="dark"] .gep-passage-header-label,
+:root[data-gep-theme="dark"] .gep-passage-toggle-icon,
+:root[data-gep-theme="dark"] .gep-msq-notice span,
+:root[data-gep-theme="dark"] .gep-opt-prefix,
+:root[data-gep-theme="dark"] .gep-sections-title,
+:root[data-gep-theme="dark"] .gep-palette-section-title,
+:root[data-gep-theme="dark"] .gep-qpaper-item,
+:root[data-gep-theme="dark"] .gep-qp-qnum,
+:root[data-gep-theme="dark"] .gep-popup-modal-content h2 { color: var(--gep-c-text) !important; }
+
+:root[data-gep-theme="dark"] .gep-q-pane-section { color: var(--gep-c-info) !important; }
+:root[data-gep-theme="dark"] .gep-q-pane-marks .pos { color: var(--gep-c-success) !important; }
+:root[data-gep-theme="dark"] .gep-q-pane-marks .neg { color: var(--gep-c-danger) !important; }
+
+:root[data-gep-theme="dark"] .gep-section-tab {
+    background: var(--gep-c-surface-3) !important;
+    color: var(--gep-c-text) !important;
+    border-color: var(--gep-c-border-strong) !important;
+}
+:root[data-gep-theme="dark"] .gep-section-tab.active {
+    background: var(--gep-c-accent) !important;
+    color: var(--gep-c-accent-text) !important;
+}
+:root[data-gep-theme="dark"] .gep-sections-bar-wrapper,
+:root[data-gep-theme="dark"] .gep-popup-modal-content,
+:root[data-gep-theme="dark"] .gep-short-ans-wrapper input,
+:root[data-gep-theme="dark"] .gep-numerical-wrapper input {
+    background: var(--gep-c-surface-2) !important;
+    color: var(--gep-c-text) !important;
+    border-color: var(--gep-c-border-strong) !important;
+}
+:root[data-gep-theme="dark"] .gep-secure-init-overlay { background: rgba(2, 6, 15, 0.86) !important; }
+
+/* ── Solution page: the sections that are still sheets of white ──────────────
+   Several panels here are painted from an inline attribute whose exact spelling
+   varies (#fff, #ffffff, with and without the space). Catch the container and
+   let its children inherit rather than chasing each spelling. */
+:root[data-gep-theme="dark"] .gep-result-wrap section,
+:root[data-gep-theme="dark"] .gep-result-wrap > div,
+:root[data-gep-theme="dark"] .gep-result-wrap > div > div,
+:root[data-gep-theme="dark"] .gep-analysis-section,
+:root[data-gep-theme="dark"] .gep-subject-section,
+:root[data-gep-theme="dark"] .gep-weak-areas,
+:root[data-gep-theme="dark"] .gep-result-hero,
+:root[data-gep-theme="dark"] .gep-metric-card,
+:root[data-gep-theme="dark"] .gep-score-cell {
+    background-color: var(--gep-c-surface) !important;
+    border-color: var(--gep-c-border) !important;
+}
+:root[data-gep-theme="dark"] .gep-result-wrap h1,
+:root[data-gep-theme="dark"] .gep-result-wrap h2,
+:root[data-gep-theme="dark"] .gep-result-wrap h3,
+:root[data-gep-theme="dark"] .gep-result-wrap h4,
+:root[data-gep-theme="dark"] .gep-result-wrap h5,
+:root[data-gep-theme="dark"] .gep-section-title { color: var(--gep-c-text) !important; }
+:root[data-gep-theme="dark"] .gep-result-status-pill { color: var(--gep-c-success) !important; }
+:root[data-gep-theme="dark"] .gep-ring-center { color: var(--gep-c-info) !important; }
+
+/* ── Solution page state signals ─────────────────────────────────────────────
+   Correct / incorrect / difficulty / answer chips were deliberately left out of
+   the literal-to-token pass because their colour carries meaning and must not
+   simply follow the copy. They do still need a value per theme: the deep greens
+   and reds chosen for a white card sit at 2.7-3.2:1 on the dark one. Same
+   meaning, lighter tint. */
+:root[data-gep-theme="dark"] .gep-qr-status.correct,
+:root[data-gep-theme="dark"] .gep-ans-chip.correct-ans,
+:root[data-gep-theme="dark"] .gep-subject-nums .c,
+:root[data-gep-theme="dark"] span.c { color: var(--gep-c-success) !important; }
+
+:root[data-gep-theme="dark"] .gep-qr-status.wrong,
+:root[data-gep-theme="dark"] .gep-subject-nums .w,
+:root[data-gep-theme="dark"] span.w { color: var(--gep-c-danger) !important; }
+
+:root[data-gep-theme="dark"] .gep-qr-status.skipped,
+:root[data-gep-theme="dark"] .gep-weak-topic-count,
+:root[data-gep-theme="dark"] .gep-weak-topic-sub { color: var(--gep-c-text-muted) !important; }
+
+:root[data-gep-theme="dark"] .gep-ans-chip.your,
+:root[data-gep-theme="dark"] .gep-exp-header { color: var(--gep-c-info) !important; }
+
+:root[data-gep-theme="dark"] .gep-qr-type-pill {
+    color: var(--gep-c-text) !important;
+    background: var(--gep-c-surface-3) !important;
+}
+/* The weak-areas rows are tinted red/amber panels sized for a white page. */
+:root[data-gep-theme="dark"] .gep-weak-topic-row,
+:root[data-gep-theme="dark"] [style*="background: #fef2f2"],
+:root[data-gep-theme="dark"] [style*="background: #fffbeb"],
+:root[data-gep-theme="dark"] [style*="background: #f0fdf4"],
+:root[data-gep-theme="dark"] [style*="background: #eff6ff"] {
+    background: var(--gep-c-surface-2) !important;
+    border-color: var(--gep-c-border) !important;
+}
+:root[data-gep-theme="dark"] .gep-result-wrap h4,
+:root[data-gep-theme="dark"] .gep-result-wrap p { color: var(--gep-c-text) !important; }
+:root[data-gep-theme="dark"] .gep-result-wrap p.gep-muted,
+:root[data-gep-theme="dark"] .gep-result-wrap [style*="color: #64748b"] { color: var(--gep-c-text-muted) !important; }
+
+/* ── Respect reduced motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .gep-theme-toggle { transition: none; }
+}

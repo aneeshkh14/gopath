@@ -1,4 +1,54 @@
 jQuery(document).ready(function($) {
+
+    // ─── Light / dark theme ──────────────────────────────────────────────────
+    // The stored choice is already applied by an inline script in <head> so the
+    // page never paints in the wrong palette. This only handles the switch, and
+    // only writes to storage when the student actually picks one — leaving the
+    // key absent means "follow the device", which is the default we want.
+    (function () {
+        var root = document.documentElement;
+        var toggle = document.getElementById('gep-theme-toggle');
+        if (!toggle) return;
+
+        function current() {
+            var set = root.getAttribute('data-gep-theme');
+            if (set === 'dark' || set === 'light') return set;
+            return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+                ? 'dark' : 'light';
+        }
+
+        function label() {
+            var next = current() === 'dark' ? 'light' : 'dark';
+            toggle.setAttribute('title', 'Switch to ' + next + ' theme');
+            toggle.setAttribute('aria-label', 'Switch to ' + next + ' theme');
+        }
+        label();
+
+        toggle.addEventListener('click', function () {
+            var next = current() === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-gep-theme', next);
+            try { localStorage.setItem('gep-theme', next); } catch (e) {}
+            label();
+        });
+
+        // Follow the device while the student has expressed no preference of
+        // their own, so a phone flipping to dark at sunset takes the portal with
+        // it mid-session.
+        if (window.matchMedia) {
+            var mq = window.matchMedia('(prefers-color-scheme: dark)');
+            var onChange = function () {
+                var stored = null;
+                try { stored = localStorage.getItem('gep-theme'); } catch (e) {}
+                if (stored !== 'dark' && stored !== 'light') {
+                    root.removeAttribute('data-gep-theme');
+                    label();
+                }
+            };
+            if (mq.addEventListener) mq.addEventListener('change', onChange);
+            else if (mq.addListener) mq.addListener(onChange);
+        }
+    })();
+
     $('.gep-dashboard-nav a[data-tab]').on('click', function(e) {
         e.preventDefault();
         

@@ -230,6 +230,14 @@ class GEP_Loader {
 		wp_register_style( 'gep-auth-css', GEP_PLUGIN_URL . 'public/css/gep-auth.css', array(), GEP_VERSION );
 		wp_register_style( 'gep-dashboard-css', GEP_PLUGIN_URL . 'public/css/gep-dashboard.css', array(), GEP_VERSION );
 		wp_register_style( 'gep-exam-css', GEP_PLUGIN_URL . 'public/css/gep-exam.css', array(), GEP_VERSION );
+		// The theme layer must load after every stylesheet it recolours, so it
+		// declares all of them as dependencies.
+		wp_register_style(
+			'gep-theme-css',
+			GEP_PLUGIN_URL . 'public/css/gep-theme.css',
+			array( 'gep-public-css' ),
+			GEP_VERSION
+		);
 		
 		wp_register_script( 'gep-auth-js', GEP_PLUGIN_URL . 'public/js/gep-auth.js', array('jquery'), GEP_VERSION, array( 'in_footer' => true, 'strategy' => 'defer' ) );
 		wp_register_script( 'gep-dashboard-js', GEP_PLUGIN_URL . 'public/js/gep-dashboard.js', array('jquery'), GEP_VERSION, array( 'in_footer' => true, 'strategy' => 'defer' ) );
@@ -260,6 +268,13 @@ class GEP_Loader {
 			foreach ( $gep_chrome_shortcodes as $gep_sc ) {
 				if ( has_shortcode( $post->post_content, $gep_sc ) ) { $gep_needs_chrome = true; break; }
 			}
+		}
+
+		// Colour tokens for both themes. Enqueued on every portal screen and kept
+		// last in the cascade so it can recolour rules the other sheets set with
+		// !important.
+		if ( self::is_portal_page() || $gep_needs_chrome ) {
+			wp_enqueue_style( 'gep-theme-css' );
 		}
 
 		if ( $gep_needs_chrome ) {
