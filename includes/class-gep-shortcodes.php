@@ -414,7 +414,7 @@ class GEP_Shortcodes {
 				$sections_map[ $sec_id ] = $sec['name'] ?: 'Section ' . ($idx + 1);
 				
 				// Map questions matching these IDs to this section
-				$sec_q_ids = array_filter( array_map('absint', explode(',', $sec['ids'])) );
+				$sec_q_ids = array_filter( array_map('absint', explode(',', isset($sec['ids']) ? (string) $sec['ids'] : '') ) );
 				foreach ( $questions as $q ) {
 					if ( in_array( $q->id, $sec_q_ids ) ) {
 						// Overwrite category_id with our virtual section ID so the frontend tabs match it

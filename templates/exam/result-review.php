@@ -36,7 +36,7 @@ if ( isset( $trans['sections'] ) && is_array( $trans['sections'] ) && !empty($tr
 		$sections_map[ $sec_id ] = $sec['name'] ?: 'Section ' . ($idx + 1);
 		
 		// Map questions matching these IDs to this section
-		$sec_q_ids = array_filter( array_map('absint', explode(',', $sec['ids'])) );
+		$sec_q_ids = array_filter( array_map('absint', explode(',', isset($sec['ids']) ? (string) $sec['ids'] : '') ) );
 		foreach ( $questions as $q ) {
 			if ( in_array( $q->id, $sec_q_ids ) ) {
 				// Overwrite category_id with our virtual section ID so the frontend tabs match it
@@ -343,7 +343,17 @@ foreach ( $questions as $q ) {
     if(!isset($diff_stats[$diff])) $diff_stats[$diff] = array('total'=>0, 'correct'=>0);
     $diff_stats[$diff]['total']++;
 
-    $user_ans = isset( $answers[$q->id] ) ? $answers[$q->id]['answer'] : '';
+    // Answers are stored as array( 'answer' => ..., 'flagged' => ... ). Indexing
+    // ['answer'] on an entry that is a bare string throws, and a throw here takes
+    // the entire results page down to a blank screen with no way back — so read
+    // it defensively and accept the older plain-string shape too.
+    $user_ans = '';
+    if ( isset( $answers[$q->id] ) ) {
+        $entry = $answers[$q->id];
+        $user_ans = is_array( $entry )
+            ? ( isset( $entry['answer'] ) ? $entry['answer'] : '' )
+            : (string) $entry;
+    }
 
     if ( $user_ans === '' ) {
         $skipped++;

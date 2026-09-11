@@ -20,6 +20,21 @@ $seo_keywords = '';
 $schema_json = '';
 
 $current_view = isset( $_GET['view'] ) ? sanitize_text_field( $_GET['view'] ) : 'main';
+
+// Whether this request is the exam window. Computed here, at the top, because the
+// <style> block in <head> switches body overflow on it — it used to be defined
+// further down in <body>, so that switch always read an undefined variable
+// (a warning on every single page load) and always took the non-exam branch.
+$exam_slug       = get_option( 'gep_slug_exam', 'exam' );
+$current_path    = rtrim( (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' );
+$exam_slug_clean = rtrim( '/' . $exam_slug, '/' );
+$exam_page_id    = (int) get_option( 'gep_page_exam', 0 );
+$is_exam_page    = (
+    $current_path === $exam_slug_clean ||
+    strpos( $current_path, $exam_slug_clean . '/' ) === 0 ||
+    ( $exam_page_id && is_page( $exam_page_id ) ) ||
+    ( isset( $_GET['page_id'] ) && $_GET['page_id'] == $exam_page_id )
+);
 global $wp;
 $canonical_url = esc_url( home_url( add_query_arg( $_GET, $wp->request ) ) );
 $logo_url = plugins_url( 'assets/images/gep-logo.png', GEP_PLUGIN_FILE );
@@ -53,7 +68,7 @@ if ( is_front_page() ) {
         );
         $schema_json = json_encode( $schema_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT );
     }
-} elseif ( isset( $_GET['id'] ) && ( $current_view === 'tests' || $current_view === 'instructions' || $current_view === 'exam' ) ) {
+} elseif ( isset( $_GET['id'] ) && ( $is_exam_page || $current_view === 'tests' || $current_view === 'instructions' || $current_view === 'exam' ) ) {
     // Exam Page
     $test_id = absint( $_GET['id'] );
     $test = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}gep_tests WHERE id = %d", $test_id ) );
@@ -121,10 +136,59 @@ if ( is_front_page() ) {
             'Help Center & Ticket Support - GoPath', 
             'Need assistance? Reach our student success support desk, check policies, or resolve account concerns.',
             'student support help desk, submit ticket, exam portal policies, contact teachers'
-        )
+        ),
+        // These five had no entry, so each fell through to the generic WordPress
+        // document title and every one of them read the same in a tab strip.
+        'pyqs'           => array(
+            'Previous Year Question Papers (PYQs) - GoPath',
+            'Practice year-wise previous year question papers with full solutions and exam-style timing.',
+            'previous year question papers, pyqs, year wise papers, solved question papers'
+        ),
+        'notifications'  => array(
+            'Notifications - GoPath Exam Portal',
+            'Exam alerts, new test series announcements and updates from your educators.',
+            'exam notifications, test alerts, student announcements'
+        ),
+        'about'          => array(
+            'About GoPath - Our Mission for Exam Aspirants',
+            'Who we are, what we teach, and how GoPath prepares students for competitive examinations.',
+            'about gopath, exam portal team, our mission'
+        ),
+        'policies'       => array(
+            'Legal & Policies - GoPath Exam Portal',
+            'Terms of service, refund policy and privacy practices for the GoPath exam portal.',
+            'terms of service, refund policy, privacy policy, legal'
+        ),
+        'lectures'       => array(
+            'Video Lectures Library - GoPath',
+            'Recorded subject-wise video lectures you can watch any time, with notes and practice sets.',
+            'video lectures, recorded classes, subject lectures, exam videos'
+        ),
     );
     
-    if ( isset( $view_meta[$current_view] ) ) {
+    // $current_view defaults to 'main' whenever no ?view= is present — which is
+    // true of every page that is not the dashboard. Looking the map up regardless
+    // handed the login, register, result and checkout pages the Dashboard's title.
+    $gep_page_titles = array(
+        'login'    => array( 'Login - GoPath Exam Portal', 'Sign in to your GoPath account to continue your preparation.', 'login, student sign in, exam portal login' ),
+        'register' => array( 'Create Your Account - GoPath Exam Portal', 'Join GoPath to access mock tests, courses and previous year papers.', 'register, sign up, create account, student registration' ),
+        'result'   => array( 'Your Result & Solutions - GoPath', 'Your scorecard with question-by-question solutions and subject-wise analysis.', 'exam result, scorecard, solutions, answer key' ),
+        'checkout' => array( 'Secure Checkout - GoPath', 'Complete your purchase to unlock this test series or course.', 'checkout, buy test series, payment' ),
+    );
+    $gep_this_page = '';
+    foreach ( array_keys( $gep_page_titles ) as $gep_key ) {
+        $gep_pid = (int) get_option( 'gep_page_' . $gep_key, 0 );
+        if ( $gep_pid && is_page( $gep_pid ) ) {
+            $gep_this_page = $gep_key;
+            break;
+        }
+    }
+
+    if ( $gep_this_page ) {
+        $seo_title    = $gep_page_titles[$gep_this_page][0];
+        $seo_desc     = $gep_page_titles[$gep_this_page][1];
+        $seo_keywords = $gep_page_titles[$gep_this_page][2];
+    } elseif ( isset( $view_meta[$current_view] ) ) {
         $seo_title    = $view_meta[$current_view][0];
         $seo_desc     = $view_meta[$current_view][1];
         $seo_keywords = $view_meta[$current_view][2];
@@ -293,21 +357,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
 </head>
 <body <?php body_class(); ?>>
 
-    <?php 
-    $exam_slug = get_option( 'gep_slug_exam', 'exam' );
-    $current_uri = $_SERVER['REQUEST_URI'];
-    $current_path = parse_url( $current_uri, PHP_URL_PATH );
-    $current_path = rtrim( $current_path, '/' );
-    $exam_slug_clean = rtrim( '/' . $exam_slug, '/' );
-
-    $exam_page_id = (int) get_option( 'gep_page_exam', 0 );
-    $is_exam_page = (
-        $current_path === $exam_slug_clean ||
-        strpos( $current_path, $exam_slug_clean . '/' ) === 0 ||
-        ( $exam_page_id && is_page( $exam_page_id ) ) ||
-        ( isset( $_GET['page_id'] ) && $_GET['page_id'] == $exam_page_id )
-    );
-
+    <?php
     // Initialize context user ID safely to avoid undefined variable notices
     $context_user_id = is_user_logged_in() ? gep_get_context_user_id() : 0;
 

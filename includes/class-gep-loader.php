@@ -108,6 +108,9 @@ class GEP_Loader {
 		add_action( 'init', array( $shortcodes, 'register_shortcodes' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_public_assets' ) );
 		add_filter( 'template_include', array( $this, 'load_custom_portal_template' ) );
+		// template_redirect, not init: is_front_page() and $post are only known
+		// once the main query has run, and this still lands well before wp_head.
+		add_action( 'template_redirect', array( $this, 'disable_emoji_rewriter' ) );
 
 		// Auth Form Handlers (admin_post)
 		$auth = new GEP_Auth();
@@ -341,18 +344,24 @@ class GEP_Loader {
 		wp_add_inline_script( 'gep-katex-init', 'document.addEventListener("DOMContentLoaded", function() { if (typeof renderMathInElement === "function") { renderMathInElement(document.body, { delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}, {left: "\\\\(", right: "\\\\)", display: false}, {left: "\\\\[", right: "\\\\]", display: true}], throwOnError: false }); } });' );
 	}
 
-	public function load_custom_portal_template( $template ) {
+	/**
+	 * Is the current request one of the portal's own screens?
+	 *
+	 * Shared by the template loader and by anything that needs to change how the
+	 * page is built (see disable_emoji_rewriter) so the two can never disagree
+	 * about which pages belong to the plugin.
+	 */
+	public static function is_portal_page() {
+		if ( is_admin() ) {
+			return false;
+		}
+		if ( is_front_page() ) {
+			return true;
+		}
+
 		global $post;
-		
 		if ( ! is_a( $post, 'WP_Post' ) ) {
-			// Handle front page even if it's the blog index
-			if ( is_front_page() ) {
-				$custom_template = GEP_PLUGIN_DIR . 'templates/portal-layout.php';
-				if ( file_exists( $custom_template ) ) {
-					return $custom_template;
-				}
-			}
-			return $template;
+			return false;
 		}
 
 		$shortcodes = array(
@@ -361,25 +370,54 @@ class GEP_Loader {
 			// BUG-18 FIX: These 4 were missing — their pages rendered in the default WP theme
 			'gep_home', 'gep_forgot_password', 'gep_payment_success', 'gep_payment_failed'
 		);
-		
-		// Also trigger for front page
-		if ( is_front_page() ) {
-			$custom_template = GEP_PLUGIN_DIR . 'templates/portal-layout.php';
-			if ( file_exists( $custom_template ) ) {
-				return $custom_template;
-			}
-		}
-
 		foreach ( $shortcodes as $sc ) {
 			if ( has_shortcode( $post->post_content, $sc ) ) {
-				$custom_template = GEP_PLUGIN_DIR . 'templates/portal-layout.php';
-				if ( file_exists( $custom_template ) ) {
-					return $custom_template;
-				}
+				return true;
 			}
 		}
+		return false;
+	}
 
-		return $template;
+	public function load_custom_portal_template( $template ) {
+		if ( ! self::is_portal_page() ) {
+			return $template;
+		}
+		$custom_template = GEP_PLUGIN_DIR . 'templates/portal-layout.php';
+		return file_exists( $custom_template ) ? $custom_template : $template;
+	}
+
+	/**
+	 * Stop WordPress rewriting the portal's emoji into remote <img> tags.
+	 *
+	 * The portal uses emoji as its icon set — sidebar navigation, dashboard stat
+	 * cards, the exam palette and passage headers all rely on them. WordPress's
+	 * wp-emoji script replaces each one with an <img> served from s.w.org, so a
+	 * single dashboard load fired dozens of cross-origin image requests purely to
+	 * draw its own icons. On a slow connection the icons arrive late; when that
+	 * host is unreachable the interface renders as a grid of broken-image
+	 * placeholders. Left to the system font they are instant, offline-safe, and
+	 * look native on the student's device.
+	 *
+	 * Scoped to portal pages: the rest of the site, and wp-admin, are untouched.
+	 */
+	public function disable_emoji_rewriter() {
+		if ( ! self::is_portal_page() ) {
+			return;
+		}
+		remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+		remove_action( 'wp_print_styles', 'print_emoji_styles' );
+		remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
+		remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
+		remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
+		add_filter( 'emoji_svg_url', '__return_false' );
+		add_filter( 'wp_resource_hints', function ( $urls, $relation ) {
+			if ( 'dns-prefetch' !== $relation ) {
+				return $urls;
+			}
+			return array_values( array_filter( $urls, function ( $u ) {
+				return false === strpos( is_array( $u ) ? ( isset( $u['href'] ) ? $u['href'] : '' ) : $u, 's.w.org' );
+			} ) );
+		}, 10, 2 );
 	}
 
 	/**

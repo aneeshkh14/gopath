@@ -504,6 +504,31 @@ foreach ( $section_counters as $cat_key => $val ) {
             <button type="button" class="gep-palette-close" id="gep-palette-close" aria-label="Close question palette" title="Close">&times;</button>
         </div>
 
+        <?php
+        /* Section switcher inside the palette.
+           The palette only ever lists the questions of the section you are in.
+           The only control that changed section was the tab strip in the main
+           area — which the palette covers completely on a phone. So once the
+           palette was open, the other sections' question numbers were not merely
+           hidden, they were unreachable: on a two-paper test a student could see
+           5 of 8 numbers and had no way to get to the rest without closing the
+           palette first and knowing the strip was there. These carry the same
+           class and data attribute as the main strip, so gep-exam.js binds and
+           highlights them through the code path that already exists. */
+        ?>
+        <?php if ( $gep_multi_section ) : ?>
+        <div class="gep-palette-sections" role="tablist" aria-label="Exam sections">
+            <?php $pal_first = true; foreach ( $sections_map as $cat_id => $cat_name ) : ?>
+                <button type="button"
+                        class="gep-section-tab gep-palette-section-tab<?php echo $pal_first ? ' active' : ''; ?>"
+                        data-cat-id="<?php echo esc_attr( $cat_id ); ?>"
+                        data-keep-palette-open="1">
+                    <?php echo esc_html( $cat_name ); ?>
+                </button>
+            <?php $pal_first = false; endforeach; ?>
+        </div>
+        <?php endif; ?>
+
         <!-- NTA 5-State Legend -->
         <div class="gep-palette-legend">
             <div class="gep-legend-item"><div class="gep-legend-dot answered" id="count-answered">0</div>Answered</div>

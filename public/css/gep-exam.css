@@ -1502,6 +1502,15 @@ span.sa-text.active { display: inline; }
     background: rgba(255, 255, 255, 0.18);
 }
 
+/* Desktop docks the palette permanently and already has an edge handle
+   (#gep-sidebar-collapse-toggle) for folding it away. The header button is a
+   second control for the same thing, and its "📋 Grid" label promises the
+   opposite of what it does there: the grid is already on screen, so the first
+   click hides it. Keep it on phones and tablets, where it is the only way in. */
+@media (min-width: 993px) {
+    .gep-palette-toggle { display: none !important; }
+}
+
 @media (max-width: 992px) {
     .gep-show-mobile { display: inline; }
     .gep-hide-mobile { display: none; }
@@ -3590,10 +3599,15 @@ span.sa-text.active { display: inline; }
 }
 
 /* ── iOS Safari fix — prevents address bar resize breaking layout ─────────── */
+/* Desktop only. Pinning these to the viewport height on a phone is what made the
+   exam unscrollable (see the mobile block below): the layout is taller than one
+   screen there, and a viewport-height box can only clip it. */
 @supports (-webkit-touch-callout: none) {
-    .gep-exam-fullscreen-container,
-    .gep-exam-layout {
-        height: -webkit-fill-available !important;
+    @media (min-width: 993px) {
+        .gep-exam-fullscreen-container,
+        .gep-exam-layout {
+            height: -webkit-fill-available !important;
+        }
     }
     .gep-exam-footer {
         padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
@@ -3617,11 +3631,33 @@ span.sa-text.active { display: inline; }
 
 @media (max-width: 992px) {
 
+    /* ── 0. Let the exam back into the document flow ──
+       This container is the outermost box of the exam page and it was
+       `position: fixed; height: 100dvh; overflow: hidden; display: flex`.
+       Three of those four fight scrolling, and together they beat every other
+       rule in this block:
+         · position:fixed took it out of flow, so <body> measured 0px tall and
+           the document had nothing to scroll even with overflow:auto;
+         · height:100dvh + overflow:hidden clipped everything past one screen;
+         · display:flex stretched .gep-exam-layout to the container's height, so
+           the `height:auto` below could never take effect.
+       On a phone a paper with a passage runs about 300px past one screen, so the
+       last option sat behind the fixed footer with no way to reach it. Restoring
+       normal flow here is what makes every other mobile rule work. */
+    .gep-exam-fullscreen-container {
+        position: static !important;
+        height: auto !important;
+        min-height: 100dvh !important;
+        overflow: visible !important;
+        display: block !important;
+        z-index: auto !important;
+    }
+
     /* ── 1. Kill the CSS Grid layout — switch to simple block ── */
     .gep-exam-layout {
         display: block !important;
         height: auto !important;
-        min-height: 100vh !important;
+        min-height: 100dvh !important;
         overflow: visible !important;
     }
 
@@ -4401,6 +4437,45 @@ span.sa-text.active { display: inline; }
 }
 .gep-palette-close:hover  { background: rgba(255,255,255,0.2); }
 .gep-palette-close:active { transform: scale(0.95); }
+
+/* Section switcher inside the palette. Without it the palette can only ever
+   reach the section you are already in, and on a phone it covers the only other
+   way to change section. Horizontally scrollable so a paper with four or five
+   sections still shows them all. */
+.gep-palette-sections {
+    display: none;                 /* desktop shows the strip in the main area */
+    gap: 6px;
+    padding: 10px 14px;
+    background: #1e293b;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex: 0 0 auto;
+}
+.gep-palette-sections::-webkit-scrollbar { display: none; }
+.gep-palette-section-tab {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    min-height: 36px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: transparent;
+    color: #cbd5e1;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+.gep-palette-section-tab.active {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: #ffffff;
+}
+@media (max-width: 992px) {
+    .gep-palette-sections { display: flex !important; }
+}
 
 /* The number grid fills the width in whole columns instead of forcing a fixed
    count that overflowed sideways on narrow phones. */

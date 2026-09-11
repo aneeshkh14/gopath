@@ -319,7 +319,10 @@ if ( ! function_exists( 'gep_add_seo_meta_tags' ) ) {
 			$test_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
 			if ( $test_id ) {
 				global $wpdb;
-				$test_row = $wpdb->get_row( $wpdb->prepare( "SELECT title, duration FROM {$wpdb->prefix}gep_tests WHERE id = %d", $test_id ) );
+					// The column is duration_minutes; "duration" does not exist on this
+					// table, so this query errored on every exam page view and the
+					// meta description and canonical link below were never emitted.
+					$test_row = $wpdb->get_row( $wpdb->prepare( "SELECT title, duration_minutes FROM {$wpdb->prefix}gep_tests WHERE id = %d", $test_id ) );
 				if ( $test_row ) {
 					$desc = "Attempt " . esc_attr( $test_row->title ) . " mock test on GoPath Exam Portal. Real-time test engine with advanced analytics, rank predictor, and step-by-step solutions.";
 					echo '<meta name="description" content="' . $desc . '" />' . "\n";

@@ -688,7 +688,13 @@ document.addEventListener('DOMContentLoaded', function() {
         sectionTabs.forEach(tab => {
             tab.addEventListener('click', function() {
                 const catId = this.dataset.catId;
-                switchSection(catId, true);
+                // The copies of this strip that live inside the palette only
+                // re-point the palette at another section's numbers: the student
+                // is mid-way through choosing a question, so jumping them to the
+                // first question of the section and shutting the palette would
+                // undo the very thing they opened it to do.
+                const keepOpen = this.dataset.keepPaletteOpen === '1';
+                switchSection(catId, !keepOpen);
             });
         });
         
@@ -717,11 +723,12 @@ document.addEventListener('DOMContentLoaded', function() {
         activeCatId = catId;
         activeTab = catId;
         
-        // 1. Update tab active state
+        // 1. Update tab active state — on both strips, the one in the main area
+        //    and its copy inside the palette, so they never disagree.
         sectionTabs.forEach(tab => {
             tab.classList.toggle('active', tab.dataset.catId === catId);
             if (tab.dataset.catId === catId) {
-                const activeLabel = document.getElementById('gep-sidebar-active-section-name');
+                const activeLabel = document.getElementById('gep-palette-section-name');
                 if (activeLabel) activeLabel.textContent = tab.textContent.trim();
             }
         });

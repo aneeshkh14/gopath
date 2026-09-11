@@ -21,9 +21,12 @@ class GEP_Analytics {
         ) );
         if ( ! $attempt ) return null;
 
-        $answers = json_decode( $attempt->answers, true ) ?: array();
-        $section_scores_raw = json_decode( $attempt->section_scores, true ) ?: array();
-        $analytics_raw = json_decode( $attempt->analytics_data, true ) ?: array();
+        // These three columns are NULL on a fresh attempt, and PHP 8 deprecates
+        // passing NULL to json_decode — every such attempt wrote three notices to
+        // the log before this cast.
+        $answers = json_decode( (string) $attempt->answers, true ) ?: array();
+        $section_scores_raw = json_decode( (string) $attempt->section_scores, true ) ?: array();
+        $analytics_raw = json_decode( (string) $attempt->analytics_data, true ) ?: array();
 
         // Get all questions for this test
         $test_logic = new GEP_Test();
