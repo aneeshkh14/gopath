@@ -2109,14 +2109,49 @@
 }
 
 /* --- White-on-colour buttons: darken the fill so white text passes AA --------- */
+/* The box belongs here too, not only in one view's <style> block. These classes
+   are used across several templates but were only given their padding and
+   display in templates/dashboard/main.php, so anywhere else (the About page,
+   for one) they rendered as a bare inline <a>: vertical padding on an inline
+   box does not grow it, leaving a 21px-tall tap target with a green fill. */
 .gep-btn-mini,
 .gep-btn-strip {
     background: #047857 !important;
     border-color: #065f46 !important;
     color: #fff !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    touch-action: manipulation;
 }
 .gep-btn-mini:hover,
 .gep-btn-strip:hover { background: #065f46 !important; }
+
+/* Touch devices need a comfortable target on the small action buttons that sit
+   at 29-30px on a phone. Applied only where the pointer is actually coarse, so
+   the desktop density is unchanged. */
+@media (hover: none) and (pointer: coarse) {
+    .gep-btn-mini,
+    .gep-btn-strip,
+    .gep-btn-sovereign-primary,
+    .gep-btn-sovereign-secondary,
+    .filter-btn,
+    .domain-chip,
+    .gep-popular-tab-btn,
+    .gep-pyq-tab-btn,
+    .t-btn {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        touch-action: manipulation;
+    }
+}
 .gep-popular-tab-btn.active,
 .gep-pyq-tab-btn.active {
     background: #4f46e5 !important;

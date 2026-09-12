@@ -499,13 +499,16 @@ html body {
    carries its own background wherever it goes. `color: unset` was wrong here:
    colour is an inherited property, so unset means inherit, which pulled the
    page's near-black text onto the dark carousel. Name the colour instead. */
+/* :not(...) on the button descendants matters: the slide's call to action is a
+   white pill, so painting everything inside the slide near-white put white text
+   on a white button. Only the copy sitting directly on the slide follows it. */
 :root[data-gep-theme="light"] .gep-carousel-slide,
 :root[data-gep-theme="light"] .gep-carousel-slide h1,
 :root[data-gep-theme="light"] .gep-carousel-slide h2,
 :root[data-gep-theme="light"] .gep-carousel-slide h3,
-:root[data-gep-theme="light"] .gep-carousel-slide p,
-:root[data-gep-theme="light"] .gep-carousel-slide span,
-:root[data-gep-theme="light"] .gep-carousel-slide a {
+:root[data-gep-theme="light"] .gep-carousel-slide p:not(.gep-btn-sovereign-primary *),
+:root[data-gep-theme="light"] .gep-carousel-slide > div > span,
+:root[data-gep-theme="light"] .gep-carousel-slide > span {
     color: #f8fafc !important;
 }
 :root[data-gep-theme="light"] .gep-carousel-desc { color: rgba(255,255,255,0.88) !important; }
@@ -741,10 +744,13 @@ html body {
 :root .t-btn:not(.active),
 :root .pill-label,
 :root .view-all-link { color: var(--gep-c-text-muted) !important; }
+/* The active tab is filled with the accent colour, so its label follows the
+   accent's own contrast pair, not the page's. Using --gep-c-text here put
+   near-black on indigo at 2.8:1. */
 :root .gep-popular-tab-btn.active,
 :root .gep-pyq-tab-btn.active,
 :root .filter-btn.active,
-:root .t-btn.active { color: var(--gep-c-text) !important; }
+:root .t-btn.active { color: #ffffff !important; }
 
 /* The instructions screen is built entirely from inline styles, so its copy can
    only be reached this way. */
@@ -870,6 +876,101 @@ html body {
 :root[data-gep-theme="dark"] .gep-result-wrap p { color: var(--gep-c-text) !important; }
 :root[data-gep-theme="dark"] .gep-result-wrap p.gep-muted,
 :root[data-gep-theme="dark"] .gep-result-wrap [style*="color: #64748b"] { color: var(--gep-c-text-muted) !important; }
+
+/* ── Ghost buttons ───────────────────────────────────────────────────────────
+   Several action buttons are drawn as a film of translucent white
+   (rgba(255,255,255,0.05-0.1)) with white text — invisible-by-design on a dark
+   card, and invisible-by-accident on a light one, where 5% white over white is
+   still white. Give them a real fill and readable text in light mode; dark mode
+   keeps the film it was designed with. */
+:root[data-gep-theme="light"] .gep-btn-asset:not(.gep-btn-asset-primary),
+:root[data-gep-theme="light"] .btn-link-action,
+:root[data-gep-theme="light"] .gep-btn-hero-outline,
+:root[data-gep-theme="light"] .gep-btn-sovereign-secondary,
+:root[data-gep-theme="light"] .play-btn-glass {
+    background: var(--gep-c-surface-3) !important;
+    border: 1px solid var(--gep-c-border-strong) !important;
+    color: var(--gep-c-text) !important;
+}
+:root[data-gep-theme="light"] .gep-btn-asset:not(.gep-btn-asset-primary):hover,
+:root[data-gep-theme="light"] .btn-link-action:hover,
+:root[data-gep-theme="light"] .gep-btn-sovereign-secondary:hover {
+    background: var(--gep-c-border) !important;
+    color: var(--gep-c-text) !important;
+}
+
+/* Accent-tinted meta text sized for a dark card: the mid greens and indigos sit
+   around 2.5-3:1 on white. The semantic tokens already hold a value per theme. */
+:root .free-text,
+:root .asset-icon-wrap { color: var(--gep-c-success) !important; }
+:root .time-tag,
+:root .gep-exam-card-icon { color: var(--gep-c-info) !important; }
+:root .section-subtitle,
+:root .gep-page-header p,
+:root .pill-label { color: var(--gep-c-text-muted) !important; }
+
+/* ── Literal colours used under the wrong theme ──────────────────────────────
+   The tail of the contrast audit is all the same shape: a grey or an accent
+   picked to sit on one background, now appearing on the other. Mapping the
+   literals to tokens fixes them as a class rather than one at a time.
+
+   Scoped away from the panels that keep a fixed dark background of their own
+   (the hero blocks, the carousel, the live banner): copy inside those is
+   correct as authored under either theme, and recolouring it would be the same
+   mistake in reverse. */
+/* Muted greys: #94a3b8, #a1a1aa, #71717a, #64748b, #475569 were each chosen for
+   one surface and fail on the other. */
+:root .gep-main-inner :not(.gep-hero):not(.gep-hero-premium):not(.gep-carousel-slide):not(.gep-live-now-banner) >
+    :is([style*="color: #94a3b8"], [style*="color: #a1a1aa"], [style*="color: #71717a"],
+        [style*="color: #64748b"], [style*="color: #475569"], [style*="color:#94a3b8"]):not([style*="background"]),
+:root .gep-result-wrap [style*="color: #64748b"]:not([style*="background"]),
+:root .gep-checkout-wrap [style*="color: #64748b"]:not([style*="background"]),
+:root .policy-date,
+:root .section-subtitle,
+:root .gep-empty-state p,
+:root .sidebar-empty-state p,
+:root .purchases-empty p,
+:root .gep-purchases-empty p {
+    color: var(--gep-c-text-muted) !important;
+}
+
+/* Accent-tinted values on profile and summary cards. */
+:root .gep-profile-stats .val,
+:root .gep-profile-completeness .label-row .val,
+:root .gep-skill-stat-item .val,
+:root .count,
+:root .gep-subject-nums .s { color: var(--gep-c-text) !important; }
+
+/* A filled "active" chip needs the accent fill as well as the white label —
+   without the fill it was white text on the page. */
+:root .filter-btn.active,
+:root .domain-chip.active,
+:root .t-btn.active {
+    background: var(--gep-c-accent) !important;
+    border-color: var(--gep-c-accent) !important;
+    color: #ffffff !important;
+}
+
+/* Deep greens and blues sized for a white card, on the dark one. */
+:root[data-gep-theme="dark"] [style*="color: #166534"],
+:root[data-gep-theme="dark"] [style*="color: #15803d"],
+:root[data-gep-theme="dark"] [style*="color: #047857"] { color: var(--gep-c-success) !important; }
+:root[data-gep-theme="dark"] [style*="color: #1e40af"],
+:root[data-gep-theme="dark"] [style*="color: #4f46e5"] { color: var(--gep-c-info) !important; }
+
+/* Checkout cards that are still sheets of white under the dark theme. */
+:root[data-gep-theme="dark"] .gep-checkout-card,
+:root[data-gep-theme="dark"] .gep-checkout-content > div,
+:root[data-gep-theme="dark"] .order-details-card,
+:root[data-gep-theme="dark"] .gep-checkout-grid > div {
+    background-color: var(--gep-c-surface) !important;
+    border-color: var(--gep-c-border) !important;
+}
+:root[data-gep-theme="dark"] .gep-checkout-wrap h1,
+:root[data-gep-theme="dark"] .gep-checkout-wrap h2,
+:root[data-gep-theme="dark"] .gep-checkout-wrap h3,
+:root[data-gep-theme="dark"] .gep-checkout-wrap h4,
+:root[data-gep-theme="dark"] .gep-checkout-wrap h5 { color: var(--gep-c-text) !important; }
 
 /* ── Respect reduced motion ──────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

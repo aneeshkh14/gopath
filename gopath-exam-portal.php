@@ -345,7 +345,7 @@ if ( ! function_exists( 'gep_add_seo_meta_tags' ) ) {
 						'name' => $test_row->title,
 						'description' => 'Online Mock Test Practice Series',
 						'educationalUse' => 'Practice Test',
-						'timeRequired' => 'PT' . intval( $test_row->duration ) . 'M',
+						'timeRequired' => 'PT' . intval( $test_row->duration_minutes ) . 'M',
 						'provider' => array(
 							'@type' => 'Organization',
 							'name' => get_bloginfo( 'name' ),
