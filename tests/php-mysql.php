@@ -32,7 +32,7 @@ $discounted=(new FreeCouponPaymentFixture())->create_order(4,'test','SAVE');expe
 echo "PASS MySQL free enrollment and full-discount coupon grant access and record usage\n";
 seed();if(!function_exists('pcntl_fork'))throw new Exception('pcntl is required for concurrent callback coverage');$wpdb=null;$children=[];
 for($i=0;$i<2;$i++){ $pid=pcntl_fork();if($pid===-1)throw new Exception('Could not fork');if($pid===0){$wpdb=new IntegrationDb();exit(verify()?0:1);} $children[]=$pid; }
-foreach($children as $pid){pcntl_waitpid($pid,$status);expect(pcntl_wexitstatus($status)===0,'Concurrent callback failed');}
+foreach($children as $pid){pcntl_waitpid($pid,$status);expect(pcntl_wifexited($status) && pcntl_wexitstatus($status)===0,'Concurrent callback failed');}
 $wpdb=new IntegrationDb();expect((int)$wpdb->get_var('SELECT extra_attempts FROM wp_gep_user_test_access WHERE test_id=2')===8);expect((int)$wpdb->get_var('SELECT used_count FROM wp_gep_coupons')===1);echo "PASS MySQL simultaneous callbacks grant once\n";
 seed();$wpdb->query("UPDATE wp_gep_tests SET title='Test title' WHERE id=2");$wpdb->query("INSERT INTO wp_gep_courses VALUES(2,'Course title')");$wpdb->query("INSERT INTO wp_gep_orders(user_id,item_id,item_type,status) VALUES(7,2,'course','success'),(7,2,'pass','success'),(7,999,'test','success'),(99,2,'test','success')");$history=(new GEP_Payment())->get_user_orders(7);expect(count($history)===4);$titles=array_column($history,'item_title');foreach(['Test title','Course title','Yearly Mock Test Pass Pro','Unavailable item #999'] as $title)expect(in_array($title,$titles,true));echo "PASS MySQL history separates overlapping item IDs and excludes another account\n";
 echo "5 MySQL integration scenarios passed.\n";

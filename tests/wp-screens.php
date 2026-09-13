@@ -5,7 +5,7 @@ $root = getenv('GEP_TEST_WORDPRESS_ROOT');
 if (!$root || !is_file($root.'/wp-load.php')) throw new RuntimeException('Disposable WordPress root required.');
 define('WP_ADMIN', $kind === 'admin' || $kind === 'admin-reply');
 define('DISABLE_WP_CRON', true);
-$_SERVER['HTTP_HOST']='portal.example'; $_SERVER['REQUEST_METHOD']='GET'; $_SERVER['REQUEST_URI']='/dashboard/';
+$_SERVER['HTTP_HOST']='portal.example'; $_SERVER['SERVER_NAME']='portal.example'; $_SERVER['SERVER_PORT']=80; $_SERVER['REQUEST_METHOD']='GET'; $_SERVER['REQUEST_URI']='/dashboard/';
 ob_start();
 require $root.'/wp-load.php';
 if (DB_NAME !== 'gep_wordpress') throw new RuntimeException('Only the disposable gep_wordpress database is allowed.');
@@ -13,7 +13,8 @@ add_filter('pre_wp_mail', '__return_true');
 add_filter('pre_http_request', function(){return new WP_Error('isolated_test','External services are disabled in rendering tests.');});
 $wpdb->suppress_errors(true);
 set_error_handler(function($severity,$message,$file,$line){
-    if (($severity & (E_WARNING|E_NOTICE|E_USER_WARNING|E_USER_NOTICE)) && strpos($file, GEP_PLUGIN_DIR) === 0) throw new ErrorException($message,0,$severity,$file,$line);
+    if (!(error_reporting() & $severity)) return false;
+    if ($severity & (E_WARNING|E_NOTICE|E_USER_WARNING|E_USER_NOTICE)) throw new ErrorException($message,0,$severity,$file,$line);
     return false;
 });
 function check_db(){global $wpdb;if($wpdb->last_error)throw new RuntimeException($wpdb->last_error);}
@@ -61,7 +62,7 @@ try {
             if($pid===0){$wpdb->db_connect();$order='fixture_order_'.$n;$payment='fixture_payment_'.$n;$ok=(new GEP_Payment())->verify_payment($order,$payment,hash_hmac('sha256',$order.'|'.$payment,'fixture-secret'));while(ob_get_level())ob_end_clean();exit($ok?0:1);}
             $children[]=$pid;
         }
-        foreach($children as $pid){pcntl_waitpid($pid,$status);if(pcntl_wexitstatus($status)!==0)throw new RuntimeException('Concurrent pass verification failed.');}
+        foreach($children as $pid){pcntl_waitpid($pid,$status);if(!pcntl_wifexited($status) || pcntl_wexitstatus($status)!==0)throw new RuntimeException('Concurrent pass verification failed.');}
         $wpdb->db_connect();wp_cache_delete($student,'user_meta');
         $expected=date('Y-m-d H:i:s',strtotime('+60 days',strtotime($before)));
         if(get_user_meta($student,'gep_pass_expiry',true)!==$expected)throw new RuntimeException('Concurrent renewals lost time.');
