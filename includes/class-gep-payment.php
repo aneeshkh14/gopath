@@ -106,6 +106,7 @@ class GEP_Payment {
 			$granted = $this->grant_access( get_current_user_id(), $item_id, $item_type, $order_db_id );
 			$recorded = $wpdb->update("{$wpdb->prefix}gep_orders", array('status' => 'success'), array('id' => $order_db_id));
 			if ( ! $granted || $recorded === false ) { $wpdb->query('ROLLBACK'); return new WP_Error('order_failed', 'Could not complete enrollment. Please retry.'); }
+			if (!empty($coupon_code) && $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}gep_coupons SET used_count = used_count + 1 WHERE code = %s", $coupon_code)) === false) { $wpdb->query('ROLLBACK'); return new WP_Error('order_failed', 'Could not confirm the coupon. Please retry.'); }
 			if ($wpdb->query('COMMIT') === false) { $wpdb->query('ROLLBACK'); return new WP_Error('order_failed', 'Enrollment is not confirmed. Please retry.'); }
 			// BUG FIX: Redirect to ?view=purchases so user sees their newly enrolled item
 			return array( 'status' => 'free', 'redirect' => add_query_arg( 'view', 'purchases', (string) gep_get_url( 'dashboard' ) ) );
