@@ -110,7 +110,10 @@ if ($view==='practice-lifecycle') {
     $id=insert_fixture('tests',customer_paper(['type'=>'random','is_free'=>0,'price'=>100]));
     customer_assert(is_wp_error((new GEP_Payment())->create_order($id)),'Random checkout allowed zero purchased attempts.');
 } elseif ($view==='payment-free') {
-    $id=insert_fixture('tests',customer_paper(['is_free'=>1,'price'=>100]));$order=(new GEP_Payment())->create_order($id);
+    $id=insert_fixture('tests',customer_paper(['is_free'=>1,'price'=>100]));
+    insert_fixture('coupons',['code'=>'FREEPREVIEW','type'=>'percent','value'=>10]);
+    $preview=(new GEP_Payment())->validate_coupon('FREEPREVIEW',$id);customer_assert(!is_wp_error($preview) && (float)$preview['new_total']===0.0 && (float)$preview['discount']===0.0,'Coupon preview reintroduced an old price on a free item.');
+    $order=(new GEP_Payment())->create_order($id);
     customer_assert(!is_wp_error($order) && $order['status']==='free','A test marked free was charged its old price.');
     customer_assert((int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}gep_orders WHERE item_id=%d AND amount=0 AND status='success'",$id))===1,'Free enrollment not recorded.');
 } else throw new RuntimeException('Unknown customer test case.');

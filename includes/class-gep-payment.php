@@ -329,7 +329,7 @@ class GEP_Payment {
 		}
 		if ( ! $item ) return new WP_Error( 'error', 'Invalid item' );
 
-		$base_price = $item->price;
+		$base_price = !empty($item->is_free) ? 0 : $item->price;
 		if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && empty($item->is_free) && $attempts > 0 ) {
 			$trans = !empty($item->translated_data) ? gep_safe_json_decode($item->translated_data, true) : array();
 			$attempt_pricing = isset($trans['attempt_pricing']) ? $trans['attempt_pricing'] : array();
@@ -342,6 +342,7 @@ class GEP_Payment {
 		}
 
 		$discount = ( $coupon->type === 'percent' ) ? ( $base_price * $coupon->value / 100 ) : $coupon->value;
+        $discount = min($base_price, max(0, $discount));
 
 		return array(
 			'code' => $code,
