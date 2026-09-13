@@ -308,7 +308,7 @@ class GEP_Payment {
 
 		if ( ! $coupon ) return new WP_Error( 'invalid_coupon', 'Invalid coupon code' );
 
-		if ( $coupon->expiry_date && strtotime( $coupon->expiry_date ) < time() ) {
+		if ( $coupon->expiry_date && strtotime( $coupon->expiry_date ) < current_time('timestamp') ) {
 			return new WP_Error( 'expired_coupon', 'Coupon has expired' );
 		}
 

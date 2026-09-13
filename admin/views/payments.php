@@ -9,20 +9,27 @@ if ($payment_month !== '0') {
     $month_end = date('Y-m-d', strtotime($month_start . ' +1 month'));
     $payment_where = $wpdb->prepare('WHERE o.created_at >= %s AND o.created_at < %s', $month_start, $month_end);
 }
+$payment_total = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}gep_orders o $payment_where");
+$payment_pages = max(1, (int)ceil($payment_total / 50));
+$payment_page = min($payment_pages, max(1, absint($_GET['paged'] ?? 1)));
+$payment_offset = ($payment_page - 1) * 50;
+$pass_names = array(1=>'Monthly Mock Test Pass', 2=>'Yearly Mock Test Pass Pro', 3=>'Lifetime Mock Test Pass');
 $gateway_key = (string) get_option('gep_razorpay_key_id', '');
-$gateway_label = strpos($gateway_key, 'rzp_test_') === 0 ? 'Test mode configured' : ($gateway_key ? 'Gateway key configured' : 'Not configured');
+$gateway_complete = $gateway_key !== '' && (string)get_option('gep_razorpay_key_secret', '') !== '';
+$gateway_label = !$gateway_complete ? 'Configuration incomplete' : (strpos($gateway_key, 'rzp_test_') === 0 ? 'Test mode configured' : 'Gateway keys configured');
+$gateway_color = $gateway_complete ? '#166534' : '#92400e';
 ?>
 <div class="wrap gep-admin-wrap">
     <div class="gep-admin-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #fff; padding: 12px 25px; border-radius: 20px; border: 1px solid var(--admin-border); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);">
         <div>
-            <h1 style="margin: 0; font-size: 24px; letter-spacing: -0.5px;">Revenue Command Center</h1>
+            <h1 style="margin: 0; font-size: 24px; letter-spacing: -0.5px;">Payments</h1>
             <p style="margin: 4px 0 0; color: var(--admin-muted); font-weight: 600; font-size: 13px;">Monitor student transactions and payment health.</p>
         </div>
         <div style="display: flex; align-items: center; gap: 20px;">
             <div style="text-align: right;">
                 <span style="display: block; font-size: 11px; font-weight: 800; color: var(--admin-muted); text-transform: uppercase; letter-spacing: 1px;">Gateway Status</span>
-                <span style="color: #10b981; font-weight: 900; font-size: 14px; display: flex; align-items: center; gap: 6px;">
-                    <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span>
+                <span style="color: <?php echo esc_attr($gateway_color); ?>; font-weight: 900; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 8px; height: 8px; background: <?php echo esc_attr($gateway_color); ?>; border-radius: 50%; display: inline-block;"></span>
                     <?php echo esc_html($gateway_label); ?>
                 </span>
             </div>
@@ -69,43 +76,48 @@ $gateway_label = strpos($gateway_key, 'rzp_test_') === 0 ? 'Test mode configured
                 <?php
                 global $wpdb;
                 $orders = $wpdb->get_results( "
-                    SELECT o.*, u.display_name, 
-                    CASE 
+                    SELECT o.*, u.display_name,
+                    CASE
+                        WHEN o.item_type = 'pass' THEN NULL
                         WHEN o.item_type = 'course' THEN (SELECT title FROM {$wpdb->prefix}gep_courses WHERE id = o.item_id)
                         ELSE (SELECT title FROM {$wpdb->prefix}gep_tests WHERE id = o.item_id)
                     END as item_name
-                    FROM {$wpdb->prefix}gep_orders o 
-                    JOIN {$wpdb->users} u ON o.user_id = u.ID 
+                    FROM {$wpdb->prefix}gep_orders o
+                    LEFT JOIN {$wpdb->users} u ON o.user_id = u.ID
                     $payment_where
-                    ORDER BY o.created_at DESC 
-                    LIMIT 50" 
+                    ORDER BY o.created_at DESC, o.id DESC
+                    LIMIT 50 OFFSET $payment_offset"
                 );
                 if ( $orders ) :
-                    foreach ( $orders as $order ) : ?>
+                    foreach ( $orders as $order ) :
+                        if ($order->item_type === 'pass') $order->item_name = $pass_names[(int)$order->item_id] ?? 'Unavailable pass';
+                        if (!$order->item_name) $order->item_name = 'Unavailable item #' . (int)$order->item_id;
+                        if (!$order->display_name) $order->display_name = 'Deleted user #' . (int)$order->user_id;
+                        ?>
                         <tr>
                             <td style="padding-left: 30px;">
                                 <div style="font-family: 'JetBrains Mono', 'Fira Code', monospace; font-weight: 800; color: #6366f1; font-size: 11px; background: #f5f3ff; padding: 6px 12px; border-radius: 8px; display: inline-block; border: 1px solid #e0e7ff;">
-                                    <?php echo esc_html( $order->razorpay_order_id ); ?>
+                                    <?php echo esc_html( $order->razorpay_order_id ?: 'Order #' . (int)$order->id ); ?>
                                 </div>
                             </td>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 14px;">
                                     <div style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: #6366f1; border: 1px solid #e2e8f0;">
-                                        <?php echo strtoupper(substr($order->display_name, 0, 1)); ?>
+                                        <?php echo esc_html(mb_strtoupper(mb_substr($order->display_name, 0, 1))); ?>
                                     </div>
                                     <strong style="font-size: 15px; color: #1e293b;"><?php echo esc_html( $order->display_name ); ?></strong>
                                 </div>
                             </td>
                             <td class="row-title">
-                                <span style="font-size: 10px; font-weight: 900; color: #94a3b8; display: block; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;"><?php echo $order->item_type; ?></span>
+                                <span style="font-size: 10px; font-weight: 900; color: #94a3b8; display: block; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;"><?php echo esc_html($order->item_type); ?></span>
                                 <span style="font-weight: 800; color: #0f172a; font-size: 15px;"><?php echo esc_html( $order->item_name ); ?></span>
                             </td>
                             <td>
-                                <span style="font-weight: 900; font-size: 18px; color: #10b981;">₹<?php echo number_format( $order->amount, 0 ); ?></span>
+                                <span style="font-weight: 900; font-size: 18px; color: #10b981;">₹<?php echo number_format( $order->amount, 2 ); ?></span>
                             </td>
                             <td>
                                 <div style="font-size: 12px; color: #64748b; font-family: 'JetBrains Mono', monospace; background: #f8fafc; padding: 6px 10px; border-radius: 8px; border: 1px solid #e2e8f0; display: inline-block;">
-                                    <?php echo esc_html( $order->razorpay_payment_id ?: 'SYNC_PENDING' ); ?>
+                                    <?php echo esc_html( $order->razorpay_payment_id ?: 'Not recorded' ); ?>
                                 </div>
                             </td>
                             <td>
@@ -149,3 +161,9 @@ $gateway_label = strpos($gateway_key, 'rzp_test_') === 0 ? 'Test mode configured
     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 </style>
+
+<nav class="tablenav" aria-label="Payment pages">
+    <span><?php echo esc_html(sprintf('%d orders · Page %d of %d', $payment_total, $payment_page, $payment_pages)); ?></span>
+    <?php if ($payment_page > 1) : ?><a class="button" href="<?php echo esc_url(add_query_arg(array('page'=>'gep-payments','m'=>$payment_month,'paged'=>$payment_page-1), admin_url('admin.php'))); ?>">Previous page</a><?php endif; ?>
+    <?php if ($payment_page < $payment_pages) : ?><a class="button" href="<?php echo esc_url(add_query_arg(array('page'=>'gep-payments','m'=>$payment_month,'paged'=>$payment_page+1), admin_url('admin.php'))); ?>">Next page</a><?php endif; ?>
+</nav>

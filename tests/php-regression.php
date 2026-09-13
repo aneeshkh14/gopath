@@ -130,4 +130,14 @@ scenario('zero-score legacy results use a safe fallback without division by zero
 scenario('negative-mark scores retain their positive paper total',function(){
  expect(GEP_Result::recorded_total_marks((object)['score'=>-2,'percentage'=>-4],10)===50.0);
 });
+scenario('failed admin coupon insert keeps entered fields and reports failure',function(){
+ global $wpdb;$wpdb->insert_result=false;$_POST=['code'=>'RETRY','type'=>'fixed','value'=>'12.50','usage_limit'=>'3','expiry_date'=>''];
+ $method=new ReflectionMethod(GEP_Admin_Coupons::class,'handle_save_coupon');$method->invoke(new GEP_Admin_Coupons());
+ expect(strpos(GEP_Admin_Coupons::$form_error,'Could not save')!==false);expect(GEP_Admin_Coupons::$form_values['code']==='RETRY');expect(GEP_Admin_Coupons::$form_values['value']===12.5);
+});
+scenario('invalid admin coupon stays in its form and never writes a discount',function(){
+ global $wpdb;$_POST=['code'=>'INVALID','type'=>'percent','value'=>'101','usage_limit'=>'3','expiry_date'=>''];
+ $method=new ReflectionMethod(GEP_Admin_Coupons::class,'handle_save_coupon');$method->invoke(new GEP_Admin_Coupons());
+ expect(strpos(GEP_Admin_Coupons::$form_error,'100')!==false);expect(GEP_Admin_Coupons::$form_values['value']===101.0);expect(!$wpdb->inserts);
+});
 echo "$passed PHP scenarios passed; $failed failed.\n";exit($failed?1:0);
