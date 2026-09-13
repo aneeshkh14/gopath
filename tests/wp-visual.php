@@ -24,6 +24,14 @@ if ($view === 'resume') {
         $url = esc_url(add_query_arg('id', 901, (string)gep_get_url('result')));
         if (strpos($html, $url) === false || strpos($html, '/8</small>') === false) throw new RuntimeException('Recent results lost their direct link or recorded mark total.');
     } finally { $wpdb->update($wpdb->prefix.'gep_attempts', ['analytics_data'=>null], ['id'=>901]); }
+} elseif ($view === 'promotions') {
+    update_option('gep_slide1_title','Fixture poster');
+    update_option('gep_slide1_url','https://portal.example/dashboard/?view=tests');
+    try {
+        $html=$shortcodes->render_dashboard();
+        if(strpos($html,'Fixture poster')===false || strpos($html,'data-promo-direction="1"')===false || strpos($html,'gep-study-promotions')>strpos($html,'id="gep-study-heading"'))throw new RuntimeException('Configured posters are missing above the study area.');
+        if(strpos($html,'Continue test')===false)throw new RuntimeException('Posters removed the saved-test action.');
+    } finally {delete_option('gep_slide1_title');delete_option('gep_slide1_url');}
 } elseif ($view === 'assets') {
     $shortcodes->register_shortcodes();
     $page=wp_insert_post(['post_type'=>'page','post_status'=>'publish','post_title'=>'Fixture assets','post_content'=>'[gep_dashboard]']);

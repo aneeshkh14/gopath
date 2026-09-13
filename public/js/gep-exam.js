@@ -402,6 +402,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return parseFloat(n.toFixed(2)).toString();
     }
 
+    // Move only the number grid, never the page or the question reading pane.
+    function revealCurrentPaletteQuestion() {
+        const grid = document.querySelector('.gep-palette-grid-container');
+        const current = document.querySelector('.gep-palette-btn.active');
+        if (!grid || !current || grid.clientHeight <= 0) return;
+        const bounds = grid.getBoundingClientRect();
+        const item = current.getBoundingClientRect();
+        const top = bounds.top + grid.clientTop + 6;
+        const bottom = bounds.top + grid.clientTop + grid.clientHeight - 6;
+        if (item.top < top) grid.scrollTop = Math.max(0, grid.scrollTop + item.top - top);
+        else if (item.bottom > bottom) grid.scrollTop += item.bottom - bottom;
+    }
+
     function loadQuestion(index, capturePrevious = true) {
         const questions = document.querySelectorAll('.gep-question-block');
         if (!questions[index] || submitting || submissionRequested || timerExpired) return;
@@ -481,7 +494,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (langPicker) langPicker.hidden = sectionLocked;
         }
 
-        paletteButtons.forEach((btn, i) => btn.classList.toggle('active', i === index));
+        paletteButtons.forEach((btn, i) => {
+            btn.classList.toggle('active', i === index);
+            if (i === index) btn.setAttribute('aria-current', 'step');
+            else btn.removeAttribute('aria-current');
+        });
         if (prevBtn) prevBtn.disabled = (index === 0 || (hasSectionalTiming && questions[index - 1].dataset.catId !== sectionalTimings[currentSectionIdx].id));
         if (nextBtn) nextBtn.textContent = (index === questions.length - 1) ? 'Save & Finish' : (hasSectionalTiming && questions[index + 1].dataset.catId !== sectionalTimings[currentSectionIdx].id) ? 'Save Answer' : 'Save & Next →';
         
@@ -549,6 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
             activeBlock.querySelectorAll('.hi-text').forEach(el => el.classList.toggle('active', activeLang === 'hi'));
         }
         updateSidebarCounters();
+        revealCurrentPaletteQuestion();
     }
 
     // ─── Navigation ─────────────────────────────────────────────────────────
@@ -627,7 +645,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const examLayout    = document.querySelector('.gep-exam-layout');
     
     // The Grid button opens the same full-screen overview on every device.
-    // The desktop edge handle remains a separate compact-sidebar control.
+    // The desktop edge handle opens that same overview.
     const paletteClose = document.getElementById('gep-palette-close');
     const paletteBackground = Array.from(document.querySelectorAll('.gep-exam-header, .gep-exam-main, .gep-exam-footer'));
     let paletteBackgroundState = [];
@@ -647,7 +665,10 @@ document.addEventListener('DOMContentLoaded', function() {
             paletteBackgroundState = [];
         }
         if (paletteToggle) paletteToggle.setAttribute('aria-expanded', String(open));
+        const expandHandle = document.getElementById('gep-sidebar-collapse-toggle');
+        if (expandHandle) expandHandle.setAttribute('aria-expanded', String(open));
         syncPaletteVisibility();
+        if (open) revealCurrentPaletteQuestion();
         if (open && paletteClose) paletteClose.focus();
         else if (restoreFocus && paletteToggle) paletteToggle.focus();
     }
@@ -697,22 +718,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
     if (sidebarCollapseToggle && examSidebar) {
-        sidebarCollapseToggle.addEventListener('click', function() {
-            examSidebar.classList.toggle('collapsed');
-            if (examLayout) {
-                examLayout.classList.toggle('sidebar-collapsed');
-            }
-            syncPaletteVisibility();
-            this.setAttribute('aria-expanded', String(!examSidebar.classList.contains('collapsed')));
-            const icon = this.querySelector('.toggle-icon');
-            if (icon) {
-                if (examSidebar.classList.contains('collapsed')) {
-                    icon.textContent = '❮'; // Points left to indicate expand
-                } else {
-                    icon.textContent = '❯'; // Points right to indicate collapse
-                }
-            }
-        });
+        sidebarCollapseToggle.addEventListener('click', () => setPaletteOpen(true));
     }
 
     paletteButtons.forEach((btn) => {

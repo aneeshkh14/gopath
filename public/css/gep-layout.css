@@ -93,3 +93,16 @@
 #gep-page-wrapper .gep-home-wrapper .gep-section-title p,
 #gep-page-wrapper .gep-home-wrapper .gep-feature-card p,
 #gep-page-wrapper .gep-home-wrapper .gep-hero-stats .stat { color: var(--gep-c-text-muted); }
+
+/* Restore swipeable configured posters without hiding the saved-test action. */
+#gep-page-wrapper .gep-study-promotions { margin-bottom: 24px; position: relative; }
+#gep-page-wrapper .gep-study-promotions h2 { padding-right: 112px; color: var(--gep-c-text); font-size: 18px; }
+#gep-page-wrapper .gep-study-promotions .gep-study-links {
+    display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: 8px;
+}
+#gep-page-wrapper .gep-study-promotions .gep-study-link { flex: 0 0 100%; box-sizing: border-box; scroll-snap-align: start; min-width: 0; }
+#gep-page-wrapper .gep-study-promotions .gep-study-link img { max-height: 200px; object-fit: contain; }
+#gep-page-wrapper .gep-promo-controls { position: absolute; right: 0; top: 0; display: flex; gap: 8px; }
+#gep-page-wrapper .gep-promo-controls button { min-width: 44px; min-height: 44px; border: 1px solid var(--gep-c-border-strong); border-radius: 8px; background: var(--gep-c-surface); color: var(--gep-c-text); cursor: pointer; }
+#gep-page-wrapper .gep-study-promotions :focus-visible { outline: 3px solid var(--gep-c-accent); outline-offset: 2px; }
