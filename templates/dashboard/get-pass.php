@@ -37,7 +37,7 @@ $is_active = $pass_expiry && strtotime( $pass_expiry ) > current_time( 'timestam
     <?php endif; ?>
 
     <!-- Pricing Grid -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px;">
+    <div class="gep-pass-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px;">
         
         <!-- 1 Month Card -->
         <div class="gep-pricing-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 35px; display: flex; flex-direction: column; transition: all 0.3s; position: relative;">

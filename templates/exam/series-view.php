@@ -421,8 +421,8 @@
 
 <!-- Details Modal -->
 <div id="gep-details-modal" class="gep-details-modal-overlay" style="display: none;">
-    <div class="gep-details-modal-content">
-        <button type="button" class="gep-details-modal-close" id="gep-details-modal-close">&times;</button>
+    <div class="gep-details-modal-content" role="dialog" aria-modal="true" aria-labelledby="gep-modal-title">
+        <button type="button" aria-label="Close test details" class="gep-details-modal-close" id="gep-details-modal-close">&times;</button>
         <div class="gep-details-modal-header">
             <div class="gep-details-modal-thumb-container">
                 <img id="gep-modal-thumb" src="" alt="Thumbnail">
@@ -461,14 +461,24 @@
 
 <script>
 jQuery(document).ready(function($) {
+    var detailsOpener = null;
+    function closeDetails() {
+        $('#gep-details-modal').hide(); $('html').removeClass('gep-dialog-open');
+        if (detailsOpener && detailsOpener.isConnected) detailsOpener.focus();
+    }
+    $('#gep-details-modal').on('keydown', function(e) {
+        if (e.key === 'Escape') { e.preventDefault(); closeDetails(); }
+        if (e.key === 'Tab') { e.preventDefault(); $('#gep-details-modal-close').trigger('focus'); }
+    });
     // Show details modal
     $(document).on('click', '.gep-view-details-btn', function(e) {
         e.preventDefault();
-        var $btn = $(this);
+        var $btn = $(this); detailsOpener = this;
         
         // Populate modal data
         $('#gep-modal-title').text($btn.data('title'));
-        $('#gep-modal-thumb').attr('src', $btn.data('thumbnail'));
+        var thumbnail = $btn.data('thumbnail');
+        $('#gep-modal-thumb').attr('src', thumbnail || '').toggle(!!thumbnail);
         $('#gep-modal-duration').text($btn.data('duration'));
         $('#gep-modal-qcount').text($btn.data('qcount') + ' Ques');
         
@@ -484,13 +494,14 @@ jQuery(document).ready(function($) {
         $('#gep-modal-price').text($btn.data('price'));
         
         // Open modal
-        $('#gep-details-modal').fadeIn(200);
+        $('#gep-details-modal').show(); $('html').addClass('gep-dialog-open');
+        $('#gep-details-modal-close').trigger('focus');
     });
     
     // Close modal
     $(document).on('click', '#gep-details-modal-close, .gep-details-modal-overlay', function(e) {
         if (e.target === this || $(e.target).hasClass('gep-details-modal-close')) {
-            $('#gep-details-modal').fadeOut(200);
+            closeDetails();
         }
     });
 });

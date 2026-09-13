@@ -2,56 +2,76 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof GEP_Exam === 'undefined') return;
 
     const examData = GEP_Exam;
+    const questions = document.querySelectorAll('.gep-question-block');
     let currentQuestionIndex = 0;
     let timerInterval;
+    let submitting = false;
+    let submissionRequested = false;
+    let navigationReady = false;
+    let draftSaveTimer;
+    const pendingAnswers = new Map();
+    let savePromise = null;
+    const storagePrefix = `gep_pending_${examData.attempt_id}_`;
+    function storePending(id, data) {
+        try {
+            if (data) localStorage.setItem(storagePrefix + id, JSON.stringify(data));
+            else localStorage.removeItem(storagePrefix + id);
+        } catch (e) { /* Saving to the server must work when device storage is unavailable. */ }
+    }
+    async function postExam(formData) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 20000);
+        try {
+            const response = await fetch(examData.ajaxurl, {method: 'POST', body: formData, signal: controller.signal});
+            if (!response.ok) throw new Error('Connection failed.');
+            return await response.json();
+        } finally { clearTimeout(timeout); }
+    }
+    function showSaveStatus(text, failed) {
+        let status = document.getElementById('gep-save-status');
+        if (!status) {
+            status = document.createElement('div');
+            status.id = 'gep-save-status'; status.setAttribute('role', 'status');
+            document.body.appendChild(status);
+        }
+        status.textContent = text;
+        status.classList.toggle('is-pending', !!failed);
+    }
+    window.onbeforeunload = function(e) {
+        if (pendingAnswers.size || submitting || submissionRequested) { e.preventDefault(); e.returnValue = ''; return ''; }
+    };
     let remainingSeconds = examData.remaining_seconds;
     let questionStartTime = Date.now(); // NTA-style per-Q time tracking
     let currentFontSize = 16; // Text zoom support — must match --gep-zoom-font-size in gep-exam.css
     
-    // --- Sectional Timings ---
-    let sectionalTimings = [];
-    let hasSectionalTiming = false;
-    let currentSectionIdx = 0;
-    
-    if (examData.sections_data && examData.sections_data.length > 0) {
-        examData.sections_data.forEach((sec, idx) => {
-            let t = parseInt(sec.time_limit) || 0;
-            if (t > 0) hasSectionalTiming = true;
-            sectionalTimings.push({
-                id: 'sec_' + idx,
-                limit_seconds: t * 60,
-                name: sec.name || 'Section ' + (idx + 1)
-            });
-        });
-    }
-
-    if (hasSectionalTiming) {
-        // Enforce sequential sectional time limits
-        let elapsed = parseInt(examData.elapsed_seconds) || 0;
-        for (let i = 0; i < sectionalTimings.length; i++) {
-            let sec = sectionalTimings[i];
-            if (sec.limit_seconds > 0) {
-                if (elapsed >= sec.limit_seconds) {
-                    elapsed -= sec.limit_seconds; // Already spent this section's time
-                } else {
-                    currentSectionIdx = i;
-                    remainingSeconds = sec.limit_seconds - elapsed;
-                    break;
-                }
-            } else {
-                currentSectionIdx = i;
-                // If section has no time limit, it just takes up whatever is left of the total test duration.
-                remainingSeconds = examData.remaining_seconds - parseInt(examData.elapsed_seconds || 0);
-                break;
-            }
+    // Anchor the clock to elapsed wall time so background tabs and device sleep
+    // cannot pause an exam. Heartbeats update this anchor, not a sectional timer.
+    const totalDuration = Math.max(0, Number(examData.remaining_seconds) || 0) + Math.max(0, Number(examData.elapsed_seconds) || 0);
+    let elapsedAtSync = Math.max(0, Number(examData.elapsed_seconds) || 0);
+    let clockSyncedAt = Date.now();
+    let timerExpired = false, heartbeatBusy = false;
+    const sectionalTimings = (examData.sections_data || []).map((sec, idx) => ({
+        id: 'sec_' + idx, limit_seconds: Math.max(0, Number(sec.time_limit) || 0) * 60,
+        name: sec.name || 'Section ' + (idx + 1)
+    }));
+    const hasSectionalTiming = sectionalTimings.some(sec => sec.limit_seconds > 0);
+    function clockState() {
+        const elapsed = elapsedAtSync + Math.max(0, (Date.now() - clockSyncedAt) / 1000);
+        const totalLeft = Math.max(0, totalDuration - elapsed);
+        if (!hasSectionalTiming) return {index: 0, remaining: Math.ceil(totalLeft), expired: totalLeft <= 0};
+        let sectionStart = 0;
+        for (let index = 0; index < sectionalTimings.length; index++) {
+            const limit = sectionalTimings[index].limit_seconds;
+            // An untimed section consumes the remaining total exam time.
+            if (!limit) return {index, remaining: Math.ceil(totalLeft), expired: totalLeft <= 0};
+            const sectionLeft = sectionStart + limit - elapsed;
+            if (sectionLeft > 0) return {index, remaining: Math.ceil(Math.min(totalLeft, sectionLeft)), expired: totalLeft <= 0};
+            sectionStart += limit;
         }
-        
-        // Safety bounds
-        if (currentSectionIdx >= sectionalTimings.length) {
-            currentSectionIdx = sectionalTimings.length - 1;
-            remainingSeconds = 0;
-        }
+        return {index: Math.max(0, sectionalTimings.length - 1), remaining: 0, expired: true};
     }
+    let currentSectionIdx = clockState().index;
+    remainingSeconds = clockState().remaining;
 
     // ─── Modal System (replaces all alert/confirm dialogs) ───────────────────
     function showModal({ title, message, type = 'info', buttons = [], onClose = null }) {
@@ -70,6 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         const c = colorMap[type] || colorMap.info;
 
+        const opener = document.activeElement;
         const overlay = document.createElement('div');
         overlay.id = 'gep-modal-overlay';
         overlay.style.cssText = `
@@ -79,9 +100,11 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         const modal = document.createElement('div');
+        modal.setAttribute('role', 'dialog'); modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'gep-dialog-title'); modal.tabIndex = -1;
         modal.style.cssText = `
             background:#ffffff;border:1px solid ${c.border};border-radius:24px;
-            padding:40px 48px;max-width:460px;width:90%;text-align:center;
+            padding:clamp(20px,5vw,40px);max-width:460px;width:90%;text-align:center;box-sizing:border-box;max-height:90dvh;overflow:auto;
             box-shadow:0 32px 80px rgba(0,0,0,0.15);
             animation:gepSlideUp 0.25s ease;
         `;
@@ -99,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         modal.innerHTML = `
             <div style="font-size:48px;margin-bottom:16px;">${iconMap[type]}</div>
-            <h3 style="font-size:20px;font-weight:800;color:#1e293b;margin:0 0 10px;letter-spacing:-0.5px;">${title}</h3>
+            <h3 id="gep-dialog-title" style="font-size:20px;font-weight:800;color:#1e293b;margin:0 0 10px;letter-spacing:-0.5px;">${title}</h3>
             <p style="color:#475569;font-size:14px;line-height:1.7;margin:0 0 28px;">${message}</p>
             <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">${btnHTML}</div>
         `;
@@ -119,12 +142,27 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.addEventListener('click', function() {
                 const action = this.dataset.action;
                 overlay.remove();
+                if (opener && opener.isConnected) opener.focus();
                 const handler = buttons.find(b => b.action === action);
                 if (handler && handler.onClick) handler.onClick();
                 if (onClose) onClose(action);
             });
         });
 
+        const focusable = Array.from(modal.querySelectorAll('button'));
+        (focusable[0] || modal).focus();
+        overlay.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const cancel = modal.querySelector('[data-action="cancel"]');
+                if (cancel) { e.preventDefault(); cancel.click(); }
+            }
+            if (e.key === 'Tab') {
+                if (!focusable.length) { e.preventDefault(); return; }
+                const first = focusable[0], last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            }
+        });
         return overlay;
     }
 
@@ -136,12 +174,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const colors = { info:'#6366f1', success:'#10b981', warning:'#f59e0b', danger:'#ef4444' };
         const toast = document.createElement('div');
         toast.id = 'gep-toast';
+        toast.setAttribute('role', 'status');
         toast.style.cssText = `
             position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:100000;
             background:#ffffff;border:1px solid ${colors[type]||colors.info};
             color:#1e293b;padding:12px 24px;border-radius:12px;
             font-size:14px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,0.1);
-            animation:gepFadeIn 0.2s ease;white-space:nowrap;
+            animation:gepFadeIn 0.2s ease;max-width:calc(100vw - 32px);box-sizing:border-box;text-align:center;overflow-wrap:anywhere;
         `;
         toast.textContent = message;
         document.body.appendChild(toast);
@@ -158,6 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn     = document.getElementById('gep-submit-btn');
 
     // ─── Language Switching ────────────────────────────────────────────────
+    let currentLang = examData.lang || 'en';
     const langBtns = document.querySelectorAll('.gep-lang-btn');
     const ntaLangSelect = document.querySelector('.gep-nta-lang-select');
     
@@ -166,7 +206,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (lang !== 'en' && lang !== 'hi') {
             lang = 'en';
         }
-        sessionStorage.setItem('gep_current_lang', lang);
+        currentLang = lang;
+        try { sessionStorage.setItem('gep_current_lang', lang); } catch (e) {}
 
         langBtns.forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
         
@@ -192,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // A test with a mix of sections is NOT locked here; each section decides for
     // itself in loadQuestion().
     if (examData.lang_locked) {
-        sessionStorage.removeItem('gep_current_lang');
+        try { sessionStorage.removeItem('gep_current_lang'); } catch (e) {}
         switchLanguage(examData.lang || 'en');
     } else {
         langBtns.forEach(btn => {
@@ -207,7 +248,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        let savedLang = sessionStorage.getItem('gep_current_lang') || examData.lang || 'en';
+        let savedLang = examData.lang || 'en';
+        try { savedLang = sessionStorage.getItem('gep_current_lang') || savedLang; } catch (e) {}
         switchLanguage(savedLang);
     }
 
@@ -215,87 +257,79 @@ document.addEventListener('DOMContentLoaded', function() {
     const exitBtn = document.getElementById('gep-exit-btn');
     if (exitBtn) {
         exitBtn.addEventListener('click', function() {
+            if (submitting || submissionRequested || timerExpired) return;
             const destUrl = this.dataset.url;
             showModal({
                 title: 'Exit Exam?',
-                message: 'Are you sure you want to exit? Your progress will be saved, but your exam will not be submitted.',
+                message: 'Leave this exam? The timer keeps running while you are away. We will confirm that your answers are saved before leaving.',
                 type: 'warning',
                 buttons: [
                     { label: 'Cancel', action: 'cancel', primary: false },
-                    { label: 'Exit Exam', action: 'exit', primary: true, onClick: () => {
+                    { label: 'Exit Exam', action: 'exit', primary: true, onClick: async () => {
+                        await captureCurrentAnswer();
+                        if (pendingAnswers.size) { showToast('Some answers are not synced. Reconnect and try again.', 'warning', 6000); return; }
                         window.onbeforeunload = null;
                         window.location.href = destUrl;
                     }}
                 ]
             });
         });
+        document.addEventListener('gep:request-exam-exit', () => exitBtn.click());
     }
 
     // ─── Timer ──────────────────────────────────────────────────────────────
-    function startTimer() {
+    function captureCurrentAnswer() {
+        const block = questions[currentQuestionIndex];
+        if (!block) return flushAnswers();
+        const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+        return saveAnswer(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
+    }
+    function updateClock() {
+        if (submitting || submissionRequested || timerExpired) return;
+        const state = clockState();
+        const previousRemaining = remainingSeconds;
+        remainingSeconds = state.remaining;
         updateTimerDisplay();
-        timerInterval = setInterval(() => {
-            remainingSeconds--;
-            updateTimerDisplay();
-            if (remainingSeconds === 300) {
-                showToast('⏰ 5 minutes remaining!', 'warning', 5000);
-            }
-            if (remainingSeconds <= 0) {
-                clearInterval(timerInterval);
-                if (hasSectionalTiming) {
-                    moveToNextSection();
-                } else {
-                    autoSubmitExam();
-                }
-            }
-        }, 1000);
-
-        // Server Time Sync Heartbeat (syncs clock every 30 seconds)
-        setInterval(() => {
-            if (remainingSeconds <= 0) return;
+        if (state.expired) {
+            timerExpired = true;
+            clearInterval(timerInterval);
+            submitExam();
+            return;
+        }
+        if (hasSectionalTiming && state.index > currentSectionIdx) {
+            currentSectionIdx = state.index;
+            switchSection(sectionalTimings[currentSectionIdx].id);
+            showToast('Section time ended. Continuing to ' + sectionalTimings[currentSectionIdx].name + '.', 'info', 5000);
+        } else if (previousRemaining > 300 && remainingSeconds <= 300) {
+            showToast('5 minutes remaining!', 'warning', 5000);
+        }
+    }
+    function startTimer() {
+        updateClock();
+        if (!timerExpired) timerInterval = setInterval(updateClock, 1000);
+        // One heartbeat for the entire attempt, including all section transitions.
+        setInterval(async () => {
+            if (heartbeatBusy || timerExpired || submitting || submissionRequested) return;
+            heartbeatBusy = true;
             const formData = new FormData();
             formData.append('action', 'gep_exam_heartbeat');
             formData.append('nonce', examData.nonce);
             formData.append('attempt_id', examData.attempt_id);
-            fetch(examData.ajaxurl, { method: 'POST', body: formData })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.data && typeof data.data.remaining_seconds !== 'undefined') {
-                        remainingSeconds = data.data.remaining_seconds;
-                        updateTimerDisplay();
-                    }
-                }).catch(err => console.error('Heartbeat sync failed:', err));
-        }, 30000);
-    }
-
-    function moveToNextSection() {
-        // Disable everything briefly
-        document.getElementById('gep-exam-main-container').style.opacity = '0.5';
-        document.getElementById('gep-exam-main-container').style.pointerEvents = 'none';
-
-        showModal({
-            title: 'Section Time Expired',
-            message: 'Time for the current section has ended. Your answers are saved and you will now proceed to the next section.',
-            type: 'time',
-            buttons: [{ label: 'Continue', action: 'ok', primary: true, onClick: () => {
-                currentSectionIdx++;
-                if (currentSectionIdx < sectionalTimings.length) {
-                    let sec = sectionalTimings[currentSectionIdx];
-                    remainingSeconds = sec.limit_seconds > 0 ? sec.limit_seconds : Math.max(0, examData.remaining_seconds - parseInt(examData.elapsed_seconds || 0));
-                    
-                    document.getElementById('gep-exam-main-container').style.opacity = '1';
-                    document.getElementById('gep-exam-main-container').style.pointerEvents = 'auto';
-
-                    // Switch to the section tab
-                    const nextTabBtn = document.querySelector(`.gep-tab-btn[data-cat-id="${sec.id}"]`);
-                    if (nextTabBtn) nextTabBtn.click();
-                    
-                    startTimer();
-                } else {
-                    submitExam();
+            try {
+                const data = await postExam(formData);
+                if (data && data.success && data.data && Number.isFinite(Number(data.data.remaining_seconds))) {
+                    // A delayed response must never rewind elapsed time or reopen a section.
+                    elapsedAtSync = Math.max(
+                        elapsedAtSync + Math.max(0, (Date.now() - clockSyncedAt) / 1000),
+                        totalDuration - Math.max(0, Math.min(totalDuration, Number(data.data.remaining_seconds)))
+                    );
+                    clockSyncedAt = Date.now();
+                    updateClock();
                 }
-            } }]
-        });
+            } catch (e) { /* Wall clock continues while the network is unavailable. */ }
+            finally { heartbeatBusy = false; }
+        }, 30000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) updateClock(); });
     }
 
     function updateTimerDisplay() {
@@ -311,54 +345,45 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function autoSubmitExam() {
-        // Replace alert() with custom modal
-        showModal({
-            title: 'Time\'s Up!',
-            message: 'Your exam time has expired. Your answers are being submitted automatically.',
-            type: 'time',
-            buttons: [{ label: 'OK', action: 'ok', primary: true, onClick: () => submitExam() }]
-        });
-    }
-
     // ─── Answer Saving ───────────────────────────────────────────────────────
+    // Serialize saves across questions: the server updates one attempt answer map.
     function saveAnswer(questionId, answer, flagged = false) {
-        const btn = document.querySelector(`.gep-palette-btn[data-id="${questionId}"]`);
-        if (btn) btn.classList.add('saving');
-
-        // Compute time spent on this question in ms
-        const timeSpentMs = Date.now() - questionStartTime;
-
-        const formData = new FormData();
-        formData.append('action', 'gep_save_answer');
-        formData.append('nonce', examData.nonce);
-        formData.append('attempt_id', examData.attempt_id);
-        formData.append('question_id', questionId);
-        formData.append('answer', answer);
-        formData.append('flagged', flagged);
-        formData.append('time_ms', timeSpentMs); // per-question time tracking
-
-        // Offline Persistence
-        localStorage.setItem(`gep_pending_${examData.attempt_id}_${questionId}`, JSON.stringify({ answer, flagged, timestamp: Date.now() }));
-
-        fetch(examData.ajaxurl, { method: 'POST', body: formData })
-            .then(r => r.json())
-            .then(data => {
-                if (btn) btn.classList.remove('saving');
-                if (data.success) {
-                    localStorage.removeItem(`gep_pending_${examData.attempt_id}_${questionId}`);
-                    updatePaletteStatus(questionId, answer, flagged);
-                    if (data.data && typeof data.data.remaining_seconds !== 'undefined') {
-                        remainingSeconds = data.data.remaining_seconds;
-                        updateTimerDisplay();
-                    }
-                    if (btn) { btn.classList.add('save-success'); setTimeout(() => btn.classList.remove('save-success'), 1000); }
-                }
-            }).catch(() => {
-                if (btn) btn.classList.remove('saving');
-                showToast('Answer saved locally (offline)', 'warning');
-            });
+        if (submissionRequested) return Promise.resolve(false);
+        queueAnswer(questionId, answer, flagged);
+        return flushAnswers();
     }
+    function queueAnswer(questionId, answer, flagged) {
+        const data = {answer, flagged, timestamp: Date.now(), time_ms: Date.now() - questionStartTime};
+        pendingAnswers.set(String(questionId), data);
+        storePending(questionId, data);
+        updatePaletteStatus(questionId, answer, flagged);
+    }
+    function flushAnswers() {
+        if (savePromise) return savePromise;
+        savePromise = (async function() {
+            while (pendingAnswers.size) {
+                const [id, data] = pendingAnswers.entries().next().value;
+                const btn = document.querySelector(`.gep-palette-btn[data-id="${id}"]`);
+                if (btn) btn.classList.add('saving');
+                showSaveStatus('Saving answers…', false);
+                const formData = new FormData();
+                Object.entries({action: 'gep_save_answer', nonce: examData.nonce, attempt_id: examData.attempt_id, question_id: id, answer: data.answer, flagged: data.flagged, time_ms: data.time_ms || 0})
+                    .forEach(([key, value]) => formData.append(key, value));
+                try {
+                    const response = await postExam(formData);
+                    if (!response || !response.success) throw new Error('Save not confirmed.');
+                    if (pendingAnswers.get(id) === data) { pendingAnswers.delete(id); storePending(id, null); }
+                } catch (e) {
+                    showSaveStatus('Answers not synced. Keep this page open; reconnect to retry.', true);
+                    return false;
+                } finally { if (btn) btn.classList.remove('saving'); }
+            }
+            showSaveStatus('All answers saved', false);
+            return true;
+        })().finally(() => { savePromise = null; });
+        return savePromise;
+    }
+    window.addEventListener('online', () => { flushAnswers(); });
 
     function updatePaletteStatus(questionId, answer, flagged) {
         const btn = document.querySelector(`.gep-palette-btn[data-id="${questionId}"]`);
@@ -377,8 +402,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return parseFloat(n.toFixed(2)).toString();
     }
 
-    function loadQuestion(index) {
+    function loadQuestion(index, capturePrevious = true) {
         const questions = document.querySelectorAll('.gep-question-block');
+        if (!questions[index] || submitting || submissionRequested || timerExpired) return;
+        if (hasSectionalTiming && questions[index].dataset.catId !== sectionalTimings[currentSectionIdx].id) return;
+        if (navigationReady && capturePrevious && currentQuestionIndex !== index) captureCurrentAnswer();
 
         // Reset per-question timer
         questionStartTime = Date.now();
@@ -405,6 +433,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (qDisp) qDisp.scrollTop = 0;
         const pageScroller = document.scrollingElement || document.documentElement;
         if (pageScroller) pageScroller.scrollTop = 0;
+        const examScroller = document.querySelector('.gep-exam-fullscreen-container');
+        if (examScroller) examScroller.scrollTop = 0;
         currentQuestionIndex = index;
         
         // Update header question number dynamically
@@ -452,8 +482,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         paletteButtons.forEach((btn, i) => btn.classList.toggle('active', i === index));
-        if (prevBtn) prevBtn.disabled = (index === 0);
-        if (nextBtn) nextBtn.textContent = (index === questions.length - 1) ? 'Save & Finish' : 'Save & Next →';
+        if (prevBtn) prevBtn.disabled = (index === 0 || (hasSectionalTiming && questions[index - 1].dataset.catId !== sectionalTimings[currentSectionIdx].id));
+        if (nextBtn) nextBtn.textContent = (index === questions.length - 1) ? 'Save & Finish' : (hasSectionalTiming && questions[index + 1].dataset.catId !== sectionalTimings[currentSectionIdx].id) ? 'Save Answer' : 'Save & Next →';
         
         // Immediately mark the newly loaded question as not-answered if it is currently not-visited
         const activeBlock = questions[index];
@@ -490,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (splitWrapper) splitWrapper.classList.add('has-passage');
                         
                         // Sync passage language to currently selected language
-                        const currentLang = sessionStorage.getItem('gep_current_lang') || examData.lang || 'en';
+
                         const targetElement = passageBody || passagePane;
                         targetElement.querySelectorAll('.en-text').forEach(el => el.classList.toggle('active', currentLang === 'en'));
                         targetElement.querySelectorAll('.hi-text').forEach(el => el.classList.toggle('active', currentLang === 'hi'));
@@ -507,7 +537,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Translation Toggle Logic
-        const activeLang = sessionStorage.getItem('gep_current_lang') || examData.lang || 'en';
+        const activeLang = currentLang;
         const langSelector = document.querySelector('.gep-lang-selector');
         if (langSelector) {
             langSelector.querySelectorAll('.gep-lang-btn').forEach(btn => btn.classList.remove('active'));
@@ -530,15 +560,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
+            if (submitting || submissionRequested || timerExpired) return;
             const currentQuestion = document.querySelectorAll('.gep-question-block')[currentQuestionIndex];
             const questionId = currentQuestion.dataset.id;
             const answer = getAnswerFromBlock(currentQuestion);
 
-            if (answer !== '') saveAnswer(questionId, answer, false);
-            else updatePaletteStatus(questionId, '', false);
+            saveAnswer(questionId, answer, false);
 
             if (currentQuestionIndex < document.querySelectorAll('.gep-question-block').length - 1) {
-                loadQuestion(currentQuestionIndex + 1);
+                loadQuestion(currentQuestionIndex + 1, false);
             } else {
                 triggerSubmitModal();
             }
@@ -547,12 +577,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (reviewBtn) {
         reviewBtn.addEventListener('click', () => {
+            if (submitting || submissionRequested || timerExpired) return;
             const currentQuestion = document.querySelectorAll('.gep-question-block')[currentQuestionIndex];
             const questionId = currentQuestion.dataset.id;
             const answer = getAnswerFromBlock(currentQuestion);
             saveAnswer(questionId, answer, true);
             if (currentQuestionIndex < document.querySelectorAll('.gep-question-block').length - 1) {
-                loadQuestion(currentQuestionIndex + 1);
+                loadQuestion(currentQuestionIndex + 1, false);
             }
         });
     }
@@ -565,6 +596,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function triggerSubmitModal() {
+        setPaletteOpen(false);
+        if (submitting || submissionRequested || timerExpired) return;
+        // Include the current unblurred value in the confirmation summary.
+        const block = questions[currentQuestionIndex];
+        if (block) {
+            const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+            updatePaletteStatus(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
+        }
         // Build summary stats for the modal
         const total = document.querySelectorAll('.gep-question-block').length;
         const answered = document.querySelectorAll('.gep-palette-btn.answered, .gep-palette-btn.answered-flagged').length;
@@ -572,7 +611,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         showModal({
             title: 'Submit Exam?',
-            message: `You have answered <strong style="color:#10b981">${answered}</strong> out of <strong style="color:#f1f5f9">${total}</strong> questions.<br>
+            message: `You have answered <strong style="color:#10b981">${answered}</strong> out of <strong style="color:inherit">${total}</strong> questions.<br>
                       ${unanswered > 0 ? `<span style="color:#f59e0b">⚠️ ${unanswered} question${unanswered > 1 ? 's' : ''} unanswered.</span><br>` : ''}
                       <br>Once submitted, you cannot change your answers.`,
             type: 'submit',
@@ -587,26 +626,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const examSidebar   = document.querySelector('.gep-exam-sidebar');
     const examLayout    = document.querySelector('.gep-exam-layout');
     
+    // The Grid button opens the same full-screen overview on every device.
+    // The desktop edge handle remains a separate compact-sidebar control.
+    const paletteClose = document.getElementById('gep-palette-close');
+    const paletteBackground = Array.from(document.querySelectorAll('.gep-exam-header, .gep-exam-main, .gep-exam-footer'));
+    let paletteBackgroundState = [];
+    function setPaletteOpen(open, restoreFocus = true) {
+        if (!examSidebar) return;
+        const wasOpen = examSidebar.classList.contains('active');
+        if (open === wasOpen) return;
+        examSidebar.classList.toggle('active', open);
+        examSidebar.setAttribute('role', open ? 'dialog' : 'complementary');
+        if (open) {
+            examSidebar.setAttribute('aria-modal', 'true');
+            paletteBackgroundState = paletteBackground.map(el => [el, el.inert]);
+            paletteBackground.forEach(el => { el.inert = true; });
+        } else {
+            examSidebar.removeAttribute('aria-modal');
+            paletteBackgroundState.forEach(([el, value]) => { el.inert = value; });
+            paletteBackgroundState = [];
+        }
+        if (paletteToggle) paletteToggle.setAttribute('aria-expanded', String(open));
+        syncPaletteVisibility();
+        if (open && paletteClose) paletteClose.focus();
+        else if (restoreFocus && paletteToggle) paletteToggle.focus();
+    }
+    function syncPaletteVisibility() {
+        if (!examSidebar) return;
+        const hidden = !examSidebar.classList.contains('active') && window.innerWidth <= 992;
+        examSidebar.inert = hidden;
+        examSidebar.setAttribute('aria-hidden', String(hidden));
+    }
     if (paletteToggle && examSidebar) {
-        paletteToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (window.innerWidth <= 992) {
-                // Mobile behavior
-                examSidebar.classList.toggle('active');
-            } else {
-                // Desktop behavior
-                examSidebar.classList.toggle('collapsed');
-                if (examLayout) {
-                    examLayout.classList.toggle('sidebar-collapsed');
+        paletteToggle.addEventListener('click', () => setPaletteOpen(!examSidebar.classList.contains('active')));
+        if (paletteClose) paletteClose.addEventListener('click', () => setPaletteOpen(false));
+        examSidebar.addEventListener('keydown', e => {
+            if (!examSidebar.classList.contains('active')) return;
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setPaletteOpen(false); }
+            if (e.key !== 'Tab') return;
+            const items = Array.from(examSidebar.querySelectorAll('button:not(:disabled), select, a[href], [tabindex="0"]')).filter(el => {
+                for (let node = el; node && node !== examSidebar; node = node.parentElement) {
+                    if (node.hidden || getComputedStyle(node).display === 'none') return false;
                 }
-            }
+                return true;
+            });
+            const first = items[0], last = items[items.length - 1];
+            if (!first) { e.preventDefault(); return; }
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         });
-        
-        document.addEventListener('click', function(e) {
-            if (examSidebar.classList.contains('active') && !examSidebar.contains(e.target) && e.target !== paletteToggle) {
-                examSidebar.classList.remove('active');
-            }
-        });
+        // Close before opening another dialog; restore the exam's interactivity.
+        examSidebar.addEventListener('click', e => {
+            if (e.target.closest('#gep-submit-btn, #gep-btn-instructions, #gep-btn-qpaper')) setPaletteOpen(false);
+        }, true);
+        window.addEventListener('resize', syncPaletteVisibility);
+        syncPaletteVisibility();
     }
 
     // ─── Passage: collapse once it has been read ───────────────────────────
@@ -620,27 +694,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ─── Closing the palette ───────────────────────────────────────────────
-    // On a phone the palette covers the whole screen. Tapping outside it is not a
-    // discoverable way out when there is no visible "outside", so give it an
-    // explicit close button, and let Escape close it too.
-    const paletteClose = document.getElementById('gep-palette-close');
-    if (paletteClose && examSidebar) {
-        paletteClose.addEventListener('click', function(e) {
-            e.stopPropagation();
-            examSidebar.classList.remove('active');
-            if (window.innerWidth > 992) {
-                examSidebar.classList.add('collapsed');
-                if (examLayout) examLayout.classList.add('sidebar-collapsed');
-            }
-        });
-    }
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && examSidebar && examSidebar.classList.contains('active')) {
-            examSidebar.classList.remove('active');
-        }
-    });
-
     // ─── Collapsible Sidebar Edge Toggle ───────────────────────────
     const sidebarCollapseToggle = document.getElementById('gep-sidebar-collapse-toggle');
 
@@ -651,6 +704,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (examLayout) {
                 examLayout.classList.toggle('sidebar-collapsed');
             }
+            syncPaletteVisibility();
+            this.setAttribute('aria-expanded', String(!examSidebar.classList.contains('collapsed')));
             const icon = this.querySelector('.toggle-icon');
             if (icon) {
                 if (examSidebar.classList.contains('collapsed')) {
@@ -670,9 +725,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isNaN(questionIndex)) {
                 loadQuestion(questionIndex);
             }
-            if (examSidebar) {
-                examSidebar.classList.remove('active');
-            }
+            setPaletteOpen(false);
         });
     });
 
@@ -682,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let activeTab = null;
 
     if (sectionTabs.length > 0) {
-        activeCatId = sectionTabs[0].dataset.catId;
+        activeCatId = hasSectionalTiming ? sectionalTimings[currentSectionIdx].id : sectionTabs[0].dataset.catId;
         activeTab = activeCatId;
         
         sectionTabs.forEach(tab => {
@@ -811,54 +864,58 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ─── Submit Exam ────────────────────────────────────────────────────────
-    function submitExam() {
-        window.onbeforeunload = null;
-
-        // Show loading state
-        showModal({
-            title: 'Submitting...',
-            message: 'Please wait while your exam is being submitted.',
-            type: 'info',
-            buttons: []
-        });
-
-        const formData = new FormData();
-        formData.append('action', 'gep_submit_exam');
-        formData.append('nonce', examData.nonce);
-        formData.append('attempt_id', examData.attempt_id);
-        formData.append('lang', sessionStorage.getItem('gep_current_lang') || 'en');
-
-        fetch(examData.ajaxurl, { method: 'POST', body: formData })
-            .then(r => { if (!r.ok) throw new Error('Network error'); return r.json(); })
-            .then(data => {
-                const modal = document.getElementById('gep-modal-overlay');
-                if (modal) modal.remove();
-
-                if (data.success) {
-                    window.onbeforeunload = null;
-                    window.location.href = data.data.redirect_url;
-                } else {
-                    showModal({
-                        title: 'Submission Error',
-                        message: data.data ? data.data.message : 'An error occurred. Redirecting to results...',
-                        type: 'danger',
-                        buttons: [{ label: 'Go to Results', action: 'ok', primary: true, onClick: () => {
-                            window.onbeforeunload = null;
-                            window.location.href = examData.ajaxurl.replace('wp-admin/admin-ajax.php', 'result/?id=' + examData.attempt_id);
-                        }}]
-                    });
-                }
-            }).catch(() => {
-                const modal = document.getElementById('gep-modal-overlay');
-                if (modal) modal.remove();
-                window.onbeforeunload = null;
-                window.location.href = examData.ajaxurl.replace('wp-admin/admin-ajax.php', 'result/?id=' + examData.attempt_id);
+    async function submitExam() {
+        if (submitting) return;
+        submitting = true;
+        clearTimeout(draftSaveTimer);
+        questions.forEach(block => { block.inert = true; });
+        showModal({title: 'Submitting…', message: 'Saving your answers and confirming submission. Keep this page open.', buttons: []});
+        try {
+            // Once submission is sent, retry that idempotent endpoint only: a lost
+            // response may mean the attempt is already closed to answer writes.
+            if (!submissionRequested) {
+                // Include text currently being edited, even if its change event has not fired.
+                const block = questions[currentQuestionIndex];
+                if (block) {
+                    const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+                    await saveAnswer(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
+                } else await flushAnswers();
+                if (pendingAnswers.size) throw new Error('Some answers have not reached the server. Reconnect and retry submission.');
+            }
+            const formData = new FormData();
+            formData.append('action', 'gep_submit_exam'); formData.append('nonce', examData.nonce);
+            formData.append('attempt_id', examData.attempt_id); formData.append('lang', currentLang);
+            submissionRequested = true;
+            const data = await postExam(formData);
+            if (!data || !data.success || !data.data || !data.data.redirect_url) throw new Error('The server has not confirmed submission. Please retry.');
+            window.onbeforeunload = null;
+            window.location.href = data.data.redirect_url;
+        } catch (e) {
+            showModal({
+                title: 'Submission not confirmed', message: e.message || 'Could not connect. Please retry submission.', type: 'warning',
+                buttons: [
+                    ...(!submissionRequested && !timerExpired ? [{label: 'Back to exam', action: 'cancel'}] : []),
+                    {label: 'Retry submission', action: 'retry', primary: true, onClick: () => submitExam()}
+                ]
             });
+        } finally {
+            submitting = false;
+            questions.forEach(block => { block.inert = submissionRequested || timerExpired; });
+        }
     }
 
     // ─── Init ────────────────────────────────────────────────────────────────
-    startTimer();
-
+    examData.saved_answers = examData.saved_answers || {};
+    questions.forEach(block => {
+        try {
+            const raw = localStorage.getItem(storagePrefix + block.dataset.id);
+            if (!raw) return;
+            const data = JSON.parse(raw);
+            if (!data || typeof data.answer !== 'string' || typeof data.flagged !== 'boolean') return;
+            pendingAnswers.set(String(block.dataset.id), data);
+            examData.saved_answers[block.dataset.id] = data;
+        } catch (e) {}
+    });
     // Hydrate saved answers (supports both MCQ radio and MSQ comma-separated)
     if (examData.saved_answers && typeof examData.saved_answers === 'object') {
         Object.keys(examData.saved_answers).forEach(qId => {
@@ -882,13 +939,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 } else {
                     // Radio: restore single selection
-                    const radio = block.querySelector(`input[value="${data.answer}"]`);
+                    const radio = Array.from(block.querySelectorAll('input[type="radio"]')).find(input => input.value === data.answer);
                     if (radio) {
                         radio.checked = true;
                         const card = radio.closest('.gep-option-card');
                         if (card) card.classList.add('selected');
                     }
-                    const textInput = block.querySelector('.gep-text-ans');
+                    const textInput = block.querySelector('.gep-text-ans, .gep-numerical-ans');
                     if (textInput) textInput.value = data.answer;
                 }
             }
@@ -896,8 +953,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    loadQuestion(0);
+    const firstAvailable = hasSectionalTiming ? Array.from(questions).findIndex(q => q.dataset.catId === sectionalTimings[currentSectionIdx].id) : 0;
+    loadQuestion(Math.max(0, firstAvailable));
+    navigationReady = true;
     updateSidebarCounters();
+    if (pendingAnswers.size) flushAnswers();
+    // Start after hydration/navigation are ready: an expired reload may submit now.
+    startTimer();
 
     // ─── Unified Answer Extractor ────────────────────────────────────────────
     // Works for MCQ (radio), MSQ (checkbox), and short_answer (text)
@@ -926,64 +988,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ─── Option Selection ────────────────────────────────────────────────────
     document.querySelectorAll('.gep-option-card input').forEach(input => {
-        input.addEventListener('click', function(e) {
-            const card = this.closest('.gep-option-card');
+        // Native change handles keyboard radio navigation as well as clicks.
+        input.addEventListener('change', function() {
+            if (submitting || submissionRequested || timerExpired) return;
             const block = this.closest('.gep-question-block');
-            const container = block.querySelector('.gep-options-container');
-            const qtype = container ? container.dataset.qtype : 'mcq';
-            const questionId = block.dataset.id;
-
-            if (qtype === 'msq' || qtype === 'multi_select') {
-                // MSQ checkbox: matching card visual class to checked state
-                card.classList.toggle('selected', this.checked);
-            } else {
-                // MCQ radio: checking previous selection state for deselect
-                const wasSelected = card.classList.contains('selected');
-                
-                block.querySelectorAll('.gep-option-card').forEach(c => {
-                    c.classList.remove('selected');
-                    const cInput = c.querySelector('input');
-                    if (cInput && cInput !== this) cInput.checked = false;
-                });
-
-                if (wasSelected) {
-                    card.classList.remove('selected');
-                    this.checked = false;
-                } else {
-                    card.classList.add('selected');
-                    this.checked = true;
-                }
-            }
-
-            const answer = getAnswerFromBlock(block);
-            const palBtn = document.querySelector(`.gep-palette-btn[data-id="${questionId}"]`);
-            const isFlagged = palBtn && (palBtn.classList.contains('flagged') || palBtn.classList.contains('answered-flagged'));
-            saveAnswer(questionId, answer, isFlagged);
+            block.querySelectorAll('.gep-option-card').forEach(card => {
+                card.classList.toggle('selected', !!card.querySelector('input:checked'));
+            });
+            const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+            saveAnswer(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
         });
     });
 
-    document.querySelectorAll('.gep-text-ans').forEach(input => {
-        input.addEventListener('change', function() {
+    document.querySelectorAll('.gep-text-ans, .gep-numerical-ans').forEach(input => {
+        input.addEventListener('input', function() {
+            if (submitting || submissionRequested || timerExpired) return;
             const block = this.closest('.gep-question-block');
-            const questionId = block.dataset.id;
-            const palBtn = document.querySelector(`.gep-palette-btn[data-id="${questionId}"]`);
-            const isFlagged = palBtn && (palBtn.classList.contains('flagged') || palBtn.classList.contains('answered-flagged'));
-            saveAnswer(questionId, this.value, isFlagged);
+            const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+            queueAnswer(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
+            showSaveStatus('Answer edited. Waiting to sync…', true);
+            clearTimeout(draftSaveTimer);
+            draftSaveTimer = setTimeout(flushAnswers, 500);
         });
-    });
-
-    // ─── Numerical Input Auto-Save ───────────────────────────────────────────
-    document.querySelectorAll('.gep-numerical-ans').forEach(input => {
         input.addEventListener('change', function() {
+            if (submitting || submissionRequested || timerExpired) return;
+            clearTimeout(draftSaveTimer);
             const block = this.closest('.gep-question-block');
-            const questionId = block.dataset.id;
-            const palBtn = document.querySelector(`.gep-palette-btn[data-id="${questionId}"]`);
-            const isFlagged = palBtn && (palBtn.classList.contains('flagged') || palBtn.classList.contains('answered-flagged'));
-            saveAnswer(questionId, this.value.trim(), isFlagged);
-            if (this.value.trim()) showToast('✅ Numerical answer saved', 'success', 2000);
-        });
-        input.addEventListener('blur', function() {
-            if (this.value.trim()) this.dispatchEvent(new Event('change'));
+            const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+            saveAnswer(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
         });
     });
 
@@ -991,6 +1023,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearBtn = document.getElementById('gep-clear-btn');
     if (clearBtn) {
         clearBtn.addEventListener('click', function() {
+            if (submitting || submissionRequested || timerExpired) return;
             const block = document.querySelectorAll('.gep-question-block')[currentQuestionIndex];
             if (!block) return;
 
@@ -999,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const qtype = container ? container.dataset.qtype : 'mcq';
 
             if (qtype === 'short_answer') {
-                const textInput = block.querySelector('.gep-text-ans');
+                const textInput = block.querySelector('.gep-text-ans, .gep-numerical-ans');
                 if (textInput) textInput.value = '';
             } else if (qtype === 'numerical') {
                 const numInput = block.querySelector('.gep-numerical-ans');
@@ -1024,6 +1057,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const calcModal = document.getElementById('gep-calculator-modal');
     const calcDisplay = document.getElementById('gep-calc-display');
     const calcClose = document.getElementById('gep-calc-close');
+    const calcApply = document.getElementById('gep-calc-apply');
     let calcExpression = '';
 
     function evaluateSimpleExpression(str) {
@@ -1094,6 +1128,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function openCalc() {
         if (calcModal) {
             calcModal.style.display = 'flex';
+            if (calcApply) calcApply.hidden = !questions[currentQuestionIndex]?.querySelector('.gep-numerical-ans');
             if (calcDisplay) calcDisplay.value = calcExpression || '0';
         }
     }
@@ -1117,13 +1152,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     try {
                         const expr = calcExpression.replace(/×/g,'*').replace(/÷/g,'/');
                         const result = evaluateSimpleExpression(expr);
+                        if (!Number.isFinite(result)) throw new Error('Invalid result');
                         calcExpression = String(parseFloat(result.toFixed(8)));
                         if (calcDisplay) calcDisplay.value = calcExpression;
-                        const block = document.querySelectorAll('.gep-question-block')[currentQuestionIndex];
-                        if (block) {
-                            const numInput = block.querySelector('.gep-numerical-ans');
-                            if (numInput) { numInput.value = calcExpression; numInput.dispatchEvent(new Event('change')); }
-                        }
                     } catch(e) {
                         if (calcDisplay) calcDisplay.value = 'Error';
                         calcExpression = '';
@@ -1140,6 +1171,39 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    if (calcApply) calcApply.addEventListener('click', () => {
+        const value = calcDisplay ? calcDisplay.value : '';
+        if (!value.trim() || !Number.isFinite(Number(value))) { showToast('Calculate a valid number first.', 'warning'); return; }
+        const input = questions[currentQuestionIndex]?.querySelector('.gep-numerical-ans');
+        if (!input) return;
+        input.value = value; input.dispatchEvent(new Event('change')); closeCalc();
+    });
+    // All auxiliary exam dialogs share Escape, focus trapping and focus return.
+    [modalInst, modalQpaper, calcModal].filter(Boolean).forEach(overlay => {
+        const panel = overlay.firstElementChild;
+        if (!panel) return;
+        panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.tabIndex = -1;
+        const heading = panel.querySelector('h2, h3');
+        if (heading) { heading.id = overlay.id + '-title'; panel.setAttribute('aria-labelledby', heading.id); }
+        let opened = false, opener = null;
+        const controls = () => Array.from(panel.querySelectorAll('button, a[href], input, select, textarea, [tabindex="0"]')).filter(el => !el.disabled && !el.hidden && getComputedStyle(el).display !== 'none');
+        new MutationObserver(() => {
+            const visible = getComputedStyle(overlay).display !== 'none';
+            if (visible === opened) return;
+            opened = visible;
+            if (opened) { opener = document.activeElement; (controls()[0] || panel).focus(); }
+            else if (opener && opener.isConnected) opener.focus();
+        }).observe(overlay, {attributes: true, attributeFilter: ['style']});
+        overlay.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { e.preventDefault(); overlay.style.display = 'none'; }
+            if (e.key !== 'Tab') return;
+            const items = controls(), first = items[0], last = items[items.length - 1];
+            if (!first) e.preventDefault();
+            else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        });
+    });
 
     // ─── Text Zoom ───────────────────────────────────────────────────────────
     // A chosen text size should survive a reload — a proctoring lock or a dropped
@@ -1224,7 +1288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (scrollDisplayPane && scrollDisplayPane.scrollHeight > scrollDisplayPane.clientHeight + 1) {
             return scrollDisplayPane;
         }
-        return document.scrollingElement || document.documentElement;
+        return document.querySelector('.gep-exam-fullscreen-container') || document.scrollingElement || document.documentElement;
     }
 
     function scrollQuestionTo(top) {
@@ -1244,6 +1308,8 @@ document.addEventListener('DOMContentLoaded', function() {
             scrollDisplayPane.addEventListener('scroll', revealScrollButtons, { passive: true });
         }
         window.addEventListener('scroll', revealScrollButtons, { passive: true });
+        const examScroller = document.querySelector('.gep-exam-fullscreen-container');
+        if (examScroller) examScroller.addEventListener('scroll', revealScrollButtons, { passive: true });
 
         const floatScrollUpBtn = document.getElementById('gep-float-scroll-up');
         if (floatScrollUpBtn) {

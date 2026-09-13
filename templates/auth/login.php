@@ -19,6 +19,8 @@ if ( is_user_logged_in() ) {
                 <?php 
                 if ( $_GET['login_error'] === 'nonce' ) {
                     echo 'Security check failed. Please try again.';
+                } elseif ( $_GET['login_error'] === 'otp_mail_failed' ) {
+                    echo 'We could not send your verification email. Please try logging in again or contact support.';
                 } else {
                     echo 'Invalid username or password. Please try again.';
                 }
@@ -32,23 +34,15 @@ if ( is_user_logged_in() ) {
 
         <?php if ( isset($_GET['view']) && $_GET['view'] === 'otp' && isset($_GET['uid']) ) : ?>
             <form id="gep-otp-form" class="gep-auth-form">
-                <p class="gep-otp-info">We've sent a 6-digit code to your registered email. Please enter it below to verify.</p>
+                <p class="gep-otp-info">We've sent a 6-digit code to your registered email. It expires in 5 minutes. Check your spam folder too.</p>
                 <?php wp_nonce_field( 'gep_otp_nonce', 'gep_nonce' ); ?>
                 <input type="hidden" id="gep_otp_uid" value="<?php echo absint($_GET['uid']); ?>">
                 <div class="gep-form-group">
-                    <label>Verification Code</label>
-                    <div class="gep-otp-inputs">
-                        <input type="text" class="gep-otp-box" maxlength="1" data-index="0">
-                        <input type="text" class="gep-otp-box" maxlength="1" data-index="1">
-                        <input type="text" class="gep-otp-box" maxlength="1" data-index="2">
-                        <input type="text" class="gep-otp-box" maxlength="1" data-index="3">
-                        <input type="text" class="gep-otp-box" maxlength="1" data-index="4">
-                        <input type="text" class="gep-otp-box" maxlength="1" data-index="5">
-                    </div>
-                    <input type="hidden" id="gep_otp_code">
+                    <label for="gep_otp_code">Verification Code</label>
+                    <input type="text" id="gep_otp_code" class="gep-input gep-otp-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required aria-describedby="gep-otp-error" placeholder="6-digit code">
                 </div>
-                <button type="button" id="gep-verify-otp-btn" class="gep-btn gep-btn-primary gep-btn-block">Verify & Login</button>
-                <p id="gep-otp-error" class="gep-error-msg" style="display:none;"></p>
+                <button type="submit" id="gep-verify-otp-btn" class="gep-btn gep-btn-primary gep-btn-block">Verify & Login</button>
+                <p id="gep-otp-error" role="alert" class="gep-error-msg" style="display:none;"></p>
             </form>
         <?php else : ?>
             <form id="gep-login-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -57,13 +51,13 @@ if ( is_user_logged_in() ) {
                 
                 <div class="gep-form-group">
                     <label for="log">Username or Email</label>
-                    <input type="text" name="log" id="log" class="gep-input" required placeholder="Enter your username">
+                    <input type="text" name="log" id="log" autocomplete="username" autocapitalize="none" spellcheck="false" class="gep-input" required placeholder="Enter your username">
                 </div>
 
                 <div class="gep-form-group">
                     <label for="pwd">Password</label>
                     <div class="gep-password-wrapper">
-                        <input type="password" name="pwd" id="pwd" class="gep-input" required placeholder="••••••••">
+                        <input type="password" name="pwd" id="pwd" autocomplete="current-password" class="gep-input" required placeholder="••••••••">
                     </div>
                 </div>
 
@@ -80,7 +74,7 @@ if ( is_user_logged_in() ) {
 
         <div class="gep-auth-footer">
             <?php if ( isset($_GET['view']) && $_GET['view'] === 'otp' ) : ?>
-                <a href="<?php echo gep_get_url('login'); ?>" class="gep-link">Back to Login</a>
+                <a href="<?php echo gep_get_url('login'); ?>" class="gep-link">Log in again to request a new code</a>
             <?php else : ?>
                 <p>Don't have an account? <a href="<?php echo gep_get_url('register'); ?>" class="gep-link">Register here</a></p>
             <?php endif; ?>

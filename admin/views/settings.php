@@ -228,10 +228,10 @@
         
         <div style="margin-top: 35px; display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 30px 40px; border-radius: 28px; border: 1px solid var(--admin-border); box-shadow: var(--admin-shadow-lg);">
             <div style="display: flex; gap: 20px;">
-                <button type="submit" class="button button-primary" style="height: 55px; border-radius: 16px; padding: 0 45px; font-weight: 900; font-size: 15px; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);">Commit All Architecture</button>
+                <button type="submit" class="button button-primary" style="height: 55px; border-radius: 16px; padding: 0 45px; font-weight: 900; font-size: 15px; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);">Save Settings</button>
                 <a href="<?php echo admin_url('admin.php?page=gep-settings&action=update_db&nonce=' . wp_create_nonce('gep_update_db')); ?>" class="button" style="height: 55px; line-height: 53px; border-radius: 16px; padding: 0 30px; font-weight: 900; background: #10b981; color: #fff; border: none; font-size: 14px; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);">Sync Database Architecture</a>
             </div>
-            <button type="button" class="button" style="height: 55px; border-radius: 16px; padding: 0 30px; font-weight: 900; color: #ef4444; border: 2px solid #ef4444; background: transparent; font-size: 13px;" onclick="if(confirm('🚨 CRITICAL: Are you sure you want to wipe all portal data? This cannot be undone.')) { window.location.href = '<?php echo admin_url('admin.php?page=gep-settings&action=reset_data&nonce=' . wp_create_nonce('gep_reset_all')); ?>'; }">Factory Reset Studio</button>
+            <button type="button" class="button" style="height: 55px; border-radius: 16px; padding: 0 30px; font-weight: 900; color: #ef4444; border: 2px solid #ef4444; background: transparent; font-size: 13px;" onclick="if(confirm('🚨 CRITICAL: Are you sure you want to wipe all portal data? This cannot be undone.')) { window.location.href = '<?php echo admin_url('admin.php?page=gep-settings&action=reset_data&nonce=' . wp_create_nonce('gep_reset_all')); ?>'; }">Delete All Portal Data</button>
         </div>
     </form>
 </div>

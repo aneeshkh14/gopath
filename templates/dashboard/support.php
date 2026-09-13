@@ -8,7 +8,7 @@
 
     <div class="gep-support-container" style="background: #fff; border-radius: 20px; padding: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #eef2f6; max-width: 800px; margin: 0 auto;">
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+        <div class="gep-support-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
             <!-- Left Side: Info -->
             <div>
                 <div class="gep-support-icon" style="font-size: 48px; margin-bottom: 20px;">
@@ -32,15 +32,15 @@
             <div>
                 <form id="gep-support-form" class="gep-form">
                     <div class="gep-form-group" style="margin-bottom: 20px;">
-                        <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px;">Subject</label>
+                        <label for="support_subject" style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px;">Subject</label>
                         <input type="text" id="support_subject" required placeholder="What is this regarding?" style="width: 100%; padding: 12px 15px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; transition: all 0.2s; box-sizing: border-box;">
                     </div>
                     <div class="gep-form-group" style="margin-bottom: 20px;">
-                        <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px;">Message</label>
+                        <label for="support_message" style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px;">Message</label>
                         <textarea id="support_message" required rows="5" placeholder="Describe your issue in detail..." style="width: 100%; padding: 12px 15px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; transition: all 0.2s; box-sizing: border-box; resize: vertical;"></textarea>
                     </div>
                     <button type="submit" class="gep-btn gep-btn-primary" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px;">Send Message</button>
-                    <div id="support-status" style="margin-top: 15px; font-size: 14px; font-weight: 600; text-align: center; display: none;"></div>
+                    <div id="support-status" role="status" style="margin-top: 15px; font-size: 14px; font-weight: 600; text-align: center; display: none;"></div>
                 </form>
             </div>
         </div>
@@ -55,12 +55,15 @@ jQuery(document).ready(function($) {
         const btn = $(this).find('button[type="submit"]');
         const status = $('#support-status');
         
+        if (btn.prop('disabled')) return;
+        if (!$('#support_subject').val().trim() || !$('#support_message').val().trim()) { status.text('Enter a subject and message.').show(); return; }
         btn.prop('disabled', true).text('Sending...');
         status.hide();
 
         $.ajax({
             url: gep_ajax.ajax_url,
             type: 'POST',
+            timeout: 20000,
             data: {
                 action: 'gep_submit_support_ticket',
                 nonce: gep_ajax.nonce,
@@ -68,8 +71,8 @@ jQuery(document).ready(function($) {
                 message: $('#support_message').val()
             },
             success: function(res) {
-                status.show().text(res.data.message);
-                if (res.success) {
+                status.show().text(res && res.data && res.data.message || 'Could not send your message. Please retry.');
+                if (res && res.success) {
                     status.css('color', '#10b981');
                     $('#gep-support-form')[0].reset();
                 } else {

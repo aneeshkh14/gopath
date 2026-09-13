@@ -8,8 +8,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Admin tests management logic.
  */
 class GEP_Admin_Tests {
+    public static $save_error = '';
+    public static $submitted_test = null;
 
 	public function handle_test_actions() {
+        if (!current_user_can('manage_options')) return;
 		if ( ! isset( $_GET['page'] ) || $_GET['page'] !== 'gep-tests' ) return;
 
 		if ( isset( $_GET['action'] ) && $_GET['action'] === 'delete' && isset( $_GET['id'] ) ) {
@@ -90,8 +93,10 @@ class GEP_Admin_Tests {
 			}
 		}
 
+        $existing = !empty($_POST['test_id']) ? (new GEP_Test())->get_test(absint($_POST['test_id'])) : null;
+        $previous_data = $existing ? (json_decode($existing->translated_data, true) ?: array()) : array();
 		// ── Build translated_data (preserves existing + adds sections) ────────
-		$translated_data = array(
+		$translated_data = array_merge($previous_data, array(
 			'instructions'  => wp_kses_post( isset($_POST['instructions_hi']) ? $_POST['instructions_hi'] : '' ),
 			'refundable'    => sanitize_text_field( isset($_POST['refundable']) ? $_POST['refundable'] : 'no' ),
 			'topics'        => sanitize_textarea_field( isset($_POST['topics']) ? $_POST['topics'] : '' ),
@@ -101,7 +106,7 @@ class GEP_Admin_Tests {
 			'global_negative_marks' => isset($_POST['global_negative_marks']) && $_POST['global_negative_marks'] !== '' ? floatval($_POST['global_negative_marks']) : '',
 			'sections'      => $sections_data, // ← NEW: multi-subject sections
 			'attempt_pricing' => $attempt_pricing, // ← NEW: attempt pricing tiers
-		);
+		));
 
 		// ── CRITICAL FIX: Generate a slug from the title ──────────────────────
 		$title = sanitize_text_field( $_POST['title'] );
@@ -117,7 +122,7 @@ class GEP_Admin_Tests {
 			'price'            => floatval( $_POST['price'] ),
 			'is_free'          => isset( $_POST['is_free'] ) ? 1 : 0,
 			'thumbnail'        => esc_url_raw( isset($_POST['thumbnail']) ? $_POST['thumbnail'] : '' ),
-			'duration_minutes' => absint( $_POST['duration_minutes'] ),
+			'duration_minutes' => intval( $_POST['duration_minutes'] ),
 			'attempt_limit'    => absint( $_POST['attempt_limit'] ),
 			'shuffle_questions'=> isset( $_POST['shuffle_questions'] ) ? 1 : 0,
 			'shuffle_options'  => isset( $_POST['shuffle_options'] ) ? 1 : 0,
@@ -135,16 +140,13 @@ class GEP_Admin_Tests {
 			$data['id'] = absint( $_POST['test_id'] );
 		}
 
-		$test_id = $this->save_test( $data );
-		$type = $data['type'];
-
-		if ( $type === 'series' && isset( $_POST['series_test_ids'] ) ) {
-			$s_ids = array_map( 'absint', explode( ',', $_POST['series_test_ids'] ) );
-			$this->link_tests_to_series( $test_id, $s_ids );
-		} else {
-			// Link merged question IDs from all sections (or direct IDs field)
-			$this->link_questions_to_test( $test_id, array_values( array_unique( $all_question_ids_from_sections ) ) );
-		}
+        $series_ids = array_filter(array_map('absint', explode(',', $_POST['series_test_ids'] ?? '')));
+        $test_id = $this->save_test_with_links($data, $all_question_ids_from_sections, $series_ids);
+        if (is_wp_error($test_id)) {
+            self::$save_error = $test_id->get_error_message();
+            self::$submitted_test = (object)array_merge(array('id' => 0), $data);
+            return;
+        }
 
 		if ( ob_get_level() > 0 ) ob_end_clean();
 		wp_cache_flush();
@@ -154,7 +156,7 @@ class GEP_Admin_Tests {
 
 	public function list_tests( $args = array() ) {
 		$test_logic = new GEP_Test();
-		return $test_logic->get_tests( $args );
+		return $test_logic->get_tests( array_merge(array('status' => 'all'), $args) );
 	}
 
 	public function save_test( $data ) {
@@ -164,13 +166,63 @@ class GEP_Admin_Tests {
 		if ( isset( $data['id'] ) && ! empty( $data['id'] ) ) {
 			$id = $data['id'];
 			unset( $data['id'] );
-			$wpdb->update( $table, $data, array( 'id' => $id ) );
-			return $id;
+			return $wpdb->update( $table, $data, array( 'id' => $id ) ) === false ? false : $id;
 		} else {
-			$wpdb->insert( $table, $data );
-			return $wpdb->insert_id;
+			return $wpdb->insert( $table, $data ) === false ? false : (int)$wpdb->insert_id;
 		}
 	}
+
+    /** Validate the whole paper before changing any stored links. */
+    public function save_test_with_links($data, $question_ids, $series_ids = array()) {
+        global $wpdb;
+        $error = static function($message) { return new WP_Error('invalid_test', $message); };
+        if (trim($data['title'] ?? '') === '') return $error('Enter a test title.');
+        if (!in_array($data['type'] ?? '', array('single','multiple','combined','self_test','random','series'), true)) return $error('Choose a valid test type.');
+        if (!in_array($data['status'] ?? '', array('publish','draft'), true)) return $error('Choose Published or Draft.');
+        if (($data['duration_minutes'] ?? 0) < 1) return $error('Duration must be at least one minute.');
+        if (($data['price'] ?? 0) < 0) return $error('Price cannot be negative.');
+        if (!empty($data['id']) && !(new GEP_Test())->get_test($data['id'])) return $error('This test no longer exists. Your edits have not been saved.');
+        $td = json_decode($data['translated_data'] ?? '', true) ?: array();
+        $section_ids = array(); $times = array();
+        foreach (($td['sections'] ?? array()) as $section) {
+            $raw = trim($section['ids'] ?? '');
+            if ($raw !== '' && !preg_match('/^[1-9][0-9]*(\s*,\s*[1-9][0-9]*)*$/', $raw)) return $error('Section question IDs must be positive whole numbers separated by commas.');
+            $ids = $raw === '' ? array() : array_map('absint', explode(',', $raw));
+            foreach ($ids as $id) {
+                if (in_array($id, $section_ids, true)) return $error('A question can appear only once in a test. Remove duplicate IDs across sections.');
+                $section_ids[] = $id;
+            }
+            if (($section['marks'] ?? 0) < 0 || ($section['negative_marks'] ?? 0) < 0) return $error('Marks and penalties cannot be negative.');
+            if ($data['status'] === 'publish' && !$ids && $data['type'] !== 'random') return $error('Add questions to every section before publishing, or save as Draft.');
+            $times[] = (int)($section['time_limit'] ?? 0);
+        }
+        if (array_sum($times) > $data['duration_minutes'] || (array_sum($times) > 0 && in_array(0, $times, true))) return $error('Give every timed section a duration. Their total must not exceed the exam duration.');
+        $question_ids = array_values(array_unique(array_filter(array_map('absint', $question_ids))));
+        $series_ids = array_values(array_unique(array_filter(array_map('absint', $series_ids))));
+        $ids = $data['type'] === 'series' ? $series_ids : $question_ids;
+        if ($data['status'] === 'publish' && !$ids && $data['type'] !== 'random') return $error('Add questions or child tests before publishing, or save as Draft.');
+        foreach (($td['attempt_pricing'] ?? array()) as $tier) if (($tier['price'] ?? 0) < 0 || ($tier['attempts'] ?? 0) < 1) return $error('Each attempt package needs a positive attempt count and a nonnegative price.');
+        if ($wpdb->query('START TRANSACTION') === false) return $error('Could not save. Please retry.');
+        try {
+            if ($ids) {
+                $table = $wpdb->prefix . ($data['type'] === 'series' ? 'gep_tests' : 'gep_questions');
+                $found = $wpdb->get_col("SELECT id FROM $table WHERE id IN (" . implode(',', $ids) . ") FOR UPDATE");
+                if (count($found) !== count($ids)) throw new RuntimeException('One or more question or child-test IDs do not exist. Check the IDs and retry.');
+                if ($data['type'] === 'series') {
+                    if (in_array((int)($data['id'] ?? 0), $ids, true)) throw new RuntimeException('A series cannot contain itself.');
+                    if ($wpdb->get_var("SELECT COUNT(*) FROM $table WHERE type = 'series' AND id IN (" . implode(',', $ids) . ")")) throw new RuntimeException('Add individual tests to a series; nested series are not supported.');
+                }
+            }
+            $id = $this->save_test($data);
+            if (!$id) throw new RuntimeException('The test could not be saved. Please retry.');
+            $linked = $data['type'] === 'series' ? $this->link_tests_to_series($id, $series_ids) : $this->link_questions_to_test($id, $question_ids);
+            if ($linked === false || $wpdb->query('COMMIT') === false) throw new RuntimeException('The questions could not be saved. Your existing test has been preserved. Please retry.');
+            return $id;
+        } catch (Throwable $e) {
+            $wpdb->query('ROLLBACK');
+            return $error($e->getMessage());
+        }
+    }
 
 	public function delete_test( $id ) {
 		global $wpdb;
@@ -191,7 +243,7 @@ class GEP_Admin_Tests {
 		$table = $wpdb->prefix . 'gep_test_questions';
 		
 		// Clear existing
-		$wpdb->delete( $table, array( 'test_id' => $test_id ) );
+		if ($wpdb->delete( $table, array( 'test_id' => $test_id ) ) === false) return false;
 
 		// Perfect Intelligence Filter: Remove empty or invalid IDs to prevent debris
 		$question_ids = array_filter( array_map( 'absint', $question_ids ) );
@@ -199,7 +251,8 @@ class GEP_Admin_Tests {
 		$marks_map = array();
 		if ( ! empty( $question_ids ) ) {
 			$ids_str = implode( ',', $question_ids );
-			$results = $wpdb->get_results( "SELECT id, marks FROM {$wpdb->prefix}gep_questions WHERE id IN ($ids_str)" );
+			$results = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}gep_questions WHERE id IN ($ids_str)" );
+            $results = GEP_Exam_Engine::apply_section_overrides($results, (new GEP_Test())->get_test($test_id));
 			foreach ( $results as $row ) {
 				$marks_map[ $row->id ] = floatval( $row->marks );
 			}
@@ -209,17 +262,17 @@ class GEP_Admin_Tests {
 		foreach ( $question_ids as $order => $q_id ) {
 			if ( ! $q_id ) continue;
 
-			$wpdb->insert( $table, array(
+			if ($wpdb->insert( $table, array(
 				'test_id'     => $test_id,
 				'question_id' => $q_id,
 				'order_no'    => $order + 1
-			) );
+			) ) === false) return false;
 
 			$total_marks += isset( $marks_map[ $q_id ] ) ? $marks_map[ $q_id ] : 0.0;
 		}
 
 		// Sync total marks to test record
-		$wpdb->update( 
+		return $wpdb->update(
 			$wpdb->prefix . 'gep_tests', 
 			array( 'total_marks' => $total_marks ), 
 			array( 'id' => $test_id ) 
@@ -229,7 +282,7 @@ class GEP_Admin_Tests {
 	public function link_tests_to_series( $series_id, $test_ids ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'gep_test_series';
-		$wpdb->delete( $table, array( 'series_id' => $series_id ) );
+		if ($wpdb->delete( $table, array( 'series_id' => $series_id ) ) === false) return false;
 
 		// Perfect Intelligence Filter: Remove empty or invalid IDs
 		$test_ids = array_filter( array_map( 'absint', $test_ids ) );
@@ -247,16 +300,16 @@ class GEP_Admin_Tests {
 		foreach ( $test_ids as $order => $t_id ) {
 			if ( ! $t_id ) continue;
 
-			$wpdb->insert( $table, array(
+			if ($wpdb->insert( $table, array(
 				'series_id' => $series_id,
 				'test_id'   => $t_id,
 				'order_no'  => $order + 1
-			) );
+			) ) === false) return false;
 			
 			$total_marks += isset( $marks_map[ $t_id ] ) ? $marks_map[ $t_id ] : 0.0;
 		}
 
-		$wpdb->update( 
+		return $wpdb->update(
 			$wpdb->prefix . 'gep_tests', 
 			array( 'total_marks' => $total_marks ), 
 			array( 'id' => $series_id ) 

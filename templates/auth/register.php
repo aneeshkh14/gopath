@@ -42,29 +42,30 @@ if ( is_user_logged_in() ) {
             <div class="gep-form-row">
                 <div class="gep-form-group">
                     <label for="first_name">First Name</label>
-                    <input type="text" name="first_name" id="first_name" class="gep-input" required placeholder="John">
+                    <input type="text" name="first_name" id="first_name" autocomplete="given-name" class="gep-input" required placeholder="John">
                 </div>
                 <div class="gep-form-group">
                     <label for="last_name">Last Name</label>
-                    <input type="text" name="last_name" id="last_name" class="gep-input" required placeholder="Doe">
+                    <input type="text" name="last_name" id="last_name" autocomplete="family-name" class="gep-input" required placeholder="Doe">
                 </div>
             </div>
 
             <div class="gep-form-group">
                 <label for="user_login">Username</label>
-                <input type="text" name="user_login" id="user_login" class="gep-input" required placeholder="johndoe123">
+                <input type="text" name="user_login" id="user_login" autocomplete="username" class="gep-input" required placeholder="johndoe123">
             </div>
 
             <div class="gep-form-group">
                 <label for="user_email">Email Address</label>
-                <input type="email" name="user_email" id="user_email" class="gep-input" required placeholder="john@example.com">
+                <input type="email" name="user_email" id="user_email" autocomplete="email" class="gep-input" required placeholder="john@example.com">
             </div>
 
             <div class="gep-form-group">
                 <label for="user_pass">Password</label>
-                <input type="password" name="user_pass" id="user_pass" class="gep-input" required minlength="8" placeholder="••••••••">
+                <input type="password" name="user_pass" id="user_pass" autocomplete="new-password" class="gep-input" required minlength="8" aria-describedby="gep-password-hint" placeholder="••••••••">
             </div>
 
+            <p id="gep-password-hint" class="gep-field-help">Use at least 8 characters for your password.</p>
             <div class="gep-form-group gep-consent-group" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px;">
                 <input type="checkbox" name="gep_consent" id="gep_consent" required style="margin-top: 4px; accent-color: #0ea5e9;">
                 <label for="gep_consent" style="font-size: 13px; color: #94a3b8; font-weight: normal; margin: 0;">

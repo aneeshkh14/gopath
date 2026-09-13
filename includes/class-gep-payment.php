@@ -17,11 +17,32 @@ class GEP_Payment {
 		$this->key_secret = $this->decrypt( get_option( 'gep_razorpay_key_secret' ) );
 	}
 
+	/** Keep history even when a purchased item has since been removed. */
+	public function get_user_orders( $user_id ) {
+		global $wpdb;
+		$orders = $wpdb->get_results( $wpdb->prepare(
+			"SELECT o.*, CASE WHEN o.item_type = 'course' THEN c.title ELSE t.title END AS item_title
+			 FROM {$wpdb->prefix}gep_orders o
+			 LEFT JOIN {$wpdb->prefix}gep_tests t ON o.item_type = 'test' AND o.item_id = t.id
+			 LEFT JOIN {$wpdb->prefix}gep_courses c ON o.item_type = 'course' AND o.item_id = c.id
+			 WHERE o.user_id = %d ORDER BY o.created_at DESC, o.id DESC", $user_id
+		) );
+		$pass_names = array(1 => '1-Month Mock Test Pass', 2 => 'Yearly Mock Test Pass Pro', 3 => 'Lifetime Mock Test Pass Ultimate');
+		foreach ( (array) $orders as $order ) {
+			if ( $order->item_type === 'pass' ) {
+				$order->item_title = isset($pass_names[$order->item_id]) ? $pass_names[$order->item_id] : 'Mock Test Pass';
+			}
+			if ( empty($order->item_title) ) $order->item_title = 'Unavailable item #' . (int) $order->item_id;
+		}
+		return (array) $orders;
+	}
+
 	/**
 	 * Create a real Razorpay order.
 	 */
 	public function create_order( $item_id, $item_type = 'test', $coupon_code = '', $attempts = 0 ) {
 		global $wpdb;
+        if (!in_array($item_type, array('test','course','pass'), true) || $item_id < 1) return new WP_Error('invalid_item', 'Choose a valid item.');
 		
 		if ( $item_type === 'pass' ) {
 			$pass_plans = array(
@@ -52,10 +73,13 @@ class GEP_Payment {
 		
 		if ( ! $item ) return new WP_Error( 'invalid_item', 'Item not found' );
 
-		$amount = $item->price;
+        if (isset($item->status) && $item->status !== 'publish') return new WP_Error('unavailable', 'This item is not currently available.');
+        if (!is_numeric($item->price) || !is_finite((float)$item->price) || $item->price < 0) return new WP_Error('invalid_price', 'This item needs a valid price before checkout.');
+		$amount = !empty($item->is_free) ? 0 : $item->price;
 		$discount = 0;
 
-		if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && $attempts > 0 ) {
+        if ($item_type === 'test' && isset($item->type) && $item->type === 'random' && empty($item->is_free) && $attempts <= 0) return new WP_Error('invalid_tier', 'Select an attempts package before paying.');
+		if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && empty($item->is_free) && $attempts > 0 ) {
 			$trans = !empty($item->translated_data) ? gep_safe_json_decode($item->translated_data, true) : array();
 			$attempt_pricing = isset($trans['attempt_pricing']) ? $trans['attempt_pricing'] : array();
 			$found_price = false;
@@ -73,6 +97,7 @@ class GEP_Payment {
 
 		if ( ! empty( $coupon_code ) ) {
 			$coupon_res = $this->validate_coupon( $coupon_code, $item_id, $item_type, $attempts );
+			if ( is_wp_error( $coupon_res ) ) return $coupon_res;
 			if ( ! is_wp_error( $coupon_res ) ) {
 				$discount = $coupon_res['discount'];
 				$amount -= $discount;
@@ -81,8 +106,9 @@ class GEP_Payment {
 
 		if ( $amount < 0 ) $amount = 0;
 
+        if ($amount > 0 && (empty($this->key_id) || empty($this->key_secret))) return new WP_Error('gateway_unavailable', 'Payments are temporarily unavailable. Please contact support.');
 		// Create record in our orders table first as pending
-		$wpdb->insert(
+		$inserted = $wpdb->insert(
 			"{$wpdb->prefix}gep_orders",
 			array(
 				'user_id'     => get_current_user_id(),
@@ -97,10 +123,16 @@ class GEP_Payment {
 			)
 		);
 		$order_db_id = $wpdb->insert_id;
+		if ( $inserted === false || !$order_db_id ) return new WP_Error('order_failed', 'Could not create the order. Please retry.');
 
 		// If free, grant access immediately and redirect to My Purchases view
 		if ( $amount <= 0 ) {
-			$this->grant_access( get_current_user_id(), $item_id, $item_type, $order_db_id );
+			if ( $wpdb->query('START TRANSACTION') === false ) return new WP_Error('order_failed', 'Could not complete enrollment. Please retry.');
+			$granted = $this->grant_access( get_current_user_id(), $item_id, $item_type, $order_db_id );
+			$recorded = $wpdb->update("{$wpdb->prefix}gep_orders", array('status' => 'success'), array('id' => $order_db_id));
+			if ( ! $granted || $recorded === false ) { $wpdb->query('ROLLBACK'); return new WP_Error('order_failed', 'Could not complete enrollment. Please retry.'); }
+			if (!empty($coupon_code) && $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}gep_coupons SET used_count = used_count + 1 WHERE code = %s", $coupon_code)) === false) { $wpdb->query('ROLLBACK'); return new WP_Error('order_failed', 'Could not confirm the coupon. Please retry.'); }
+			if ($wpdb->query('COMMIT') === false) { $wpdb->query('ROLLBACK'); return new WP_Error('order_failed', 'Enrollment is not confirmed. Please retry.'); }
 			// BUG FIX: Redirect to ?view=purchases so user sees their newly enrolled item
 			return array( 'status' => 'free', 'redirect' => add_query_arg( 'view', 'purchases', (string) gep_get_url( 'dashboard' ) ) );
 		}
@@ -136,11 +168,12 @@ class GEP_Payment {
 			return new WP_Error( 'razorpay_error', 'Payment gateway error: ' . $err_desc );
 		}
 
-		$wpdb->update(
+		$recorded = $wpdb->update(
 			"{$wpdb->prefix}gep_orders",
 			array( 'razorpay_order_id' => $res_body['id'] ),
 			array( 'id' => $order_db_id )
 		);
+        if ($recorded === false) return new WP_Error('order_failed', 'Could not prepare a recoverable payment. Please retry before paying.');
 		return $res_body;
 	}
 
@@ -148,62 +181,44 @@ class GEP_Payment {
 	 * Verify payment signature.
 	 */
 	public function verify_payment( $razorpay_order_id, $razorpay_payment_id, $razorpay_signature, $item_id = 0, $item_type = 'test' ) {
+        if (empty($this->key_secret) || !$razorpay_order_id || !$razorpay_payment_id) return false;
 		$expected_signature = hash_hmac( 'sha256', $razorpay_order_id . '|' . $razorpay_payment_id, $this->key_secret );
 		
 		if ( ! hash_equals( $expected_signature, $razorpay_signature ) ) {
 			return false;
 		}
 
-		// Signature valid, now update order status
 		global $wpdb;
-		$order = $wpdb->get_row( $wpdb->prepare( 
-			"SELECT * FROM {$wpdb->prefix}gep_orders WHERE razorpay_order_id = %s", 
-			$razorpay_order_id 
+		// Serialize callbacks for the exact gateway order. Granting attempts and
+		// recording success belong to one transaction, so a retry cannot double-grant.
+		if ( $wpdb->query('START TRANSACTION') === false ) return false;
+		$rollback = static function() use ($wpdb) {
+			$wpdb->query('ROLLBACK');
+			wp_cache_delete(get_current_user_id(), 'user_meta');
+			return false;
+		};
+		$order = $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}gep_orders WHERE razorpay_order_id = %s FOR UPDATE",
+			$razorpay_order_id
 		) );
-
-		if ( ! $order && $item_id ) {
-			// FALLBACK LOOKUP (BUG-B): If Razorpay order wasn't saved in db due to network lag/failure, find the most recent pending order for this user and item.
-			$order = $wpdb->get_row( $wpdb->prepare( 
-				"SELECT * FROM {$wpdb->prefix}gep_orders WHERE user_id = %d AND item_id = %d AND item_type = %s AND status = 'pending' ORDER BY id DESC LIMIT 1", 
-				get_current_user_id(), $item_id, $item_type
-			) );
-			if ( $order ) {
-				// Save razorpay_order_id on the order we found so that it matches
-				$wpdb->update(
-					"{$wpdb->prefix}gep_orders",
-					array( 'razorpay_order_id' => $razorpay_order_id ),
-					array( 'id' => $order->id )
-				);
-			}
-		}
-
-		if ( ! $order ) return false;
-
-		// IDEMPOTENCY FIX: If already processed (e.g. double-click, webhook replay), re-grant access and return true
+		// Never attach payment to a different 'latest pending' order after a failed lookup.
+		if ( ! $order || (int) $order->user_id !== get_current_user_id() ) return $rollback();
+		if ( $item_id && ((int) $order->item_id !== (int) $item_id || $order->item_type !== $item_type) ) return $rollback();
 		if ( $order->status === 'success' ) {
-			$this->grant_access( $order->user_id, $order->item_id, $order->item_type, $order->id );
-			return true;
+			return $wpdb->query('COMMIT') !== false;
 		}
-
-		$wpdb->update(
+		if ( ! $this->grant_access( $order->user_id, $order->item_id, $order->item_type, $order->id ) ) return $rollback();
+		$updated = $wpdb->update(
 			"{$wpdb->prefix}gep_orders",
-			array( 
-				'razorpay_payment_id' => $razorpay_payment_id,
-				'status' => 'success' 
-			),
-			array( 'id' => $order->id )
+			array('razorpay_payment_id' => $razorpay_payment_id, 'status' => 'success'),
+			array('id' => $order->id)
 		);
-
-		// Account for coupon usage
-		if ( ! empty( $order->coupon_code ) ) {
-			$wpdb->query( $wpdb->prepare( 
-				"UPDATE {$wpdb->prefix}gep_coupons SET used_count = used_count + 1 WHERE code = %s", 
-				$order->coupon_code 
-			) );
+		if ( $updated === false ) return $rollback();
+		if ( ! empty($order->coupon_code) ) {
+			$used = $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}gep_coupons SET used_count = used_count + 1 WHERE code = %s", $order->coupon_code));
+			if ( $used === false ) return $rollback();
 		}
-
-		$this->grant_access( $order->user_id, $order->item_id, $order->item_type, $order->id );
-
+		if ( $wpdb->query('COMMIT') === false ) return $rollback();
 		return true;
 	}
 
@@ -211,15 +226,19 @@ class GEP_Payment {
 		global $wpdb;
 
 		if ( $item_type === 'pass' ) {
+            // Serialize renewals for this account, including different paid orders.
+            if (!$wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->users} WHERE ID = %d FOR UPDATE", $user_id))) return false;
+            wp_cache_delete($user_id, 'user_meta');
+            $current_expiry = strtotime((string)get_user_meta($user_id, 'gep_pass_expiry', true));
+            $starts_at = max(current_time('timestamp'), $current_expiry ?: 0);
 			$duration = '+30 days';
 			if ( $item_id == 2 ) {
 				$duration = '+365 days';
 			} elseif ( $item_id == 3 ) {
 				$duration = '+100 years';
 			}
-			$expiry = date( 'Y-m-d H:i:s', strtotime( $duration, current_time( 'timestamp' ) ) );
-			update_user_meta( $user_id, 'gep_pass_expiry', $expiry );
-			return;
+			$expiry = date( 'Y-m-d H:i:s', strtotime( $duration, $starts_at ) );
+			return update_user_meta( $user_id, 'gep_pass_expiry', $expiry ) !== false || get_user_meta($user_id, 'gep_pass_expiry', true) === $expiry;
 		}
 
 		if ( $item_type === 'course' ) {
@@ -238,18 +257,18 @@ class GEP_Payment {
 
 		// Check if it's a random test to increment attempts
 		$test = $wpdb->get_row( $wpdb->prepare( "SELECT type FROM {$wpdb->prefix}gep_tests WHERE id = %d", $item_id ) );
-		if ( $test && $test->type === 'random' ) {
+		if ( $item_type === 'test' && $test && $test->type === 'random' ) {
 			$already_exists = $wpdb->get_var( $wpdb->prepare(
 				"SELECT id FROM $table WHERE user_id = %d AND test_id = %d",
 				$user_id, $item_id
 			) );
 			if ( $already_exists ) {
-				$wpdb->query( $wpdb->prepare(
+				$granted = $wpdb->query( $wpdb->prepare(
 					"UPDATE $table SET extra_attempts = extra_attempts + %d WHERE id = %d",
 					$attempts, $already_exists
 				) );
 			} else {
-				$wpdb->insert(
+				$granted = $wpdb->insert(
 					$table,
 					array(
 						'user_id'        => $user_id,
@@ -259,7 +278,7 @@ class GEP_Payment {
 					)
 				);
 			}
-			return;
+			return $granted !== false;
 		}
 
 		// Duplicate guard: do not insert if access already exists (legacy tests/courses)
@@ -268,16 +287,16 @@ class GEP_Payment {
 			$user_id, $item_id
 		) );
 
-		if ( $already_exists ) return;
+		if ( $already_exists ) return true;
 
-		$wpdb->insert(
+		return $wpdb->insert(
 			$table,
 			array(
 				'user_id'     => $user_id,
 				$column       => $item_id,
 				'assigned_at' => current_time( 'mysql' )
 			)
-		);
+		) !== false;
 	}
 
 	public function validate_coupon( $code, $item_id, $item_type = 'test', $attempts = 0 ) {
@@ -310,8 +329,8 @@ class GEP_Payment {
 		}
 		if ( ! $item ) return new WP_Error( 'error', 'Invalid item' );
 
-		$base_price = $item->price;
-		if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && $attempts > 0 ) {
+		$base_price = !empty($item->is_free) ? 0 : $item->price;
+		if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && empty($item->is_free) && $attempts > 0 ) {
 			$trans = !empty($item->translated_data) ? gep_safe_json_decode($item->translated_data, true) : array();
 			$attempt_pricing = isset($trans['attempt_pricing']) ? $trans['attempt_pricing'] : array();
 			foreach ( $attempt_pricing as $tier ) {
@@ -323,6 +342,7 @@ class GEP_Payment {
 		}
 
 		$discount = ( $coupon->type === 'percent' ) ? ( $base_price * $coupon->value / 100 ) : $coupon->value;
+        $discount = min($base_price, max(0, $discount));
 
 		return array(
 			'code' => $code,

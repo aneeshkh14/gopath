@@ -40,15 +40,16 @@ class GEP_AJAX {
 		$success = $engine->save_answer( $attempt_id, $question_id, $answer, $flagged );
 
 		$remaining_seconds = 0;
-		$attempt_row = $wpdb->get_row( $wpdb->prepare( "SELECT a.start_time, t.duration_minutes FROM {$wpdb->prefix}gep_attempts a JOIN {$wpdb->prefix}gep_tests t ON a.test_id = t.id WHERE a.id = %d", $attempt_id ) );
+		$attempt_row = $wpdb->get_row( $wpdb->prepare( "SELECT a.start_time, a.analytics_data, t.duration_minutes FROM {$wpdb->prefix}gep_attempts a LEFT JOIN {$wpdb->prefix}gep_tests t ON a.test_id = t.id WHERE a.id = %d", $attempt_id ) );
 		if ( $attempt_row ) {
-			$start_time = strtotime( $attempt_row->start_time );
-			$duration_seconds = $attempt_row->duration_minutes * 60;
+			$start_time = (int) get_gmt_from_date( $attempt_row->start_time, 'U' );
+			$practice = json_decode($attempt_row->analytics_data ?? '', true) ?: array();
+            $duration_seconds = ($attempt_row->duration_minutes ?? ($practice['duration'] ?? 15)) * 60;
 			$elapsed_seconds = time() - $start_time;
 			$remaining_seconds = max( 0, $duration_seconds - $elapsed_seconds );
 		}
 
-		if ( $success ) {
+		if ( $success !== false ) {
 			wp_send_json_success( array( 'message' => 'Answer saved', 'remaining_seconds' => $remaining_seconds ) );
 		} else {
 			wp_send_json_error( array( 'message' => 'Failed to save answer' ) );
@@ -61,15 +62,16 @@ class GEP_AJAX {
 
 		$attempt_id = absint( $_POST['attempt_id'] );
 		global $wpdb;
-		$attempt_row = $wpdb->get_row( $wpdb->prepare( "SELECT a.start_time, t.duration_minutes, a.user_id, a.status FROM {$wpdb->prefix}gep_attempts a JOIN {$wpdb->prefix}gep_tests t ON a.test_id = t.id WHERE a.id = %d", $attempt_id ) );
+		$attempt_row = $wpdb->get_row( $wpdb->prepare( "SELECT a.start_time, a.analytics_data, t.duration_minutes, a.user_id, a.status FROM {$wpdb->prefix}gep_attempts a LEFT JOIN {$wpdb->prefix}gep_tests t ON a.test_id = t.id WHERE a.id = %d", $attempt_id ) );
 
 		if ( ! $attempt_row || $attempt_row->user_id != get_current_user_id() || $attempt_row->status !== 'in_progress' ) {
 			wp_send_json_error( array( 'message' => 'Invalid session' ) );
 			return;
 		}
 
-		$start_time = strtotime( $attempt_row->start_time );
-		$duration_seconds = $attempt_row->duration_minutes * 60;
+		$start_time = (int) get_gmt_from_date( $attempt_row->start_time, 'U' );
+		$practice = json_decode($attempt_row->analytics_data ?? '', true) ?: array();
+            $duration_seconds = ($attempt_row->duration_minutes ?? ($practice['duration'] ?? 15)) * 60;
 		$elapsed_seconds = time() - $start_time;
 		$remaining_seconds = max( 0, $duration_seconds - $elapsed_seconds );
 
@@ -272,7 +274,8 @@ class GEP_AJAX {
 
 		$auth = new GEP_Auth();
 		if ( $auth->verify_otp( $user_id, $otp ) ) {
-			$remember = get_transient( 'gep_pending_login_' . $user_id );
+			$pending_login = get_transient( 'gep_pending_login_' . $user_id );
+			$remember = is_array($pending_login) ? ! empty($pending_login['remember']) : (bool) $pending_login;
 			wp_set_current_user( $user_id );
 			wp_set_auth_cookie( $user_id, $remember );
 			delete_transient( 'gep_pending_login_' . $user_id );
@@ -306,7 +309,10 @@ class GEP_AJAX {
 			$all_q_ids = array();
 			global $wpdb;
 
-			if ( $test && $test->type === 'random' ) {
+            if ($test && $test->type === 'random') {
+                $existing_id = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}gep_attempts WHERE user_id = %d AND test_id = %d AND status = 'in_progress'", $user_id, $test_id));
+                if ($existing_id) { wp_send_json_success(array('attempt_id' => (int)$existing_id)); return; }
+
 				$selected_topics = isset( $_POST['selected_topics'] ) ? $_POST['selected_topics'] : array();
 				if ( is_string( $selected_topics ) ) {
 					$selected_topics = json_decode( stripslashes($selected_topics), true );
@@ -316,17 +322,23 @@ class GEP_AJAX {
 					return;
 				}
 				
+				$seen_topics = array();
 				foreach ( $selected_topics as $topic ) {
+                    if (!is_array($topic) || !isset($topic['topic_id'], $topic['count']) || !is_scalar($topic['topic_id']) || !is_scalar($topic['count']) || !ctype_digit((string)$topic['topic_id'])) { wp_send_json_error(array('message' => 'Choose a valid topic and question count.')); return; }
 					$topic_id = absint( isset($topic['topic_id']) ? $topic['topic_id'] : 0 );
 					$count    = absint( isset($topic['count']) ? $topic['count'] : 0 );
-					if ( $topic_id <= 0 || $count <= 0 ) continue;
+                    if (!is_array($topic) || !ctype_digit((string)($topic['count'] ?? '')) || $topic_id <= 0 || $count <= 0 || $count > 200 || isset($seen_topics[$topic_id]) || count($all_q_ids) + $count > 200) {
+                        wp_send_json_error(array('message' => 'Choose each topic once, with a whole-number count between 1 and 200 (200 questions total).')); return;
+                    }
+                    $seen_topics[$topic_id] = true;
 					
 					// Fetch random question IDs matching this subcategory
 					$q_ids = $wpdb->get_col( $wpdb->prepare(
 						"SELECT id FROM {$wpdb->prefix}gep_questions WHERE subcategory_id = %d AND status = 'publish' ORDER BY RAND() LIMIT %d",
 						$topic_id, $count
 					) );
-					if ( ! empty($q_ids) ) {
+                    if (count($q_ids) !== $count) { wp_send_json_error(array('message' => 'Some selected questions are no longer available. Reduce the count and try again.')); return; }
+                    if ( ! empty($q_ids) ) {
 						$all_q_ids = array_merge( $all_q_ids, $q_ids );
 					}
 				}
@@ -340,7 +352,7 @@ class GEP_AJAX {
 			}
 
 			$engine = new GEP_Exam_Engine();
-			$attempt_id = $engine->start_attempt( $test_id, $user_id );
+			$attempt_id = $engine->start_attempt( $test_id, $user_id, array('question_ids' => implode(',', $all_q_ids)) );
 
 			if ( is_wp_error( $attempt_id ) ) {
 				wp_send_json_error( array( 'message' => $attempt_id->get_error_message() ) );
@@ -350,14 +362,6 @@ class GEP_AJAX {
 				return;
 			}
 
-			// If random, link generated question IDs to this attempt
-			if ( ! empty($all_q_ids) ) {
-				$wpdb->update(
-					"{$wpdb->prefix}gep_attempts",
-					array( 'question_ids' => implode( ',', $all_q_ids ) ),
-					array( 'id' => $attempt_id )
-				);
-			}
 
 			wp_send_json_success( array( 'attempt_id' => $attempt_id ) );
 		} catch ( Exception $e ) {
@@ -372,6 +376,8 @@ class GEP_AJAX {
 				wp_send_json_error( array( 'message' => 'Unauthorized' ) );
 				return;
 			}
+
+            check_ajax_referer('gep_exam_nonce', 'nonce');
 
 			$type   = sanitize_text_field( isset($_POST['type']) ? $_POST['type'] : '' );
 			$target = sanitize_text_field( isset($_POST['target']) ? $_POST['target'] : '' );
@@ -425,31 +431,14 @@ class GEP_AJAX {
 				shuffle( $question_ids );
 			}
 
-			// Initialize attempt using Exam Engine
-			$engine = new GEP_Exam_Engine();
-			$attempt_id = $engine->start_attempt( 999999, $user_id );
-
-			if ( is_wp_error( $attempt_id ) ) {
-				wp_send_json_error( array( 'message' => $attempt_id->get_error_message() ) );
-				return;
-			}
-
-			// Save custom practice info and generated questions list into this attempt
-			$analytics_data = array(
-				'practice_title' => $practice_title,
-				'type' => $type,
-				'target' => $target,
-				'duration' => $duration
-			);
-
-			$wpdb->update(
-				"{$wpdb->prefix}gep_attempts",
-				array( 
-					'question_ids' => implode( ',', $question_ids ),
-					'analytics_data' => json_encode( $analytics_data )
-				),
-				array( 'id' => $attempt_id )
-			);
+            // Persist the paper and its metadata with the attempt, never overwrite
+            // an in-progress paper when a request is retried.
+            $analytics_data = array('practice_title' => $practice_title, 'type' => $type, 'target' => $target, 'duration' => $duration);
+            $engine = new GEP_Exam_Engine();
+            $attempt_id = $engine->start_attempt(999999, $user_id, array('question_ids' => implode(',', $question_ids), 'analytics_data' => json_encode($analytics_data)));
+            if (is_wp_error($attempt_id) || !$attempt_id) {
+                wp_send_json_error(array('message' => is_wp_error($attempt_id) ? $attempt_id->get_error_message() : 'Could not create the practice test. Please retry.')); return;
+            }
 
 			wp_send_json_success( array( 'redirect' => gep_get_url( 'exam' ) . '?id=999999' ) );
 
@@ -867,14 +856,16 @@ class GEP_AJAX {
 		check_ajax_referer( 'gep_dashboard_nonce', 'nonce' );
 		$id = absint( $_POST['id'] );
 		$success = GEP_Notifications::mark_as_read( $id );
-		wp_send_json_success( array( 'success' => $success ) );
+		if ( $success === false ) wp_send_json_error( array( 'message' => 'Could not update notifications. Please retry.' ) );
+		wp_send_json_success( array( 'success' => true ) );
 	}
 
 	public function gep_mark_all_notifs_read() {
 		if ( ! is_user_logged_in() ) wp_send_json_error();
 		check_ajax_referer( 'gep_dashboard_nonce', 'nonce' );
 		$success = GEP_Notifications::mark_all_read( get_current_user_id() );
-		wp_send_json_success( array( 'success' => $success ) );
+		if ( $success === false ) wp_send_json_error( array( 'message' => 'Could not update notifications. Please retry.' ) );
+		wp_send_json_success( array( 'success' => true ) );
 	}
 
 	public function gep_update_lang() {

@@ -1,0 +1,6 @@
+{
+  "name": "gopath-ui-regression-tests",
+  "private": true,
+  "scripts": {"test": "node --test tests/*.test.cjs", "lint": "node tests/lint.cjs"},
+  "devDependencies": {"jquery": "3.7.1", "jsdom": "28.1.0", "php-parser": "3.7.0"}
+}

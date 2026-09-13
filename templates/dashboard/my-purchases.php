@@ -85,11 +85,12 @@ function gep_purchase_launch_url( $p ) {
                 // Attempt info (only for tests, not courses)
                 $show_attempts = ( $cat !== 'course' ) && isset( $p->attempt_limit );
                 if ( $show_attempts ) {
-                    $total_allowed = (int) $p->attempt_limit;
                     $used          = (int) $p->used_attempts;
-                    $is_unlimited  = ( $total_allowed == 0 );
-                    $remaining     = $is_unlimited ? '∞' : max( 0, $total_allowed - $used );
-                    $bar_pct       = ( !$is_unlimited && $total_allowed > 0 ) ? ( $used / $total_allowed * 100 ) : 0;
+                    $available     = (new GEP_Test())->get_remaining_attempts(get_current_user_id(), $p->id);
+                    $is_unlimited  = $p->type !== 'random' && $available >= 999999;
+                    $remaining     = $is_unlimited ? '∞' : max(0, $available);
+                    $total_allowed = $is_unlimited ? 0 : $used + max(0, $available);
+                    $bar_pct       = ( !$is_unlimited && $total_allowed > 0 ) ? min(100, max(0, $used / $total_allowed * 100)) : 0;
                 }
 
                 $launch_url       = gep_purchase_launch_url( $p );

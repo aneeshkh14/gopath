@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 // Translation Mapping
 $ui_strings = array(
     'en' => array(
-        'hub_title'     => "Test Repositories",
+        'hub_title'     => "Test Series",
         'all'           => "All",
         'series'        => "Series",
         'single'        => "Single",
@@ -12,8 +12,8 @@ $ui_strings = array(
         'combined'      => "Combined",
         'self_test'     => "Self Testing",
         'random'        => "Create Your Own",
-        'search_placeholder' => "Filter by subject or asset name...",
-        'all_cats'      => "All Domains",
+        'search_placeholder' => "Search by test name...",
+        'all_cats'      => "All Subjects",
         'series_badge'  => "SERIES",
         'mock_badge'    => "EXAM",
         'single_badge'    => "SINGLE",
@@ -28,8 +28,8 @@ $ui_strings = array(
         'view_series'   => "View",
         'start_now'     => "Launch",
         'unlock_now'    => "Unlock",
-        'no_exams'      => "No Assets Found",
-        'no_exams_desc' => "Our high-fidelity test repository is currently being updated. Please check back shortly.",
+        'no_exams'      => "No Tests Available",
+        'no_exams_desc' => "Published tests will appear here. Please check back soon.",
         'return_dash'   => "Back to Hub"
     ),
     'hi' => array(
@@ -74,7 +74,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
             <h3><?php echo esc_html($strings['hub_title']); ?></h3>
             
             <!-- Category (Subject Domain) Select Dropdown -->
-            <select id="gep-cat-select">
+            <select id="gep-cat-select" aria-label="Filter by subject">
                 <option value="0"><?php echo esc_html($strings['all_cats']); ?></option>
                 <?php foreach ( $categories as $cat ) : ?>
                     <option value="<?php echo $cat->id; ?>"><?php echo esc_html( $cat->name ); ?></option>
@@ -83,7 +83,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
 
             <?php $_initial_type = isset( $initial_type_filter ) ? $initial_type_filter : 'all'; ?>
             <!-- Test Type (Single, Combined, Series, etc.) Select Dropdown -->
-            <select id="gep-type-select">
+            <select id="gep-type-select" aria-label="Filter by test type">
                 <option value="all"<?php selected( $_initial_type, 'all' ); ?>><?php echo esc_html($strings['all']); ?></option>
                 <option value="series"<?php selected( $_initial_type, 'series' ); ?>><?php echo esc_html($strings['series']); ?></option>
                 <option value="single"<?php selected( $_initial_type, 'single' ); ?>><?php echo esc_html($strings['single']); ?></option>
@@ -97,11 +97,18 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
         <div class="header-right">
             <div class="gep-search-micro">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="gep-test-search" placeholder="<?php echo esc_attr($strings['search_placeholder']); ?>">
+                <input type="search" id="gep-test-search" aria-label="Search by test name" placeholder="<?php echo esc_attr($strings['search_placeholder']); ?>">
             </div>
         </div>
     </div>
 
+    <div class="gep-filter-feedback">
+        <p id="gep-filter-count" role="status" aria-live="polite"></p>
+        <button type="button" id="gep-clear-filters" class="gep-filter-reset">Clear filters</button>
+    </div>
+    <div id="gep-filter-empty" class="gep-empty-state" hidden>
+        <h3>No tests match your filters</h3><p>Try another search, subject, or test type. Use Clear filters to start again.</p>
+    </div>
     <!-- Asset Grid with Category Grouping -->
     <div class="gep-category-groups" id="gep-ajax-test-grid" style="width: 100%;">
         <?php 
@@ -643,6 +650,7 @@ jQuery(document).ready(function($) {
         const type = $('#gep-type-select').val();
         const search = $('#gep-test-search').val().toLowerCase();
         
+        let matches = 0;
         $('.gep-category-section').each(function() {
             let sectionHasVisible = false;
             $(this).find('.gep-asset-card').each(function() {
@@ -657,6 +665,7 @@ jQuery(document).ready(function($) {
                 if (show) {
                     $(this).show();
                     sectionHasVisible = true;
+                    matches++;
                 } else {
                     $(this).hide();
                 }
@@ -668,189 +677,39 @@ jQuery(document).ready(function($) {
                 $(this).hide();
             }
         });
+        $('#gep-filter-count').text(matches + (matches === 1 ? ' test shown' : ' tests shown'));
+        $('#gep-filter-empty').prop('hidden', matches !== 0 || !$('.gep-asset-card').length);
     }
     $('#gep-cat-select').on('change', filterAssets);
     $('#gep-type-select').on('change', filterAssets);
     $('#gep-test-search').on('input', filterAssets);
 
-    // Apply any server-provided initial type filter (e.g. deep link from "Create Your Own Test")
-    if ($('#gep-type-select').val() !== 'all') {
-        filterAssets();
-    }
+    $('#gep-clear-filters').on('click', function() {
+        $('#gep-cat-select').val('0'); $('#gep-type-select').val('all');
+        $('#gep-test-search, #gep-header-search-input').val('');
+        filterAssets(); $('#gep-test-search').trigger('focus');
+    });
+    filterAssets();
 });
 </script>
 
-<?php
-$razorpay_key = get_option('gep_razorpay_key_id');
-$current_user = wp_get_current_user();
-?>
-
-<!-- ─── Inline Payment Modal ─────────────────────────────────────── -->
-<div id="gep-pay-modal-overlay" style="display:none;position:fixed;inset:0;z-index:99990;background:rgba(0,0,0,0.80);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);align-items:center;justify-content:center;">
-  <div id="gep-pay-modal" style="background:#0f172a;border:1px solid rgba(255,255,255,0.1);border-radius:28px;padding:40px 36px;max-width:420px;width:92%;position:relative;box-shadow:0 32px 80px rgba(0,0,0,0.7);animation:gepPaySlide 0.25s ease;">
-    <style>@keyframes gepPaySlide{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}</style>
-    <button id="gep-pay-modal-close" style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,0.07);border:none;color:#94a3b8;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;line-height:30px;text-align:center;">✕</button>
-
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="width:52px;height:52px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 14px;">🔓</div>
-      <h3 id="gep-pay-item-title" style="font-size:17px;font-weight:900;color:#f1f5f9;margin:0 0 4px;letter-spacing:-0.5px;"></h3>
-      <p style="font-size:12px;color:#64748b;margin:0;">Unlock lifetime access to this test</p>
-    </div>
-
-    <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;padding:18px;text-align:center;margin-bottom:20px;">
-      <div style="font-size:10px;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Total Amount</div>
-      <div style="font-size:34px;font-weight:900;color:#f1f5f9;letter-spacing:-1px;"><span style="font-size:16px;color:#94a3b8;">₹</span><span id="gep-pay-price"></span></div>
-    </div>
-
-    <div style="display:flex;gap:6px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
-      <span style="padding:5px 11px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;font-size:11px;font-weight:700;color:#94a3b8;">💳 Cards</span>
-      <span style="padding:5px 11px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;font-size:11px;font-weight:700;color:#94a3b8;">📱 UPI</span>
-      <span style="padding:5px 11px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;font-size:11px;font-weight:700;color:#94a3b8;">🏦 NetBanking</span>
-      <span style="padding:5px 11px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;font-size:11px;font-weight:700;color:#94a3b8;">👛 Wallets</span>
-    </div>
-
-    <div style="display:flex;gap:8px;margin-bottom:6px;">
-      <input type="text" id="gep-modal-coupon" placeholder="Coupon code (optional)" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:11px;padding:10px 14px;color:#f1f5f9;font-size:13px;font-weight:600;outline:none;">
-      <button id="gep-modal-apply-coupon" style="background:#1e293b;color:#6366f1;border:1px solid rgba(99,102,241,0.3);border-radius:11px;padding:10px 14px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;">Apply</button>
-    </div>
-    <div id="gep-modal-coupon-status" style="font-size:12px;font-weight:700;padding-left:4px;min-height:20px;margin-bottom:14px;"></div>
-
-    <button id="gep-modal-pay-btn" style="width:100%;padding:15px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;transition:all 0.2s;">🔐 Pay with Razorpay</button>
-    <div id="gep-modal-pay-error" style="margin-top:10px;font-size:12px;color:#ef4444;text-align:center;font-weight:600;display:none;"></div>
-    <div style="text-align:center;margin-top:14px;font-size:11px;color:#334155;font-weight:600;">🛡 Secure · PCI DSS Compliant · 256-bit SSL</div>
-  </div>
-</div>
-
 <script>
-(function() {
-    var AJAXURL    = '<?php echo esc_js( admin_url("admin-ajax.php") ); ?>';
-    var NONCE      = '<?php echo wp_create_nonce("gep_checkout_nonce"); ?>';
-    var RZP_KEY    = '<?php echo esc_js( $razorpay_key ); ?>';
-    var USER_NAME  = '<?php echo esc_js( $current_user->display_name ); ?>';
-    var USER_EMAIL = '<?php echo esc_js( $current_user->user_email ); ?>';
-
-    var itemId = 0, itemType = 'test', finalAmount = 0, appliedCoupon = '';
-
-    // Ensure Razorpay SDK loaded
-    function loadRazorpay(cb) {
-        if (window.Razorpay) { cb(); return; }
-        var s = document.createElement('script');
-        s.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        s.onload = cb;
-        s.onerror = function() { showErr('Failed to load payment SDK. Check your internet connection.'); };
-        document.head.appendChild(s);
-    }
-
-    // Open modal
-    document.querySelectorAll('.gep-unlock-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            itemId        = this.dataset.id;
-            itemType      = this.dataset.type || 'test';
-            finalAmount   = parseFloat(this.dataset.price) || 0;
-            appliedCoupon = '';
-            document.getElementById('gep-pay-item-title').textContent = this.dataset.title;
-            document.getElementById('gep-pay-price').textContent = finalAmount.toFixed(0);
-            document.getElementById('gep-modal-coupon').value = '';
-            document.getElementById('gep-modal-coupon-status').textContent = '';
-            document.getElementById('gep-modal-pay-error').style.display = 'none';
-            resetBtn();
-            var ov = document.getElementById('gep-pay-modal-overlay');
-            ov.style.display = 'flex';
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.gep-unlock-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var url = new URL(<?php echo wp_json_encode(gep_get_url('checkout')); ?>);
+            url.searchParams.set('id', this.dataset.id);
+            url.searchParams.set('type', this.dataset.type || 'test');
+            window.location.href = url.href;
         });
     });
-
-    // Close
-    function closeModal() { document.getElementById('gep-pay-modal-overlay').style.display = 'none'; }
-    document.getElementById('gep-pay-modal-close').addEventListener('click', closeModal);
-    document.getElementById('gep-pay-modal-overlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
-
-    // Apply coupon
-    document.getElementById('gep-modal-apply-coupon').addEventListener('click', function() {
-        var code = document.getElementById('gep-modal-coupon').value.trim();
-        if (!code) return;
-        var me = this; me.disabled = true; me.textContent = '...';
-        var fd = new FormData();
-        fd.append('action','gep_apply_coupon'); fd.append('nonce',NONCE);
-        fd.append('coupon_code',code); fd.append('item_id',itemId); fd.append('item_type',itemType);
-        fetch(AJAXURL,{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(res) {
-            me.disabled = false; me.textContent = 'Apply';
-            var el = document.getElementById('gep-modal-coupon-status');
-            if (res.success) {
-                appliedCoupon = code;
-                finalAmount   = parseFloat(res.data.new_total);
-                document.getElementById('gep-pay-price').textContent = finalAmount.toFixed(0);
-                el.style.color = '#10b981';
-                el.textContent = '✓ Coupon applied! Saved ₹' + parseFloat(res.data.discount).toFixed(0);
-            } else {
-                appliedCoupon = '';
-                el.style.color = '#ef4444';
-                el.textContent = '✗ ' + ((res.data && res.data.message) ? res.data.message : 'Invalid coupon');
-            }
-        }).catch(function() { me.disabled = false; me.textContent = 'Apply'; });
-    });
-
-    // Pay button
-    document.getElementById('gep-modal-pay-btn').addEventListener('click', function() {
-        if (this._processing) return;
-        this._processing = true; this.disabled = true; this.textContent = '⏳ Initializing...';
-        var fd = new FormData();
-        fd.append('action','gep_create_payment_order'); fd.append('nonce',NONCE);
-        fd.append('item_id',itemId); fd.append('item_type',itemType); fd.append('coupon_code',appliedCoupon);
-        fetch(AJAXURL,{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(res) {
-            if (!res.success) { showErr((res.data&&res.data.message)||'Failed to initialize. Please try again.'); resetBtn(); return; }
-            if (res.data.status === 'free') { window.location.href = res.data.redirect; return; }
-            loadRazorpay(function() {
-                var opts = {
-                    key: RZP_KEY, amount: res.data.amount, currency: 'INR',
-                    name: 'GoPath Exam Portal',
-                    description: document.getElementById('gep-pay-item-title').textContent,
-                    order_id: res.data.id,
-                    prefill: { name: USER_NAME, email: USER_EMAIL },
-                    theme: { color: '#6366f1' },
-                    modal: { ondismiss: function() { resetBtn(); } },
-                    handler: function(response) {
-                        document.getElementById('gep-modal-pay-btn').textContent = '✅ Verifying...';
-                        verify(response);
-                    }
-                };
-                try {
-                    var rzp = new Razorpay(opts);
-                    rzp.on('payment.failed', function(r) { showErr('Payment failed: ' + (r.error.description||'Unknown')); resetBtn(); });
-                    rzp.open();
-                    resetBtn();
-                } catch(e) { showErr('Could not load payment gateway. Please refresh and try again.'); resetBtn(); }
-            });
-        }).catch(function() { showErr('Network error. Please check your connection.'); resetBtn(); });
-    });
-
-    function verify(payResp) {
-        var fd = new FormData();
-        fd.append('action','gep_verify_payment'); fd.append('nonce',NONCE);
-        fd.append('razorpay_payment_id', payResp.razorpay_payment_id);
-        fd.append('razorpay_order_id',   payResp.razorpay_order_id);
-        fd.append('razorpay_signature',  payResp.razorpay_signature);
-        fd.append('item_id',itemId); fd.append('item_type',itemType);
-        fetch(AJAXURL,{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(res) {
-            if (res.success) { window.location.href = res.data.redirect_url; }
-            else { showErr('Verification issue. Your access will activate shortly. ID: ' + payResp.razorpay_payment_id); resetBtn(); }
-        }).catch(function() { showErr('⚠️ Payment received. Access will activate within minutes. ID: ' + payResp.razorpay_payment_id); resetBtn(); });
-    }
-
-    function resetBtn() {
-        var b = document.getElementById('gep-modal-pay-btn');
-        b._processing = false; b.disabled = false; b.textContent = '🔐 Pay with Razorpay';
-    }
-    function showErr(m) {
-        var el = document.getElementById('gep-modal-pay-error');
-        el.textContent = m; el.style.display = 'block';
-    }
-})();
+});
 </script>
 
 <!-- Details Modal -->
 <div id="gep-details-modal" class="gep-details-modal-overlay" style="display: none;">
-    <div class="gep-details-modal-content">
-        <button type="button" class="gep-details-modal-close" id="gep-details-modal-close">&times;</button>
+    <div class="gep-details-modal-content" role="dialog" aria-modal="true" aria-labelledby="gep-modal-title" tabindex="-1">
+        <button type="button" class="gep-details-modal-close" id="gep-details-modal-close" aria-label="Close test details">&times;</button>
         <div class="gep-details-modal-header">
             <div class="gep-details-modal-thumb-container">
                 <img id="gep-modal-thumb" src="" alt="Thumbnail">
@@ -889,14 +748,15 @@ $current_user = wp_get_current_user();
 
 <script>
 jQuery(document).ready(function($) {
+    var detailsOpener = null;
     // Show details modal
     $(document).on('click', '.gep-view-details-btn', function(e) {
         e.preventDefault();
         var $btn = $(this);
-        
+        detailsOpener = this;
         // Populate modal data
         $('#gep-modal-title').text($btn.data('title'));
-        $('#gep-modal-thumb').attr('src', $btn.data('thumbnail'));
+        $('#gep-modal-thumb').attr('src', $btn.data('thumbnail') || '').attr('alt', $btn.data('title') || '').toggle(!!$btn.data('thumbnail'));
         $('#gep-modal-duration').text($btn.data('duration'));
         $('#gep-modal-qcount').text($btn.data('qcount') + ' Ques');
         
@@ -912,13 +772,24 @@ jQuery(document).ready(function($) {
         $('#gep-modal-price').text($btn.data('price'));
         
         // Open modal
-        $('#gep-details-modal').fadeIn(200);
+        $('#gep-details-modal').show();
+        $('html').addClass('gep-dialog-open');
+        $('#gep-details-modal-close').trigger('focus');
     });
     
+    function closeDetails() {
+        $('#gep-details-modal').hide(); $('html').removeClass('gep-dialog-open');
+        if (detailsOpener) detailsOpener.focus();
+    }
+    $(document).on('keydown', function(e) {
+        if ($('#gep-details-modal').css('display') === 'none') return;
+        if (e.key === 'Escape') { e.preventDefault(); closeDetails(); }
+        if (e.key === 'Tab') { e.preventDefault(); $('#gep-details-modal-close').trigger('focus'); }
+    });
     // Close modal
     $(document).on('click', '#gep-details-modal-close, .gep-details-modal-overlay', function(e) {
         if (e.target === this || $(e.target).hasClass('gep-details-modal-close')) {
-            $('#gep-details-modal').fadeOut(200);
+            closeDetails();
         }
     });
 });

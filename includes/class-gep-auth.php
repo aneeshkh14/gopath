@@ -96,12 +96,13 @@ class GEP_Auth {
 		// OTP CHECK
 		if ( get_option( 'gep_enable_otp' ) === 'yes' ) {
 			$otp = $this->generate_otp( $user->ID );
-			// In real world, send SMS/Email here. For this verification, we assume it's sent.
-			// error_log("OTP for User {$user->ID}: $otp"); 
-			
-			// Set session for pending OTP
-			set_transient( 'gep_pending_login_' . $user->ID, $creds['remember'], 5 * MINUTE_IN_SECONDS );
-			
+			if ( is_wp_error( $otp ) ) {
+				wp_safe_redirect( add_query_arg( 'login_error', 'otp_mail_failed', gep_get_url('login') ) );
+				exit;
+			}
+			// A false remember-me value must not look like an expired transient.
+			set_transient( 'gep_pending_login_' . $user->ID, array( 'remember' => ! empty($creds['remember']) ), 5 * MINUTE_IN_SECONDS );
+
 			$otp_url = add_query_arg( 'view', 'otp', (string) gep_get_url('login') );
 			$final_url = add_query_arg( 'uid', $user->ID, $otp_url );
 			wp_safe_redirect( $final_url );
@@ -168,16 +169,32 @@ class GEP_Auth {
 	}
 
 	public function generate_otp( $user_id ) {
-		$otp = rand( 100000, 999999 );
-		set_transient( 'gep_otp_' . $user_id, $otp, 10 * MINUTE_IN_SECONDS );
+		$user = get_user_by( 'id', $user_id );
+		if ( ! $user ) return new WP_Error( 'invalid_user', 'Account unavailable.' );
+		$otp = wp_rand( 100000, 999999 );
+		set_transient( 'gep_otp_' . $user_id, (string) $otp, 5 * MINUTE_IN_SECONDS );
+		delete_transient( 'gep_otp_failures_' . $user_id );
+		if ( ! wp_mail( $user->user_email, 'Your GoPath verification code', 'Your verification code is ' . $otp . '. It expires in 5 minutes. If you did not request this code, ignore this email.' ) ) {
+			delete_transient( 'gep_otp_' . $user_id );
+			delete_transient( 'gep_pending_login_' . $user_id );
+			return new WP_Error( 'otp_mail_failed', 'Could not send the verification code.' );
+		}
 		return $otp;
 	}
 
 	public function verify_otp( $user_id, $otp ) {
 		$stored_otp = get_transient( 'gep_otp_' . $user_id );
-		if ( $stored_otp && $stored_otp == $otp ) {
+		$failures = (int) get_transient( 'gep_otp_failures_' . $user_id );
+		if ( ! $stored_otp || $failures >= 5 ) return false;
+		if ( preg_match('/^[0-9]{6}$/', (string) $otp) && hash_equals( (string) $stored_otp, (string) $otp ) ) {
 			delete_transient( 'gep_otp_' . $user_id );
+			delete_transient( 'gep_otp_failures_' . $user_id );
 			return true;
+		}
+		set_transient( 'gep_otp_failures_' . $user_id, $failures + 1, 5 * MINUTE_IN_SECONDS );
+		if ( $failures + 1 >= 5 ) {
+			delete_transient( 'gep_otp_' . $user_id );
+			delete_transient( 'gep_pending_login_' . $user_id );
 		}
 		return false;
 	}

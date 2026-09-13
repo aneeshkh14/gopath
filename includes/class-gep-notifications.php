@@ -130,11 +130,13 @@ class GEP_Notifications {
         $table_reads  = $wpdb->prefix . 'gep_notif_reads';
 
         // 1. Mark per-user notifs as read
-        $wpdb->update( 
+        $updated = $wpdb->update(
             $table_notifs, 
             array( 'is_read' => 1 ), 
             array( 'user_id' => $user_id, 'is_read' => 0 ) 
         );
+
+        if ( $updated === false ) return false;
 
         // 2. Mark global notifs as read (insert into bridge for this user)
         $unread_globals = $wpdb->get_col( $wpdb->prepare( 
@@ -146,11 +148,12 @@ class GEP_Notifications {
 
         if ( $unread_globals ) {
             foreach ( $unread_globals as $notif_id ) {
-                $wpdb->insert( $table_reads, array( 
+                $inserted = $wpdb->insert( $table_reads, array(
                     'user_id' => $user_id, 
                     'notification_id' => $notif_id, 
                     'read_at' => current_time('mysql') 
                 ) );
+                if ( $inserted === false ) return false;
             }
         }
         

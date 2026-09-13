@@ -12,8 +12,8 @@
             <p class="hero-desc-premium">Interact with top educators in real-time. Join the community of achievers.</p>
             
             <div class="hero-actions">
-                <button class="btn-action-elite btn-secondary">Schedule</button>
-                <button class="btn-action-elite btn-primary">Join Community</button>
+                <a href="#gep-upcoming-sessions" class="btn-action-elite btn-secondary">View schedule</a>
+                <a href="<?php echo esc_url(add_query_arg('view', 'support', gep_get_url('dashboard'))); ?>" class="btn-action-elite btn-primary">Contact an educator</a>
             </div>
         </div>
     </div>
@@ -67,7 +67,7 @@
                 
                 <?php if (isset($live_now->url_type) && $live_now->url_type === 'native' && !empty($live_now->meeting_url)): ?>
                     <div class="native-embed" style="margin-top: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
-                        <iframe src="<?php echo esc_url($live_now->meeting_url); ?>" width="100%" height="450" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display: block;"></iframe>
+                        <iframe title="Live class video" src="<?php echo esc_url($live_now->meeting_url); ?>" width="100%" height="450" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display: block;"></iframe>
                     </div>
                 <?php endif; ?>
             </div>
@@ -85,7 +85,7 @@
 
         <!-- Upcoming Classes -->
         <div class="section-title-wrap">
-            <h3 class="section-title">Broadcast Schedule</h3>
+            <h3 class="section-title" id="gep-upcoming-sessions" tabindex="-1">Broadcast Schedule</h3>
             <div class="line-decorator"></div>
         </div>
         
@@ -102,7 +102,7 @@
                     </div>
                     <div class="card-footer gep-glass-subtle" style="padding: 15px;">
                         <span class="time-tag">📅 <?php echo date('j M, h:i A', strtotime($class->scheduled_at)); ?></span>
-                        <a href="<?php echo esc_url($class->meeting_url); ?>" target="_blank" class="btn-link-action">Set Reminder</a>
+                        <a href="<?php echo esc_url($class->meeting_url); ?>" target="_blank" class="btn-link-action">Open class link ↗</a>
                     </div>
                 </div>
             </div>

@@ -12,7 +12,30 @@ class GEP_Exam_Engine {
 	/**
 	 * Start a new attempt or resume an existing one.
 	 */
-	public function start_attempt( $test_id, $user_id ) {
+	public function start_attempt( $test_id, $user_id, $initial_data = array() ) {
+        return $this->in_transaction(function() use ($test_id, $user_id, $initial_data) {
+            global $wpdb;
+            // Serialize starts per student, including two tabs starting together.
+            if (!$wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->users} WHERE ID = %d FOR UPDATE", $user_id))) return false;
+            return $this->start_attempt_locked($test_id, $user_id, $initial_data);
+        });
+    }
+
+    private function in_transaction($callback) {
+        global $wpdb;
+        if ($wpdb->query('START TRANSACTION') === false) return false;
+        try {
+            $result = $callback();
+            if ($result === false || is_wp_error($result)) { $wpdb->query('ROLLBACK'); return $result; }
+            if ($wpdb->query('COMMIT') === false) { $wpdb->query('ROLLBACK'); return false; }
+            return $result;
+        } catch (Throwable $e) {
+            $wpdb->query('ROLLBACK');
+            return false;
+        }
+    }
+
+    private function start_attempt_locked( $test_id, $user_id, $initial_data ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'gep_attempts';
 
@@ -22,8 +45,15 @@ class GEP_Exam_Engine {
 			$user_id, $test_id 
 		) );
 
-		if ( $in_progress ) {
-			return $in_progress->id;
+        if ( $in_progress ) {
+            if ($test_id === 999999 && !empty($initial_data['analytics_data'])) {
+                $existing = json_decode($in_progress->analytics_data ?? '', true) ?: array();
+                $requested = json_decode($initial_data['analytics_data'], true) ?: array();
+                if (($existing['type'] ?? '') !== ($requested['type'] ?? '') || ($existing['target'] ?? '') !== ($requested['target'] ?? '')) {
+                    return new WP_Error('practice_in_progress', 'Finish or submit your current practice test before starting a different one. You can resume it from your dashboard.');
+                }
+            }
+            return (int)$in_progress->id;
 		}
 
 		// 2. Centralized Eligibility Check
@@ -32,10 +62,16 @@ class GEP_Exam_Engine {
 			return $eligibility;
 		}
 
+        if (empty($initial_data['question_ids'])) {
+            $ids = (new GEP_Test())->get_test_questions($test_id);
+            if (!$ids) return new WP_Error('empty_test', 'This test has no questions yet. Please contact support.');
+            $initial_data['question_ids'] = implode(',', $ids);
+        }
+
 		// 3. Create new attempt
 		$attempt_number = $this->get_next_attempt_number( $user_id, $test_id );
 
-		$wpdb->insert(
+		$inserted = $wpdb->insert(
 			$table,
 			array(
 				'user_id'        => $user_id,
@@ -43,12 +79,14 @@ class GEP_Exam_Engine {
 				'start_time'     => current_time( 'mysql' ),
 				'status'         => 'in_progress',
 				'answers'        => json_encode( array() ),
-				'attempt_number' => $attempt_number
+				'attempt_number' => $attempt_number,
+                'question_ids' => $initial_data['question_ids'] ?? '',
+                'analytics_data' => $initial_data['analytics_data'] ?? '{}'
 			),
-			array( '%d', '%d', '%s', '%s', '%s', '%d' )
+			array( '%d', '%d', '%s', '%s', '%s', '%d', '%s', '%s' )
 		);
 
-		return $wpdb->insert_id;
+		return $inserted === false ? false : (int)$wpdb->insert_id;
 	}
 
 	public function check_eligibility( $user_id, $test_id ) {
@@ -58,6 +96,8 @@ class GEP_Exam_Engine {
 		if ( ! $test ) {
 			return new WP_Error( 'not_found', 'Test not found.' );
 		}
+
+        if ($test->status !== 'publish' && !current_user_can('manage_options')) return new WP_Error('unavailable', 'This test is not available yet.');
 
 		// Check Validity Date
 		if ( $test->validity_date && $test->validity_date !== '0000-00-00 00:00:00' ) {
@@ -92,12 +132,21 @@ class GEP_Exam_Engine {
 	}
 
 	public function save_answer( $attempt_id, $question_id, $answer, $flagged = false ) {
+        return $this->in_transaction(function() use ($attempt_id, $question_id, $answer, $flagged) {
+            return $this->save_answer_locked($attempt_id, $question_id, $answer, $flagged);
+        });
+    }
+
+    private function save_answer_locked( $attempt_id, $question_id, $answer, $flagged ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'gep_attempts';
 
-		$attempt = $wpdb->get_row( $wpdb->prepare( "SELECT a.*, t.duration_minutes FROM $table a JOIN {$wpdb->prefix}gep_tests t ON a.test_id = t.id WHERE a.id = %d", $attempt_id ) );
+		$attempt = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d FOR UPDATE", $attempt_id ) );
 		if ( ! $attempt ) return false;
-		if ( $attempt->user_id != get_current_user_id() ) return false;
+		if ( $attempt->user_id != get_current_user_id() || $attempt->status !== 'in_progress' ) return false;
+
+        $question_ids = !empty($attempt->question_ids) ? array_map('absint', explode(',', $attempt->question_ids)) : (new GEP_Test())->get_test_questions($attempt->test_id);
+        if (!in_array((int)$question_id, array_map('intval', $question_ids), true)) return false;
 
 		// BUG-E FIX: Do NOT block save_answer on timer expiry.
 		// The exam JS stops sending saves when the timer hits 0, and auto-submits.
@@ -125,11 +174,15 @@ class GEP_Exam_Engine {
 	}
 
 	public function submit_exam( $attempt_id ) {
+        return $this->in_transaction(function() use ($attempt_id) { return $this->submit_exam_locked($attempt_id); });
+    }
+
+    private function submit_exam_locked( $attempt_id ) {
 		global $wpdb;
 		$table_attempts = $wpdb->prefix . 'gep_attempts';
 		$table_tests = $wpdb->prefix . 'gep_tests';
 
-		$attempt = $wpdb->get_row( $wpdb->prepare( "SELECT a.*, t.duration_minutes FROM $table_attempts a JOIN $table_tests t ON a.test_id = t.id WHERE a.id = %d", $attempt_id ) );
+		$attempt = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_attempts WHERE id = %d FOR UPDATE", $attempt_id ) );
 		if ( ! $attempt ) return false;
 
 		// Ownership check: allow server-side auto-submit (get_current_user_id()=0 in cron/violation context)
@@ -139,7 +192,7 @@ class GEP_Exam_Engine {
 		// Graceful Redirection Bypass: If already submitted (e.g., auto-submitted or double-clicked), return true
 		if ( $attempt->status === 'submitted' ) return true;
 
-		$test = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_tests WHERE id = %d", $attempt->test_id ) );
+		$test = (new GEP_Test())->get_test((int)$attempt->test_id, $attempt);
 		
 		if ( ! $test ) {
 			return false; // Cannot grade without the test definition
@@ -183,11 +236,12 @@ class GEP_Exam_Engine {
 		// Basic analytics data
 		$answers_for_analytics = json_decode( $attempt->answers, true ) ?: array();
 		$times = array_filter(array_column(array_values($answers_for_analytics), 'time_ms'));
-		$analytics_data = array(
+		$analytics_data = array_merge(json_decode($attempt->analytics_data ?? '', true) ?: array(), array(
+			'total_marks'    => $results['total_marks'],
 			'avg_time_ms'    => count($times) ? (int)(array_sum($times)/count($times)) : 0,
 			'total_answered' => count(array_filter($answers_for_analytics, fn($a)=>isset($a['answer'])&&$a['answer']!=='')),
 			'total_flagged'  => count(array_filter($answers_for_analytics, fn($a)=>!empty($a['flagged']))),
-		);
+		));
 
 		$updated = $wpdb->update(
 			$table_attempts,
@@ -249,6 +303,7 @@ class GEP_Exam_Engine {
 		$is_pass = ( $percentage >= $test->pass_marks ) ? 1 : 0;
 
 		return array(
+			'total_marks' => $total_max_marks,
 			'score'      => $score,
 			'percentage' => $percentage,
 			'is_pass'    => $is_pass
@@ -302,11 +357,16 @@ class GEP_Exam_Engine {
 		if ( trim($user_ans) === '' ) return false;
 
 		if ( $qtype === 'numerical' ) {
+			if ( ! is_numeric(trim((string) $user_ans)) || ! is_numeric(trim((string) $correct_ans)) ) return false;
 			// NTA-style numerical: check within tolerance
 			$tolerance = isset($question->numerical_tolerance) && $question->numerical_tolerance > 0 ? floatval($question->numerical_tolerance) : 0.01;
 			$user_num  = floatval($user_ans);
 			$correct_num = floatval($correct_ans);
 			return abs($user_num - $correct_num) <= $tolerance;
+		} elseif ( $qtype === 'short_answer' ) {
+			// Free text must not inherit MCQ option aliases such as 1 => A.
+			$normalize = static function($text) { return strtolower(preg_replace('/\s+/u', ' ', trim((string) $text))); };
+			return $normalize($user_ans) === $normalize($correct_ans);
 		} elseif ( $qtype === 'true_false' ) {
 			// Case-insensitive true/false
 			return strtolower(trim($user_ans)) === strtolower(trim($correct_ans));

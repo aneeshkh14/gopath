@@ -5,7 +5,7 @@
             <p style="margin: 4px 0 0; color: var(--admin-muted); font-weight: 600; font-size: 13px;">Strategic overview of platform performance and student engagement.</p>
         </div>
         <div style="display: flex; gap: 15px;">
-            <a href="<?php echo admin_url('admin.php?page=gep-dashboard&action=seed_test_data&nonce=' . wp_create_nonce('gep_seed_data')); ?>" class="button button-primary" style="height: 45px; border-radius: 12px; font-weight: 800; padding: 0 20px;" onclick="return confirm('This will add sample courses, tests, and PYQ questions. Continue?');">🚀 Seed Production Assets</a>
+            <a href="<?php echo admin_url('admin.php?page=gep-dashboard&action=seed_test_data&nonce=' . wp_create_nonce('gep_seed_data')); ?>" class="button button-primary" style="height: 45px; border-radius: 12px; font-weight: 800; padding: 0 20px;" onclick="return confirm('This will add sample courses, tests, and PYQ questions. Continue?');">🚀 Add Sample Data</a>
         </div>
     </div>
 

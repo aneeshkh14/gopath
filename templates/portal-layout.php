@@ -404,11 +404,13 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
     $is_sovereign_view = in_array( $current_view, array( 'main', 'supercoaching', 'live-classes', 'lectures', 'tests', 'pyqs', 'skill-academy', 'rank-predictor', 'profile', 'policies', 'purchases', 'support', 'watch', 'about' ) );
     ?>
 
+    <a class="gep-skip-link" href="#gep-main-content">Skip to content</a>
     <div id="gep-page-wrapper" style="width:100%; height:100%; display:flex; flex-direction:column;">
     <?php if ( ! $is_exam_page ) : ?>
     <div class="gep-dashboard-container<?php echo $is_sovereign_view ? ' gep-sovereign-active' : ''; ?>">
         <!-- Persistent Sidebar -->
-        <aside class="gep-dashboard-sidebar">
+        <aside class="gep-dashboard-sidebar" id="gep-navigation" aria-label="Main navigation">
+            <button type="button" id="gep-menu-close" class="gep-menu-close" aria-label="Close menu">&times;</button>
             <div class="gep-sidebar-logo">
                 <span>GoPath<span style="color: var(--gep-primary);">.</span></span>
             </div>
@@ -465,8 +467,8 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                     </a>
                     <div class="gep-nav-subitems">
                         <a href="<?php echo $get_nav_link('tests'); ?>" class="<?php echo ( $current_view === 'tests' && empty($_GET['type']) ) ? 'active' : ''; ?>">Section-wise</a>
-                        <a href="<?php echo $get_nav_link('pyqs'); ?>" class="<?php echo $current_view === 'pyqs' ? 'active' : ''; ?>">Year-wise</a>
-                        <a href="<?php echo add_query_arg( 'type', 'self_test', (string) $get_nav_link('tests') ); ?>" class="<?php echo ( $current_view === 'tests' && isset($_GET['type']) && $_GET['type'] === 'self_test' ) ? 'active' : ''; ?>">Create Your Own Test</a>
+                        <a href="<?php echo add_query_arg('tab', 'year_wise', $get_nav_link('pyqs')); ?>" class="<?php echo $current_view === 'pyqs' ? 'active' : ''; ?>">Year-wise</a>
+                        <a href="<?php echo add_query_arg( 'type', 'random', (string) $get_nav_link('tests') ); ?>" class="<?php echo ( $current_view === 'tests' && isset($_GET['type']) && $_GET['type'] === 'random' ) ? 'active' : ''; ?>">Create Your Own Test</a>
                     </div>
                 </div>
 
@@ -490,6 +492,8 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                 <a href="<?php echo $get_nav_link('purchases'); ?>" class="<?php echo $current_view === 'purchases' ? 'active' : ''; ?>">
                     <span class="gep-nav-icon">💰</span> My Purchases
                 </a>
+                <a href="<?php echo esc_url($get_nav_link('orders')); ?>" class="<?php echo $current_view === 'orders' ? 'active' : ''; ?>"><span class="gep-nav-icon">🧾</span> Transaction History</a>
+                <a href="<?php echo esc_url($get_nav_link('results')); ?>" class="<?php echo $current_view === 'results' ? 'active' : ''; ?>"><span class="gep-nav-icon">📊</span> Results &amp; Progress</a>
                 <a href="<?php echo $get_nav_link('profile'); ?>" class="<?php echo $current_view === 'profile' ? 'active' : ''; ?>">
                     <span class="gep-nav-icon">👤</span> My Profile
                 </a>
@@ -506,16 +510,16 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
         </aside>
 
         <!-- Main Content Area -->
-        <main class="gep-dashboard-content">
+        <main class="gep-dashboard-content" id="gep-main-content" tabindex="-1">
             <!-- Persistent Header -->
             <header class="gep-dashboard-header">
-                <button class="gep-mobile-toggle" id="gep-menu-toggle" type="button" aria-label="Open menu" style="background:transparent;border:none;padding:8px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">☰</button>
+                <button class="gep-mobile-toggle" id="gep-menu-toggle" type="button" aria-label="Open menu" aria-controls="gep-navigation" aria-expanded="false" style="background:transparent;border:none;padding:8px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">☰</button>
 
                 <div class="gep-header-search">
                     <?php if ($current_view !== 'watch') : ?>
                     <form action="<?php echo gep_get_url('dashboard'); ?>" method="get" id="gep-header-search-form">
-                        <input type="hidden" name="view" value="main">
-                        <input type="text" name="gep_s" id="gep-header-search-input" placeholder="Search for tests, courses, or videos..." value="<?php echo isset($_GET['gep_s']) ? esc_attr($_GET['gep_s']) : ''; ?>">
+                        <input type="hidden" name="view" value="tests">
+                        <input type="search" aria-label="Search tests on this page" name="gep_s" id="gep-header-search-input" placeholder="Search tests on this page..." value="<?php echo isset($_GET['gep_s']) ? esc_attr($_GET['gep_s']) : ''; ?>">
                     </form>
                     <?php else : ?>
                         <div class="gep-watch-breadcrumbs">
@@ -538,8 +542,8 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                     <a href="<?php echo esc_url( add_query_arg( 'view', 'support', (string) gep_get_url('dashboard') ) ); ?>" class="gep-header-contact-link" title="Contact Us">
                         <span class="gep-header-contact-icon">✉️</span><span class="gep-header-contact-label">Contact Us</span>
                     </a>
-                    <div class="gep-header-notification-wrapper" id="gep-notif-trigger">
-                        <div class="gep-notif-bell">🔔</div>
+                    <div class="gep-header-notification-wrapper">
+                        <button type="button" id="gep-notif-trigger" class="gep-notif-bell" aria-label="Notifications" aria-expanded="false" aria-controls="gep-notif-panel">🔔</button>
                         <?php 
                         $unread_count = GEP_Notifications::get_unread_count( get_current_user_id() );
                         if ( $unread_count > 0 ) : 
@@ -547,7 +551,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                             <span class="gep-notif-count"><?php echo $unread_count; ?></span>
                         <?php endif; ?>
                         
-                        <div class="gep-notif-dropdown" id="gep-notif-panel">
+                        <div class="gep-notif-dropdown" id="gep-notif-panel" aria-label="Notifications">
                             <div class="notif-header">
                                 <span>Notifications</span>
                                 <a href="#" id="gep-mark-all-read">Mark all as read</a>
@@ -558,7 +562,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                                 if ( $user_notifs ) :
                                     foreach ( $user_notifs as $un ) :
                                 ?>
-                                    <div class="notif-item <?php echo $un->is_read ? '' : 'unread'; ?>" data-id="<?php echo $un->id; ?>">
+                                    <div role="button" tabindex="0" class="notif-item <?php echo $un->is_read ? '' : 'unread'; ?>" data-id="<?php echo $un->id; ?>">
                                         <div class="notif-icon">📢</div>
                                         <div class="notif-content">
                                             <div class="notif-title"><?php echo esc_html( $un->title ); ?></div>
@@ -573,6 +577,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                                     <div class="notif-empty">No new notifications.</div>
                                 <?php endif; ?>
                             </div>
+                            <a class="gep-notif-view-all" href="<?php echo esc_url($get_nav_link('notifications')); ?>">View all notifications</a>
                         </div>
                     </div>
 
@@ -630,7 +635,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
     </div>
     <?php else : ?>
         <!-- Exam Mode: No Dashboard Wrapper -->
-        <main class="gep-exam-fullscreen-container">
+        <main class="gep-exam-fullscreen-container" id="gep-main-content" tabindex="-1">
             <?php 
             if ( is_user_logged_in() ) {
                 // High-Fidelity Fallback: Force render exam engine
@@ -661,25 +666,6 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const toggle = document.getElementById('gep-menu-toggle');
-            const sidebar = document.querySelector('.gep-dashboard-sidebar');
-            
-            if (toggle && sidebar) {
-                toggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
-                });
-
-                // Close sidebar when clicking outside on mobile (aligned with 1024px responsive breakpoint)
-                document.addEventListener('click', function(e) {
-                    if (window.innerWidth <= 1024 && 
-                        !sidebar.contains(e.target) && 
-                        !toggle.contains(e.target) && 
-                        sidebar.classList.contains('active')) {
-                        sidebar.classList.remove('active');
-                    }
-                });
-            }
-
             // Sidebar "Miscellaneous" group expand/collapse
             document.querySelectorAll('.gep-nav-group-toggle-btn').forEach(function(btn) {
                 btn.setAttribute('aria-expanded', btn.closest('.gep-nav-group').classList.contains('open') ? 'true' : 'false');
@@ -691,19 +677,6 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                 });
             });
 
-            // Notification Panel Toggle
-            const notifTrigger = document.getElementById('gep-notif-trigger');
-            const notifPanel = document.getElementById('gep-notif-panel');
-            if (notifTrigger && notifPanel) {
-                notifTrigger.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    notifPanel.classList.toggle('active');
-                });
-
-                document.addEventListener('click', function() {
-                    notifPanel.classList.remove('active');
-                });
-            }
         });
     </script>
     

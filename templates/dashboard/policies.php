@@ -260,6 +260,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    window.addEventListener('popstate', function() {
+        const hash = window.location.hash.slice(1);
+        switchTab(['terms', 'privacy', 'refund'].includes(hash) ? hash : 'terms');
+    });
     // Check URL hash on load
     if (window.location.hash) {
         const hash = window.location.hash.replace('#', '');

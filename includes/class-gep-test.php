@@ -9,14 +9,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class GEP_Test {
 
-	public function get_test( $id ) {
-		if ( $id === 999999 ) {
+	public function get_test( $id, $attempt = null ) {
+		if ( (int)$id === 999999 ) {
 			$user_id = get_current_user_id();
 			global $wpdb;
-			$attempt = null;
-			if ( isset( $_GET['attempt_id'] ) ) {
+			if ( !$attempt && isset( $_GET['attempt_id'] ) ) {
 				$attempt = $wpdb->get_row( $wpdb->prepare( "SELECT analytics_data FROM {$wpdb->prefix}gep_attempts WHERE id = %d", absint( $_GET['attempt_id'] ) ) );
-			} else {
+			} elseif (!$attempt) {
 				$attempt = $wpdb->get_row( $wpdb->prepare( "SELECT analytics_data FROM {$wpdb->prefix}gep_attempts WHERE user_id = %d AND test_id = 999999 ORDER BY id DESC LIMIT 1", $user_id ) );
 			}
 			$title = 'PYQ Practice Test';
@@ -85,8 +84,8 @@ class GEP_Test {
 		);
 		$args = wp_parse_args( $args, $defaults );
 
-		$where = "WHERE status = %s";
-		$params = array( $args['status'] );
+		$where = $args['status'] === 'all' ? "WHERE 1=1" : "WHERE status = %s";
+		$params = $args['status'] === 'all' ? array() : array( $args['status'] );
 
 		if ( $args['type'] !== 'all' ) {
 			$where .= " AND type = %s";
@@ -175,7 +174,7 @@ class GEP_Test {
 		global $wpdb;
 
 		// If it's a random test, attempts are purchased in packages and are NOT unlimited
-		if ( isset($test->type) && $test->type === 'random' ) {
+		if ( isset($test->type) && $test->type === 'random' && empty($test->is_free) ) {
 			$access_table = $wpdb->prefix . 'gep_user_test_access';
 			$purchased_attempts = $wpdb->get_var( $wpdb->prepare( 
 				"SELECT SUM(extra_attempts) FROM $access_table WHERE user_id = %d AND test_id = %d", 

@@ -694,3 +694,20 @@ input:focus + .gep-option-icon {
     margin: 0 !important;
 }
 
+
+/* Admin forms and records remain usable with keyboard and small viewports. */
+.gep-admin-wrap :is(a, button, input, select, textarea, [tabindex]):focus-visible,
+.gep-modal-overlay :is(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 3px solid #4f46e5 !important; outline-offset: 3px; }
+.gep-admin-table-container { overflow-x: auto !important; }
+.gep-modal-overlay .gep-modal-content { max-width: calc(100vw - 32px) !important; max-height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain; }
+@media (max-width: 782px) {
+    .gep-modal-overlay .gep-modal-content { padding: 24px 16px !important; box-sizing: border-box; }
+    .gep-admin-wrap .button { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .gep-admin-wrap *, .gep-modal-overlay * { animation: none !important; transition: none !important; } }
+
+@media (max-width: 782px) {
+    .gep-admin-header, .gep-admin-recent-activity > form { flex-wrap: wrap; gap: 16px !important; }
+    .gep-admin-recent-activity select { min-width: 0 !important; max-width: 100%; }
+    #gep-assign-access-form > div:first-of-type { grid-template-columns: minmax(0, 1fr) !important; }
+}

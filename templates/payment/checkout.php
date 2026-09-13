@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 if ( ! isset($item) || ! $item ) {
     wp_die('Invalid selection.');
 }
+$checkout_price = !empty($item->is_free) ? 0 : $item->price;
 // NOTE: Razorpay SDK + GEP_Checkout JS object are enqueued in class-gep-loader.php
 // during wp_enqueue_scripts so they load before wp_head() fires.
 ?>
@@ -17,7 +18,8 @@ if ( ! isset($item) || ! $item ) {
             <div class="gep-checkout-header">
                 <div class="header-badge">SECURE CHECKOUT</div>
                 <h1>Complete Your <span class="gep-text-gradient-primary">Enrollment</span></h1>
-                <p>Join thousands of students mastering their future with GoPath.</p>
+                <p>Review your selection and payment details before enrolling.</p>
+                <?php if ($item_type === 'pass') : ?><p>Renewing an active pass? Your remaining time is kept, and the new duration is added after it.</p><?php endif; ?>
             </div>
 
             <div class="gep-checkout-grid">
@@ -37,7 +39,7 @@ if ( ! isset($item) || ! $item ) {
                     </div>
 
                     <div class="gep-order-summary">
-                        <?php if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' ) : 
+                        <?php if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && empty($item->is_free) ) :
                             $trans = !empty($item->translated_data) ? json_decode($item->translated_data, true) : array();
                             $attempt_pricing = isset($trans['attempt_pricing']) ? $trans['attempt_pricing'] : array();
                         ?>
@@ -58,16 +60,16 @@ if ( ! isset($item) || ! $item ) {
                         <?php else : ?>
                             <div class="summary-row">
                                 <span class="label">Original Price</span>
-                                <span class="value">₹<?php echo number_format($item->price, 2); ?></span>
+                                <span class="value">₹<?php echo number_format($checkout_price, 2); ?></span>
                             </div>
                         <?php endif; ?>
                         
                         <div class="gep-coupon-section-modern">
                             <div class="input-wrap">
-                                <input type="text" id="gep-coupon-code" placeholder="HAVE A COUPON?">
+                                <input type="text" id="gep-coupon-code" aria-label="Coupon code" aria-describedby="gep-coupon-status" placeholder="HAVE A COUPON?">
                                 <button type="button" id="gep-apply-coupon">APPLY</button>
                             </div>
-                            <div id="gep-coupon-status"></div>
+                            <div id="gep-coupon-status" role="status" aria-live="polite"></div>
                         </div>
 
                         <div class="summary-divider"></div>
@@ -76,13 +78,13 @@ if ( ! isset($item) || ! $item ) {
                             <span class="label">Total Amount</span>
                             <div class="final-price-wrap">
                                 <span class="currency">₹</span>
-                                <span class="value" id="gep-final-amount"><?php echo number_format($item->price, 2); ?></span>
+                                <span class="value" id="gep-final-amount" aria-live="polite"><?php echo number_format($checkout_price, 2); ?></span>
                             </div>
                         </div>
                     </div>
 
                     <button type="button" id="gep-pay-button" class="btn-pay-sovereign">
-                        <?php if ( $item->price <= 0 ) : ?>
+                        <?php if ( $checkout_price <= 0 ) : ?>
                             <span>Complete Enrollment</span>
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                         <?php else : ?>

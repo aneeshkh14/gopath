@@ -1,3 +1,17 @@
+<?php
+global $wpdb;
+$payment_month = isset($_GET['m']) ? sanitize_text_field(wp_unslash($_GET['m'])) : '0';
+if (!preg_match('/^[0-9]{4}(0[1-9]|1[0-2])$/', $payment_month)) $payment_month = '0';
+$payment_months = $wpdb->get_col("SELECT DISTINCT DATE_FORMAT(created_at, '%Y%m') FROM {$wpdb->prefix}gep_orders ORDER BY created_at DESC");
+$payment_where = '';
+if ($payment_month !== '0') {
+    $month_start = substr($payment_month, 0, 4) . '-' . substr($payment_month, 4, 2) . '-01';
+    $month_end = date('Y-m-d', strtotime($month_start . ' +1 month'));
+    $payment_where = $wpdb->prepare('WHERE o.created_at >= %s AND o.created_at < %s', $month_start, $month_end);
+}
+$gateway_key = (string) get_option('gep_razorpay_key_id', '');
+$gateway_label = strpos($gateway_key, 'rzp_test_') === 0 ? 'Test mode configured' : ($gateway_key ? 'Gateway key configured' : 'Not configured');
+?>
 <div class="wrap gep-admin-wrap">
     <div class="gep-admin-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #fff; padding: 12px 25px; border-radius: 20px; border: 1px solid var(--admin-border); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);">
         <div>
@@ -9,12 +23,12 @@
                 <span style="display: block; font-size: 11px; font-weight: 800; color: var(--admin-muted); text-transform: uppercase; letter-spacing: 1px;">Gateway Status</span>
                 <span style="color: #10b981; font-weight: 900; font-size: 14px; display: flex; align-items: center; gap: 6px;">
                     <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span>
-                    RAZORPAY LIVE
+                    <?php echo esc_html($gateway_label); ?>
                 </span>
             </div>
             <div style="width: 1px; height: 40px; background: #e2e8f0;"></div>
             <div style="background: #f0fdf4; color: #166534; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 13px; border: 1px solid #bbf7d0; display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 18px;">🛡️</span> SECURE VAULT ACTIVE
+                <span style="font-size: 18px;">🛡️</span> Payment records
             </div>
         </div>
     </div>
@@ -28,11 +42,13 @@
                     <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">Historical Audit Data</span>
                 </div>
             </div>
-            <select name="m" style="height: 50px; border-radius: 14px; border: 2px solid #e2e8f0; padding: 0 20px; font-weight: 700; min-width: 280px; background: #f8fafc; color: #1e293b;">
-                <option value="0">All Historical Data</option>
-                <option value="202605" selected>May 2026 (Active Cycle)</option>
+            <select aria-label="Transaction month" name="m" style="height: 50px; border-radius: 14px; border: 2px solid #e2e8f0; padding: 0 20px; font-weight: 700; min-width: 280px; background: #f8fafc; color: #1e293b;">
+                <option value="0" <?php selected($payment_month, '0'); ?>>All months</option>
+                <?php foreach ($payment_months as $month) : ?>
+                    <option value="<?php echo esc_attr($month); ?>" <?php selected($payment_month, $month); ?>><?php echo esc_html(date('F Y', strtotime($month . '01'))); ?></option>
+                <?php endforeach; ?>
             </select>
-            <button type="submit" class="button button-primary" style="height: 50px; border-radius: 14px; padding: 0 35px; font-weight: 900; font-size: 14px; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.25); letter-spacing: 0.5px;">Filter Intelligence</button>
+            <button type="submit" class="button button-primary" style="height: 50px; border-radius: 14px; padding: 0 35px; font-weight: 900; font-size: 14px; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.25); letter-spacing: 0.5px;">Filter Payments</button>
         </form>
     </div>
 
@@ -60,6 +76,7 @@
                     END as item_name
                     FROM {$wpdb->prefix}gep_orders o 
                     JOIN {$wpdb->users} u ON o.user_id = u.ID 
+                    $payment_where
                     ORDER BY o.created_at DESC 
                     LIMIT 50" 
                 );
@@ -111,7 +128,7 @@
                             <div style="display: flex; gap: 20px; justify-content: center;">
                                 <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px 25px; border-radius: 14px; display: flex; align-items: center; gap: 10px;">
                                     <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
-                                    <span style="font-size: 13px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Gateway: Connected</span>
+                                    <span style="font-size: 13px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;"><?php echo esc_html($gateway_label); ?></span>
                                 </div>
                                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 25px; border-radius: 14px; display: flex; align-items: center; gap: 10px;">
                                     <span style="font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Currency: INR (₹)</span>

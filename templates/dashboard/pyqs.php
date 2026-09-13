@@ -264,6 +264,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    const initialTab = new URLSearchParams(window.location.search).get('tab');
+    tabs.forEach(btn => { if (btn.dataset.tab === initialTab) btn.click(); });
     // 2. AJAX Dynamic Quiz Launch
     const ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';
     
@@ -273,13 +275,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const target = btn.data('target');
         const originalText = btn.text();
 
+        if (btn.prop('disabled')) return;
         btn.prop('disabled', true).text('⌛ Initializing...');
 
         jQuery.ajax({
             url: ajaxurl,
             type: 'POST',
+            timeout: 20000,
             data: {
                 action: 'gep_start_pyq_practice_test',
+                nonce: '<?php echo esc_js(wp_create_nonce('gep_exam_nonce')); ?>',
                 type: type,
                 target: target
             },

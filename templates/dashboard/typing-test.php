@@ -5,23 +5,6 @@ $user_id = get_current_user_id();
 global $wpdb;
 $table_name = $wpdb->prefix . 'gep_typing_attempts';
 
-// Self-healing database table creation for typing logs
-if ( $wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name ) {
-    $charset_collate = $wpdb->get_charset_collate();
-    $sql = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
-        user_id bigint(20) NOT NULL,
-        wpm double NOT NULL,
-        accuracy double NOT NULL,
-        errors int(11) NOT NULL,
-        duration int(11) NOT NULL,
-        created_at datetime NOT NULL,
-        PRIMARY KEY  (id)
-    ) $charset_collate;";
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql );
-}
-
 // Fetch user's historical typing attempts
 $attempts = $wpdb->get_results( $wpdb->prepare(
     "SELECT * FROM $table_name WHERE user_id = %d ORDER BY id DESC LIMIT 10",
@@ -75,14 +58,14 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
                 <div style="margin-bottom: 30px;">
                     <label style="display: block; font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;"><?php _e( 'Select Test Duration', 'gopath-exam-portal' ); ?></label>
                     <div style="display: flex; gap: 15px;">
-                        <label style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
-                            <input type="radio" name="gep_typing_dur" value="60" checked style="display: none;" aria-label="<?php esc_attr_e( '1 Minute', 'gopath-exam-portal' ); ?>"> <?php _e( '1 Minute', 'gopath-exam-portal' ); ?>
+                        <label class="gep-dur-label" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
+                            <input type="radio" name="gep_typing_dur" value="60" checked class="gep-visually-hidden" aria-label="<?php esc_attr_e( '1 Minute', 'gopath-exam-portal' ); ?>"> <?php _e( '1 Minute', 'gopath-exam-portal' ); ?>
                         </label>
-                        <label style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
-                            <input type="radio" name="gep_typing_dur" value="120" style="display: none;" aria-label="<?php esc_attr_e( '2 Minutes', 'gopath-exam-portal' ); ?>"> <?php _e( '2 Minutes', 'gopath-exam-portal' ); ?>
+                        <label class="gep-dur-label" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
+                            <input type="radio" name="gep_typing_dur" value="120" class="gep-visually-hidden" aria-label="<?php esc_attr_e( '2 Minutes', 'gopath-exam-portal' ); ?>"> <?php _e( '2 Minutes', 'gopath-exam-portal' ); ?>
                         </label>
-                        <label style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
-                            <input type="radio" name="gep_typing_dur" value="300" style="display: none;" aria-label="<?php esc_attr_e( '5 Minutes', 'gopath-exam-portal' ); ?>"> <?php _e( '5 Minutes', 'gopath-exam-portal' ); ?>
+                        <label class="gep-dur-label" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
+                            <input type="radio" name="gep_typing_dur" value="300" class="gep-visually-hidden" aria-label="<?php esc_attr_e( '5 Minutes', 'gopath-exam-portal' ); ?>"> <?php _e( '5 Minutes', 'gopath-exam-portal' ); ?>
                         </label>
                     </div>
                 </div>
@@ -133,7 +116,7 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
             </div>
 
             <!-- Complete Results Badge -->
-            <div id="gep-typing-completed" style="display: none; text-align: center; padding: 20px 0;" role="status">
+            <div id="gep-typing-completed" role="status" style="display: none; text-align: center; padding: 20px 0;" role="status">
                 <div style="font-size: 55px; margin-bottom: 15px;">🏆</div>
                 <h3 style="margin: 0 0 5px; font-size: 22px; font-weight: 900; color: #0f172a;"><?php _e( 'Session Completed!', 'gopath-exam-portal' ); ?></h3>
                 <p style="margin: 0 0 25px; color: #64748b; font-size: 14px; font-weight: 600;"><?php _e( 'Your stats have been computed and saved to your skill academy profile.', 'gopath-exam-portal' ); ?></p>
@@ -157,6 +140,7 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
                     </div>
                 </div>
 
+                <p id="gep-typing-save-status" role="status"></p>
                 <button type="button" id="gep-new-test-btn" style="background: #6366f1; border: none; color: #fff; padding: 12px 30px; border-radius: 12px; font-weight: 800; cursor: pointer;">
                     <?php _e( 'Start New Session', 'gopath-exam-portal' ); ?>
                 </button>
@@ -212,7 +196,7 @@ jQuery(document).ready(function($) {
     let duration = 60; // seconds
     let timeRemaining = 60;
     let timerInterval = null;
-    let started = false;
+    let started = false, finished = false, sessionRevision = 0, startedAt = 0;
     let totalKeystrokes = 0;
     let errorCount = 0;
 
@@ -231,6 +215,8 @@ jQuery(document).ready(function($) {
     });
 
     $('#gep-start-typing-btn').on('click', function() {
+        sessionRevision++; finished = false; startedAt = 0; clearInterval(timerInterval);
+        $('#gep-typing-save-status').text('');
         targetText = paragraphs[$('#gep-typing-paragraph').val()];
         duration = parseInt($('input[name="gep_typing_dur"]:checked').val());
         timeRemaining = duration;
@@ -260,7 +246,7 @@ jQuery(document).ready(function($) {
         $('#gep-errors-label').text('0');
 
         // Enable and focus textarea
-        $('#gep-typing-input').prop('disabled', false).val('').focus();
+        $('#gep-typing-input').prop('disabled', false).attr('maxlength', targetText.length).val('').focus();
     });
 
     function updateTimerLabel() {
@@ -273,12 +259,14 @@ jQuery(document).ready(function($) {
 
     // Interactive keystroke handler
     $('#gep-typing-input').on('input', function(e) {
+        if (finished) return;
         if (!started) {
             startTimer();
             started = true;
         }
 
-        let currentVal = $(this).val();
+        let currentVal = $(this).val().slice(0, targetText.length);
+        $(this).val(currentVal);
         totalKeystrokes = currentVal.length;
 
         errorCount = 0;
@@ -347,8 +335,9 @@ jQuery(document).ready(function($) {
     });
 
     function startTimer() {
+        startedAt = Date.now();
         timerInterval = setInterval(function() {
-            timeRemaining--;
+            timeRemaining = Math.max(0, duration - Math.floor((Date.now() - startedAt) / 1000));
             updateTimerLabel();
 
             // Calculate current WPM
@@ -366,6 +355,10 @@ jQuery(document).ready(function($) {
     }
 
     function endSession() {
+        if (finished) return;
+        finished = true;
+        const revision = sessionRevision;
+        if (startedAt) timeRemaining = Math.max(0, duration - Math.min(duration, Math.max(1, Math.floor((Date.now() - startedAt) / 1000))));
         clearInterval(timerInterval);
         $('#gep-typing-input').prop('disabled', true);
 
@@ -387,7 +380,7 @@ jQuery(document).ready(function($) {
         $('#gep-typing-completed').show();
 
         // AJAX Save Result to log
-        $.post(ajaxurl, {
+        $.post(gep_ajax.ajax_url, {
             action: 'gep_save_typing_attempt',
             wpm: finalWpm,
             accuracy: finalAcc,
@@ -395,10 +388,11 @@ jQuery(document).ready(function($) {
             duration: duration - timeRemaining,
             nonce: '<?php echo wp_create_nonce("gep_student_access"); ?>'
         }, function(response) {
+            if (revision !== sessionRevision) return;
             if (!response.success) {
-                console.error('Logging failed: ' + response.data);
+                $('#gep-typing-save-status').text('Your result is shown here, but it could not be saved to your history.');
             }
-        });
+        }).fail(function() { if (revision !== sessionRevision) return; $('#gep-typing-save-status').text('Could not save your result to history. Check your connection.'); });
     }
 
     $('#gep-restart-test').on('click', function() {

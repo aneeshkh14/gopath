@@ -5,6 +5,13 @@
     if (typeof GEP_Analytics_Data === 'undefined') return;
 
     const data = GEP_Analytics_Data;
+    const chartMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 800;
+    const charts = document.querySelectorAll('canvas[id^="gep-"]');
+    charts.forEach(canvas => { canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', 'Performance chart. Detailed scores are available in the results on this page.'); });
+    if (typeof Chart === 'undefined') {
+        charts.forEach(canvas => { const message = document.createElement('p'); message.textContent = 'Chart unavailable. Your scores and answers are still shown on this page.'; canvas.replaceWith(message); });
+        return;
+    }
 
     // ── Score Gauge (doughnut) ──────────────────────────────────────────────
     const gaugeCtx = document.getElementById('gep-score-gauge');
@@ -14,7 +21,7 @@
             type: 'doughnut',
             data: {
                 datasets: [{
-                    data: [pct, 100 - pct],
+                    data: [Math.min(100, Math.max(0, pct)), 100 - Math.min(100, Math.max(0, pct))],
                     backgroundColor: [
                         pct >= 80 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444',
                         '#1e293b'
@@ -30,14 +37,14 @@
                     const cx = (left+right)/2, cy = (top+bottom)/2;
                     ctx.save();
                     ctx.font = 'bold 28px Inter, sans-serif';
-                    ctx.fillStyle = '#f1f5f9';
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--gep-c-text').trim() || '#1e293b';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(pct.toFixed(1)+'%', cx, cy);
                     ctx.restore();
                 }
             }],
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: { duration: 800 } }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: { duration: chartMotion } }
         });
     }
 
@@ -59,7 +66,7 @@
                 plugins: {
                     legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 12 } } }
                 },
-                animation: { duration: 800 }
+                animation: { duration: chartMotion }
             }
         });
     }
@@ -107,7 +114,7 @@
                     x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
                     y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
                 },
-                animation: { duration: 800 }
+                animation: { duration: chartMotion }
             }
         });
     }
@@ -140,7 +147,7 @@
                     y: { min: 0, max: 100, ticks: { color: '#94a3b8', callback: v => v+'%' }, grid: { color: '#334155' } }
                 },
                 plugins: { legend: { display: false } },
-                animation: { duration: 800 }
+                animation: { duration: chartMotion }
             }
         });
     }
@@ -187,7 +194,7 @@
                         x: { min: 0, max: 100, ticks: { color: '#94a3b8', callback: v => v+'%' }, grid: { color: '#334155' } },
                         y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
                     },
-                    animation: { duration: 800 }
+                    animation: { duration: chartMotion }
                 }
             });
         }
