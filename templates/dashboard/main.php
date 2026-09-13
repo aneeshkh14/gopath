@@ -53,134 +53,35 @@ $_gep_lang = (isset($_SESSION['gep_lang']) ? $_SESSION['gep_lang'] : (get_user_m
 $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_strings['en'];
 ?>
 
-    <?php
-    // Fetch dynamic slides settings from database
-    $slide1_title = get_option('gep_slide1_title', 'Mission Officer 2026');
-    $slide1_desc  = get_option('gep_slide1_desc', 'Your Journey to Government Job Starts Here. Get access to premium tests and video courses.');
-    $slide1_btn   = get_option('gep_slide1_btn', 'Explore Academy');
-    $slide1_url   = get_option('gep_slide1_url');
-    if ( empty( $slide1_url ) ) {
-        $slide1_url = add_query_arg( 'view', 'supercoaching', (string) gep_get_url('dashboard') );
-    }
-    $slide1_img   = get_option('gep_slide1_image');
-    $slide1_bg    = ! empty( $slide1_img ) ? "linear-gradient(180deg, rgba(9, 9, 11, 0.4) 0%, rgba(9, 9, 11, 0.85) 100%), url('" . esc_url($slide1_img) . "') no-repeat center center / cover" : "linear-gradient(135deg, #09090b 0%, #1e1b4b 100%)";
-
-    $slide2_title = get_option('gep_slide2_title', 'UGC NET Mock Tests');
-    $slide2_desc  = get_option('gep_slide2_desc', 'Challenge yourself with realistic full-length paper simulations. Track your progress with advanced cohort analytics.');
-    $slide2_btn   = get_option('gep_slide2_btn', 'Practice Now');
-    $slide2_url   = get_option('gep_slide2_url');
-    if ( empty( $slide2_url ) ) {
-        $slide2_url = add_query_arg( 'view', 'tests', (string) gep_get_url('dashboard') );
-    }
-    $slide2_img   = get_option('gep_slide2_image');
-    $slide2_bg    = ! empty( $slide2_img ) ? "linear-gradient(180deg, rgba(2, 6, 23, 0.4) 0%, rgba(2, 6, 23, 0.85) 100%), url('" . esc_url($slide2_img) . "') no-repeat center center / cover" : "linear-gradient(135deg, #020617 0%, #064e3b 100%)";
-
-    $slide3_title = get_option('gep_slide3_title', 'Live Doubt Solving');
-    $slide3_desc  = get_option('gep_slide3_desc', 'Connect with top educators in real-time interactively. Resolve conceptual doubts and learn exam techniques.');
-    $slide3_btn   = get_option('gep_slide3_btn', 'Join Live Class');
-    $slide3_url   = get_option('gep_slide3_url');
-    if ( empty( $slide3_url ) ) {
-        $slide3_url = add_query_arg( 'view', 'live-classes', (string) gep_get_url('dashboard') );
-    }
-    $slide3_img   = get_option('gep_slide3_image');
-    $slide3_bg    = ! empty( $slide3_img ) ? "linear-gradient(180deg, rgba(9, 9, 11, 0.4) 0%, rgba(9, 9, 11, 0.85) 100%), url('" . esc_url($slide3_img) . "') no-repeat center center / cover" : "linear-gradient(135deg, #09090b 0%, #581c87 100%)";
-    ?>
-    <!-- Hero Slideshow Carousel Section -->
-    <div class="gep-dashboard-carousel" role="region" aria-roledescription="carousel" aria-label="Featured learning">
-        <div class="gep-carousel-slides">
-            
-            <!-- Slide 1: Mission Officer -->
-            <div class="gep-carousel-slide active" style="background: <?php echo $slide1_bg; ?>;">
-                <?php if ( empty( $slide1_img ) ) : ?>
-                    <div class="visual-orb" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 350px; background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);"></div>
-                <?php endif; ?>
-                <div style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;">
-                    <div style="font-size: 48px; margin-bottom: 12px; animation: placeholderFloat 3s infinite alternate; will-change: transform;">🚀</div>
-                    <span class="gep-banner-tag-sovereign"><?php echo esc_html($strings['promo_tag']); ?></span>
-                    <h2 class="gep-carousel-title" style="background-image: linear-gradient(135deg, #fde047 0%, #d97706 100%) !important; -webkit-background-clip: text !important; background-clip: text !important;"><?php echo esc_html($slide1_title); ?></h2>
-                    <p class="gep-carousel-desc"><?php echo esc_html($slide1_desc); ?></p>
-                    <a href="<?php echo esc_url($slide1_url); ?>" class="gep-btn-sovereign-primary" style="padding: 12px 28px; font-size: 14px; border-radius: 14px;">
-                        <span><?php echo esc_html($slide1_btn); ?></span>
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Slide 2: National Mock Tests -->
-            <div class="gep-carousel-slide" style="background: <?php echo $slide2_bg; ?>;">
-                <?php if ( empty( $slide2_img ) ) : ?>
-                    <div class="visual-orb" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 350px; background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);"></div>
-                <?php endif; ?>
-                <div style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;">
-                    <div style="font-size: 48px; margin-bottom: 12px; animation: placeholderFloat 3s infinite alternate; will-change: transform;">🏆</div>
-                    <span class="gep-banner-tag-sovereign" style="background: rgba(16, 185, 129, 0.15); color: #a7f3d0; border: 1px solid rgba(16,185,129,0.3);">NATIONAL SCHOLARSHIP MOCK</span>
-                    <h2 class="gep-carousel-title" style="background-image: linear-gradient(135deg, #34d399 0%, #059669 100%) !important; -webkit-background-clip: text !important; background-clip: text !important;"><?php echo esc_html($slide2_title); ?></h2>
-                    <p class="gep-carousel-desc"><?php echo esc_html($slide2_desc); ?></p>
-                    <a href="<?php echo esc_url($slide2_url); ?>" class="gep-btn-sovereign-primary" style="padding: 12px 28px; font-size: 14px; border-radius: 14px; background: #047857; color: #fff;">
-                        <span><?php echo esc_html($slide2_btn); ?></span>
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Slide 3: Live Doubt Solving -->
-            <div class="gep-carousel-slide" style="background: <?php echo $slide3_bg; ?>;">
-                <?php if ( empty( $slide3_img ) ) : ?>
-                    <div class="visual-orb" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 350px; background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%);"></div>
-                <?php endif; ?>
-                <div style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;">
-                    <div style="font-size: 48px; margin-bottom: 12px; animation: placeholderFloat 3s infinite alternate; will-change: transform;">📡</div>
-                    <span class="gep-banner-tag-sovereign" style="background: rgba(168, 85, 247, 0.15); color: #e9d5ff; border: 1px solid rgba(168,85,247,0.3);">LIVE BATCHES</span>
-                    <h2 class="gep-carousel-title" style="background-image: linear-gradient(135deg, #c084fc 0%, #7c3aed 100%) !important; -webkit-background-clip: text !important; background-clip: text !important;"><?php echo esc_html($slide3_title); ?></h2>
-                    <p class="gep-carousel-desc"><?php echo esc_html($slide3_desc); ?></p>
-                    <a href="<?php echo esc_url($slide3_url); ?>" class="gep-btn-sovereign-primary" style="padding: 12px 28px; font-size: 14px; border-radius: 14px; background: #7e22ce; color: #fff;">
-                        <span><?php echo esc_html($slide3_btn); ?></span>
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                    </a>
-                </div>
-            </div>
-
+<?php
+$dash_url = (string) gep_get_url('dashboard');
+$resume_attempt = $dashboard->get_resume_attempt( $user_id );
+$study_user = get_userdata( $user_id );
+$is_hindi = $_gep_lang === 'hi';
+?>
+<section class="gep-study-start" aria-labelledby="gep-study-heading">
+    <div class="gep-study-intro">
+        <p class="gep-study-eyebrow"><?php echo $is_hindi ? 'आपकी पढ़ाई, आपका लक्ष्य' : 'YOUR STUDY SPACE'; ?></p>
+        <h1 id="gep-study-heading"><?php echo esc_html( ($is_hindi ? 'नमस्ते, ' : 'Welcome, ') . ($study_user ? $study_user->display_name : 'learner') ); ?></h1>
+        <p><?php echo $is_hindi ? 'अभ्यास करें, परिणाम देखें और अगला कदम चुनें।' : 'A little practice today. A clearer path to your next exam.'; ?></p>
+    </div>
+    <div class="gep-study-focus">
+        <div>
+            <p class="gep-study-eyebrow"><?php echo $resume_attempt ? ($is_hindi ? 'अधूरा टेस्ट' : 'PICK UP WHERE YOU LEFT OFF') : ($is_hindi ? 'अगला कदम' : 'YOUR NEXT STEP'); ?></p>
+            <h2><?php echo esc_html( $resume_attempt ? $resume_attempt->title : ($is_hindi ? 'आज किस विषय का अभ्यास करेंगे?' : 'What will you practise today?') ); ?></h2>
+            <p><?php echo $resume_attempt ? ($is_hindi ? 'अपना टेस्ट खोलें और बाकी प्रश्न पूरे करें।' : 'Open your saved test to continue or finish your attempt.') : ($is_hindi ? 'विषय के अनुसार टेस्ट चुनें या अपना अभ्यास सेट बनाएं।' : 'Choose a subject test, try a previous year paper, or build your own practice set.'); ?></p>
         </div>
-
-        <!-- Carousel Bottom Dots -->
-        <div class="gep-carousel-dots" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10;">
-            <button type="button" class="gep-carousel-dot active" data-index="0" aria-label="Show featured slide 1"></button>
-            <button type="button" class="gep-carousel-dot" data-index="1" aria-label="Show featured slide 2"></button>
-            <button type="button" class="gep-carousel-dot" data-index="2" aria-label="Show featured slide 3"></button>
+        <div class="gep-study-actions">
+            <a class="gep-study-button" href="<?php echo esc_url( $resume_attempt ? add_query_arg('id', $resume_attempt->test_id, (string) gep_get_url('exam')) : add_query_arg('view', 'tests', $dash_url) ); ?>"><?php echo $resume_attempt ? ($is_hindi ? 'टेस्ट जारी रखें' : 'Continue test') : ($is_hindi ? 'टेस्ट चुनें' : 'Find a practice test'); ?> <span aria-hidden="true">→</span></a>
+            <a class="gep-study-secondary" href="<?php echo esc_url( add_query_arg('view', $resume_attempt ? 'tests' : 'pyqs', $dash_url) ); ?>"><?php echo $resume_attempt ? ($is_hindi ? 'सभी टेस्ट देखें' : 'Browse all tests') : ($is_hindi ? 'पिछले वर्ष के प्रश्न' : 'Practise past papers'); ?></a>
         </div>
     </div>
-
-    <!-- Telemetry Stats (Refined) -->
-    <div class="gep-telemetry-grid">
-        <div class="gep-telemetry-card-micro gep-glass">
-            <div class="card-icon">🎯</div>
-            <div class="card-info">
-                <div class="val"><?php echo $stats['total_attempts']; ?></div>
-                <div class="lbl"><?php echo esc_html($strings['tests_att']); ?></div>
-            </div>
-        </div>
-        <div class="gep-telemetry-card-micro gep-glass">
-            <div class="card-icon">🏆</div>
-            <div class="card-info">
-                <div class="val"><?php echo $stats['passed_exams']; ?></div>
-                <div class="lbl"><?php echo esc_html($strings['exams_passed']); ?></div>
-            </div>
-        </div>
-        <div class="gep-telemetry-card-micro gep-glass">
-            <div class="card-icon">🎓</div>
-            <div class="card-info">
-                <div class="val"><?php echo $stats['active_courses']; ?></div>
-                <div class="lbl"><?php echo esc_html($strings['active_courses']); ?></div>
-            </div>
-        </div>
-        <div class="gep-telemetry-card-micro rank-card gep-glass">
-            <div class="card-icon">⚡</div>
-            <div class="card-info">
-                <div class="val"><?php echo is_numeric($stats['rank']) ? '#' . $stats['rank'] : $stats['rank']; ?></div>
-                <div class="lbl"><?php echo esc_html($strings['global_rank']); ?></div>
-            </div>
-        </div>
+    <div class="gep-study-stats">
+        <a href="<?php echo esc_url(add_query_arg('view', 'results', $dash_url)); ?>"><strong><?php echo (int) $stats['total_attempts']; ?></strong><span><?php echo $is_hindi ? 'पूरे किए गए टेस्ट' : 'Tests completed'; ?></span><span aria-hidden="true">↗</span></a>
+        <a href="<?php echo esc_url(add_query_arg('view', 'purchases', $dash_url)); ?>"><strong><?php echo (int) $stats['active_courses']; ?></strong><span><?php echo $is_hindi ? 'आपके पाठ्यक्रम' : 'Your courses'; ?></span><span aria-hidden="true">↗</span></a>
+        <a href="<?php echo esc_url(add_query_arg('view', 'profile', $dash_url)); ?>"><strong><?php echo (int) $stats['streak']; ?></strong><span><?php echo $is_hindi ? 'लगातार सक्रिय दिन' : 'Day visit streak'; ?></span><span aria-hidden="true">↗</span></a>
     </div>
+</section>
 
     <?php
     // ── Required dashboard sections (per client sketch/PDF): Today's Special Tests,
@@ -192,9 +93,9 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
         ob_start();
         ?>
         <a href="<?php echo $link; ?>" class="gep-hcard">
-            <div class="gep-hcard-thumb">
+            <div class="gep-hcard-thumb" aria-hidden="true">
                 <?php if ( ! empty( $t->thumbnail ) ) : ?>
-                    <img src="<?php echo esc_url( $t->thumbnail ); ?>" alt="<?php echo esc_attr( $t->title ); ?>" loading="lazy">
+                    <img src="<?php echo esc_url( $t->thumbnail ); ?>" alt="" loading="lazy">
                 <?php else : ?>
                     <span class="gep-hcard-thumb-icon"><?php echo $is_series ? '📁' : '📝'; ?></span>
                 <?php endif; ?>
@@ -206,6 +107,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                     <span><?php echo (int) $t->duration_minutes; ?> Mins</span>
                     <?php if ( ! $is_series && isset( $t->total_marks ) ) : ?><span>•</span><span><?php echo (int) $t->total_marks; ?> Marks</span><?php endif; ?>
                 </div>
+                <span class="gep-hcard-action">View <?php echo $is_series ? 'series' : 'test'; ?> <span aria-hidden="true">→</span></span>
             </div>
         </a>
         <?php
@@ -224,7 +126,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                     </a>
                 <?php endif; ?>
             </div>
-            <div class="gep-hscroll-row" tabindex="0" role="region" aria-label="<?php echo esc_attr($title); ?>">
+            <div class="gep-test-card-grid" role="region" aria-label="<?php echo esc_attr($title); ?>">
                 <?php foreach ( $tests as $t ) { echo $gep_hcard_render( $t ); } ?>
             </div>
         </section>
@@ -233,71 +135,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
 
     $dash_url = (string) gep_get_url('dashboard');
     ?>
-    <style>
-    .gep-hscroll-row {
-        display: flex;
-        gap: 16px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding: 4px 4px 14px;
-        scroll-snap-type: x proximity;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-    }
-    .gep-hcard {
-        scroll-snap-align: start;
-        flex: 0 0 220px;
-        background: #18181b;
-        border: 1px solid rgba(255,255,255,0.05);
-        border-radius: 20px;
-        overflow: hidden;
-        text-decoration: none !important;
-        transition: all 0.25s ease;
-        display: block;
-    }
-    .gep-hcard:hover {
-        transform: translateY(-4px);
-        border-color: rgba(99,102,241,0.35);
-        box-shadow: 0 14px 30px rgba(99,102,241,0.15);
-    }
-    .gep-hcard-thumb {
-        position: relative;
-        height: 110px;
-        background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #9333ea 100%);
-        display: flex; align-items: center; justify-content: center;
-    }
-    .gep-hcard-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .gep-hcard-thumb-icon { font-size: 30px; }
-    .gep-hcard-badge {
-        position: absolute; top: 8px; right: 8px;
-        background: #10b981; color: #fff; font-size: 9px; font-weight: 900;
-        padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px;
-    }
-    .gep-hcard-body { padding: 14px 16px; }
-    .gep-hcard-body h4 {
-        margin: 0 0 8px; font-size: 13.5px; font-weight: 800; color: #fff;
-        line-height: 1.35;
-        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-    }
-    .gep-hcard-meta { font-size: 11px; font-weight: 700; color: #a1a1aa; display: flex; gap: 6px; }
 
-    .gep-cyo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    @media (max-width: 700px) { .gep-cyo-grid { grid-template-columns: 1fr; } }
-    .gep-cyo-card {
-        display: block; text-decoration: none !important;
-        background: #18181b; border: 1px solid rgba(255,255,255,0.05); border-radius: 20px;
-        padding: 22px 20px; transition: all 0.25s ease;
-    }
-    .gep-cyo-card:hover { transform: translateY(-4px); border-color: rgba(99,102,241,0.35); box-shadow: 0 14px 30px rgba(99,102,241,0.15); }
-    .gep-cyo-card .icon { font-size: 26px; margin-bottom: 10px; }
-    .gep-cyo-card h4 { margin: 0 0 6px; font-size: 15px; font-weight: 800; color: #fff; }
-    .gep-cyo-card p { margin: 0; font-size: 12.5px; color: #a1a1aa; line-height: 1.5; }
-
-    @media (max-width: 480px) {
-        .gep-hcard { flex-basis: 168px; }
-        .gep-hcard-thumb { height: 90px; }
-    }
-    </style>
 
     <?php
     // 1) Today's Special Tests — safest available signal (no "special test" field exists in the
@@ -328,14 +166,14 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
     </section>
 
     <?php
-    // 3) Paper 1 (Single Test) — horizontally scrollable
+    // 3) Paper 1 (Single Test)
     $gep_hscroll_section(
         'Paper 1 (Single Test)',
         $paper1_single_tests,
         add_query_arg( 'view', 'tests', $dash_url )
     );
 
-    // 4) Sanskrit (Single Test) — horizontally scrollable
+    // 4) Sanskrit (Single Test)
     $gep_hscroll_section(
         'Sanskrit (Single Test)',
         $sanskrit_single_tests,
@@ -363,16 +201,8 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
 
     <!-- Recent Activity & Resume Practice -->
     <?php
-    $current_user_id = get_current_user_id();
-    global $wpdb;
-    $recent_attempts = $wpdb->get_results( $wpdb->prepare(
-        "SELECT a.id, a.test_id, t.title, a.score, a.percentage, a.status, a.end_time, t.total_marks 
-         FROM {$wpdb->prefix}gep_attempts a
-         JOIN {$wpdb->prefix}gep_tests t ON a.test_id = t.id
-         WHERE a.user_id = %d
-         ORDER BY a.id DESC LIMIT 3",
-        $current_user_id
-    ) );
+    $recent_attempts = array_slice( (new GEP_Result())->get_user_results( $user_id ), 0, 3 );
+    foreach ( $recent_attempts as $recent ) { $recent->title = $recent->test_name; }
     ?>
     <?php if ( ! empty( $recent_attempts ) ) : ?>
     <section class="gep-curated-section" style="margin-top: 20px; margin-bottom: 40px;">
@@ -408,7 +238,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                     </div>
                     <div style="text-align: right; min-width: 60px;">
                        <div style="font-size: 16px; font-weight: 900; color: #818cf8;"><?php echo round($att->percentage); ?>%</div>
-                       <div style="font-size: 10px; color: #a1a1aa; font-weight: 700; text-transform: uppercase;">Accuracy</div>
+                       <div style="font-size: 10px; color: #a1a1aa; font-weight: 700; text-transform: uppercase;">Score %</div>
                     </div>
                     <?php endif; ?>
                     <div>
@@ -417,7 +247,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                                 Resume Test
                             </a>
                         <?php else : ?>
-                            <a href="<?php echo esc_url( add_query_arg( array( 'view' => 'results', 'attempt_id' => $att->id ), (string) gep_get_url('dashboard') ) ); ?>" class="gep-btn-strip" style="font-size: 12px; padding: 8px 18px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);">
+                            <a href="<?php echo esc_url( add_query_arg( 'id', $att->id, (string) gep_get_url('result') ) ); ?>" class="gep-btn-strip" style="font-size: 12px; padding: 8px 18px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);">
                                 Review Analysis
                             </a>
                         <?php endif; ?>
@@ -428,6 +258,22 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
         </div>
     </section>
     <?php endif; ?>
+
+    <section class="gep-study-discover" aria-label="More ways to learn">
+        <h2><?php echo $is_hindi ? 'और सीखें' : 'More ways to learn'; ?></h2>
+        <div class="gep-study-links">
+        <?php foreach (array(1 => array('Explore courses', 'Learn at your own pace with available courses.', 'View courses', 'supercoaching'), 2 => array('Mock tests', 'Practise with timed papers and review your results.', 'View tests', 'tests'), 3 => array('Live classes', 'See upcoming classes and available sessions.', 'View classes', 'live-classes')) as $slide => $defaults) :
+            $promo_url = get_option('gep_slide'.$slide.'_url') ?: add_query_arg('view', $defaults[3], $dash_url);
+            $promo_image = get_option('gep_slide'.$slide.'_image'); ?>
+            <a href="<?php echo esc_url($promo_url); ?>" class="gep-study-link">
+                <?php if ($promo_image) : ?><img src="<?php echo esc_url($promo_image); ?>" alt="" loading="lazy"><?php endif; ?>
+                <h3><?php echo esc_html(get_option('gep_slide'.$slide.'_title', $defaults[0])); ?></h3>
+                <p><?php echo esc_html(get_option('gep_slide'.$slide.'_desc', $defaults[1])); ?></p>
+                <span><?php echo esc_html(get_option('gep_slide'.$slide.'_btn', $defaults[2])); ?> <span aria-hidden="true">→</span></span>
+            </a>
+        <?php endforeach; ?>
+        </div>
+    </section>
 
     <!-- Popular Exams Section (Testbook-style) -->
     <?php
@@ -776,7 +622,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                         <div class="strip-meta">
                             <span><?php echo (int)$test->duration_minutes; ?> Mins</span>
                             <span>•</span>
-                            <span><?php echo isset($test->pass_marks) ? (int)$test->pass_marks . '% Pass' : '—'; ?></span>
+                            <span><?php echo isset($test->pass_marks) ? (float)$test->pass_marks . ' marks to pass' : '—'; ?></span>
                         </div>
                     </div>
                     <?php 
@@ -1309,88 +1155,5 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
     .gep-curated-grid { grid-template-columns: 1fr; }
 }
 
-/* Hero Carousel Styles */
-.gep-dashboard-carousel {
-    margin-top: -5px;
-    position: relative;
-    margin-bottom: 30px;
-    overflow: hidden;
-    border-radius: 40px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-    border: 1px solid rgba(255,255,255,0.05);
-}
-.gep-carousel-slides {
-    position: relative;
-    height: 360px;
-    width: 100%;
-}
-@media (max-width: 768px) {
-    .gep-carousel-slides {
-        height: 290px;
-    }
-}
-.gep-carousel-slide {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 30px 20px;
-    transition: opacity 0.5s ease-in-out;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 1;
-}
-.gep-carousel-slide.active {
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    z-index: 2 !important;
-}
-.gep-carousel-title {
-    font-size: 36px;
-    font-weight: 950;
-    letter-spacing: -1.5px;
-    margin: 0 0 12px;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-}
-.gep-carousel-desc {
-    font-size: 15px;
-    color: #e2e8f0 !important;
-    max-width: 600px;
-    margin: 0 auto 24px auto;
-    line-height: 1.5;
-}
-@media (max-width: 768px) {
-    .gep-carousel-title {
-        font-size: 22px !important;
-        letter-spacing: -0.5px !important;
-        margin-bottom: 8px !important;
-    }
-    .gep-carousel-desc {
-        font-size: 13px !important;
-        margin-bottom: 16px !important;
-        line-height: 1.4 !important;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    .gep-carousel-slide {
-        padding: 20px 15px;
-    }
-}
-.gep-carousel-dot.active {
-    background: #fff !important;
-    width: 24px !important;
-    border-radius: 10px !important;
-}
-.gep-carousel-arrow:hover {
-    background: rgba(255,255,255,0.15) !important;
-    transform: translateY(-50%) scale(1.05);
-}
 </style>
 

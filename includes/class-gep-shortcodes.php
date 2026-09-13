@@ -127,16 +127,7 @@ class GEP_Shortcodes {
 					<a href="'.gep_get_url('dashboard').'" class="gep-btn-sovereign-primary">Enter Dashboard</a>
 				</div>
 			</div>
-		</div>
-		<style>
-		.gep-status-page-sovereign { min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 40px; }
-		.status-card-glass { max-width: 500px; width: 100%; padding: 60px; border-radius: 40px; text-align: center; }
-		.status-icon-wrap { width: 100px; height: 100px; margin: 0 auto 30px; border-radius: 30px; display: flex; align-items: center; justify-content: center; }
-		.status-icon-wrap.success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-		.status-icon-wrap.failed { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-		.gep-status-page-sovereign h1 { font-size: 36px; font-weight: 950; letter-spacing: -1.5px; margin-bottom: 20px; }
-		.gep-status-page-sovereign p { color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 40px; font-weight: 500; }
-		</style>';
+		</div>';
 	}
 
 	public function render_payment_failed() {
@@ -148,7 +139,7 @@ class GEP_Shortcodes {
 				<h1>Payment <span style="color:#ef4444;">Not Confirmed</span></h1>
 				<p>We could not confirm your payment. If you were charged, contact support with your payment ID before trying again.</p>
 				<div class="status-actions">
-					<a href="'.gep_get_url('dashboard').'" class="gep-btn-sovereign-primary" style="background:#ef4444;">Back to Dashboard</a>
+					<a href="'.gep_get_url('dashboard').'" class="gep-btn-sovereign-primary" style="background:#b91c1c;">Back to Dashboard</a>
 				</div>
 			</div>
 		</div>';

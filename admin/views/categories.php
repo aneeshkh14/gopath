@@ -14,7 +14,7 @@ if ( $action === 'edit' && isset( $_GET['id'] ) ) {
         <p style="color: var(--admin-muted); font-weight: 600;">Define the core structure of your exams and courses.</p>
     </div>
     
-    <div style="display: grid; grid-template-columns: 380px 1fr; gap: 30px; align-items: flex-start;">
+    <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 380px 1fr; gap: 30px; align-items: flex-start;">
         <!-- Left: Form -->
         <div class="gep-admin-console">
             <div class="gep-admin-console-header">

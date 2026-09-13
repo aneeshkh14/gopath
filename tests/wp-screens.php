@@ -51,7 +51,9 @@ wp_set_current_user(in_array($kind,['admin','admin-reply'],true)?1:($kind==='aut
 $shortcodes=new GEP_Shortcodes();
 try {
     $html=''; $_GET=[]; $_POST=[]; $_REQUEST=[];
-    if ($kind==='customer') {
+    if ($kind==='visual') {
+        require __DIR__.'/wp-visual.php';
+    } elseif ($kind==='customer') {
         require __DIR__.'/wp-customer.php';
     } elseif ($kind==='pass-concurrent') {
         if(!function_exists('pcntl_fork'))throw new RuntimeException('pcntl is required.');

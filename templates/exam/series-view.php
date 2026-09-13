@@ -43,7 +43,7 @@
 }
 .gep-series-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr));
     gap: 30px;
 }
 .gep-test-card {
@@ -315,7 +315,7 @@
                         <span style="width: 4px; height: 18px; background: #4f46e5; border-radius: 2px; display: inline-block;"></span>
                         <?php echo esc_html( $cat_name ); ?>
                     </h3>
-                    <div class="gep-series-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px;">
+                    <div class="gep-series-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr)); gap: 30px;">
                         <?php foreach ( $tests_in_cat as $s_test ) : 
                             $q_count = $test_logic->get_question_count( $s_test->id );
                             $attempts = $result_logic->get_user_attempts( $user_id, $s_test->id );

@@ -96,7 +96,7 @@ $categories = $category_logic->get_categories(0);
                 <input type="text" name="title" required placeholder="e.g. Masterclass: Advanced History" style="width: 100%;">
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div>
                     <label style="display: block; font-weight: 800; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Instructor</label>
                     <input type="text" name="instructor" required placeholder="Instructor Name" style="width: 100%;">
@@ -107,7 +107,7 @@ $categories = $category_logic->get_categories(0);
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div>
                     <label style="display: block; font-weight: 800; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Category</label>
                     <select name="category_id" id="lecture_category_id" style="width: 100%;" required>
@@ -129,7 +129,7 @@ $categories = $category_logic->get_categories(0);
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px;">
+            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px;">
                 <div>
                     <label style="display: block; font-weight: 800; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Source</label>
                     <select name="video_source" style="width: 100%;">

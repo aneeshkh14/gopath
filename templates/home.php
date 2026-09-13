@@ -13,8 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="gep-hero-overlay"></div>
         <div class="gep-container">
             <div class="gep-hero-content">
-                <span class="gep-badge-promo">🚀 THE FUTURE OF LEARNING</span>
-                <h1>Master Your Exams with <span class="gep-text-gradient">Intelligence.</span></h1>
+                <span class="gep-badge-promo">UGC NET · PAPER 1 · SANSKRIT</span>
+                <h1>Make your next<br>practice session count.</h1>
                 <p>Prepare with subject-wise mock tests, Sanskrit practice, previous year papers, and video lessons. Review each attempt and choose what to study next.</p>
                 <div class="gep-hero-actions">
                     <a href="<?php echo gep_get_url('register'); ?>" class="gep-btn-hero-primary">Create free account</a>
@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 </div>
                 <div class="gep-main-viz">
                     <!-- Placeholder for generate_image result -->
-                    <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Learning Visual">
+                    <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Students studying together" loading="lazy">
                 </div>
             </div>
         </div>
@@ -88,7 +88,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <section class="gep-cta">
         <div class="gep-container">
             <div class="gep-cta-box">
-                <h2>Ready to claim your officer rank?</h2>
+                <h2>Ready for your next practice test?</h2>
                 <p>Create an account to explore available tests and start your preparation.</p>
                 <a href="<?php echo gep_get_url('register'); ?>" class="gep-btn gep-btn-primary gep-btn-lg">Join GoPath Now</a>
             </div>
@@ -114,7 +114,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /* Hero */
 .gep-hero {
     position: relative;
-    padding: 120px 0 100px;
+    padding: 64px 0;
     background: #0f172a;
     color: #fff;
     overflow: hidden;

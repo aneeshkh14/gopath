@@ -3,7 +3,7 @@
  * Plugin Name:       GoPath Exam Portal
  * Plugin URI:        https://test.gopath.in/
  * Description:       A comprehensive, large-scale modular exam management system for WordPress.
- * Version:           2.0.4
+ * Version:           2.0.5
  * Author:            GoPath
  * Author URI:        https://test.gopath.in/
  * License:           GPL-2.0+
@@ -155,7 +155,7 @@ if ( ! defined( 'YEAR_IN_SECONDS' ) )   { define( 'YEAR_IN_SECONDS',   31536000 
 /**
  * Plugin version constant.
  */
-define( 'GEP_VERSION', '2.0.4' );
+define( 'GEP_VERSION', '2.0.5' );
 
 /**
  * Database version.

@@ -116,7 +116,7 @@ $courses = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}gep_courses ORDER B
                 <input type="text" name="title" required placeholder="e.g. Masterclass in Advanced Mathematics">
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div>
                     <label style="display: block; font-weight: 800; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Lead Instructor</label>
                     <input type="text" name="instructor" required placeholder="Full Name">
@@ -132,7 +132,7 @@ $courses = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}gep_courses ORDER B
                 <input type="url" name="thumbnail" placeholder="https://your-storage.com/image.jpg">
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div>
                     <label style="display: block; font-weight: 800; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Category</label>
                     <select name="category_id" id="gep_course_category_id" style="width: 100%;">

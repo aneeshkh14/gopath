@@ -350,7 +350,15 @@ class GEP_Loader {
 			}
 		}
 		
-		// NOTE: gep-public-css already enqueued above at line 162; removed duplicate here.
+		// Resolve the theme dependencies after route-specific styles are queued.
+        if ( wp_style_is( 'gep-theme-css', 'enqueued' ) ) {
+            foreach ( array( 'gep-auth-css', 'gep-dashboard-css', 'gep-exam-css' ) as $handle ) {
+                if ( wp_style_is( $handle, 'enqueued' ) ) {
+                    wp_styles()->registered['gep-theme-css']->deps[] = $handle;
+                }
+            }
+            wp_enqueue_style( 'gep-layout-css', GEP_PLUGIN_URL . 'public/css/gep-layout.css', array( 'gep-theme-css' ), GEP_VERSION );
+        }
 	}
 
 	private function enqueue_katex() {

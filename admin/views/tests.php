@@ -76,7 +76,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
     <input type="hidden" name="exam_mode" id="gep_exam_mode" value="<?php echo esc_attr($test && isset($test->exam_mode) ? $test->exam_mode : 'custom'); ?>">
 </div>
 
-            <div class="gep-admin-grid" style="display: grid; grid-template-columns: 1.8fr 1fr; gap: 30px; align-items: start;">
+            <div class="gep-responsive-grid gep-admin-grid" style="display: grid; grid-template-columns: 1.8fr 1fr; gap: 30px; align-items: start;">
                 <div class="gep-main-settings">
                     <div class="gep-admin-console">
                         <div class="gep-admin-console-header">
@@ -149,7 +149,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                                 <div id="gep-sections-list">
                                     <?php foreach ($existing_sections as $sec_i => $sec) : ?>
                                     <div class="gep-section-row" style="background: #f8fbff; border: 1px solid #bae6fd; border-radius: 16px; padding: 18px 20px; margin-bottom: 12px; position: relative;">
-                                        <div style="display: grid; grid-template-columns: 180px 1fr 100px auto; gap: 12px; align-items: end;">
+                                        <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 180px 1fr 100px auto; gap: 12px; align-items: end;">
                                             <div>
                                                 <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 6px; display: block;">Subject Name</label>
                                                 <input type="text" name="sections[<?php echo $sec_i; ?>][name]" value="<?php echo esc_attr($sec['name']); ?>" placeholder="e.g. Physics" style="font-weight: 800; font-size: 14px;">
@@ -345,7 +345,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                                 </select>
                             </div>
 
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                                 <div>
                                     <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 8px; text-transform: uppercase;">Timer (Min)</label>
                                     <input type="number" name="duration_minutes" value="<?php echo $test ? $test->duration_minutes : '60'; ?>" min="1">
@@ -359,7 +359,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                                 </div>
                             </div>
 
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                                 <div>
                                     <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 8px; text-transform: uppercase;">Benchmark (%)</label>
                                     <input type="number" name="pass_marks" value="<?php echo $test ? $test->pass_marks : '40'; ?>" style="width: 100%;">
@@ -554,7 +554,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                 ?>
                 return `
                 <div class="gep-section-row" style="background:#f8fbff;border:1px solid #bae6fd;border-radius:16px;padding:18px 20px;margin-bottom:12px;position:relative;">
-                    <div style="display:grid;grid-template-columns:180px 1fr 100px auto;gap:12px;align-items:end;">
+                    <div class="gep-responsive-grid" style="display:grid;grid-template-columns:180px 1fr 100px auto;gap:12px;align-items:end;">
                         <div>
                             <label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#64748b;margin-bottom:6px;display:block;">Subject Name</label>
                             <input type="text" name="sections[${idx}][name]" placeholder="e.g. Mathematics" style="font-weight:800;font-size:14px;">

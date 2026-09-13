@@ -38,7 +38,7 @@ $plugin_version  = defined('GEP_VERSION') ? GEP_VERSION : 'Unknown';
     </div>
 
     <!-- System Status Tiles -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:30px;">
+    <div class="gep-responsive-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:30px;">
         <?php
         $tiles = array(
             array('label' => 'Plugin Version',    'value' => $plugin_version,     'bg' => '#f0f9ff', 'border' => '#bae6fd',  'color' => '#0369a1'),
@@ -65,7 +65,7 @@ $plugin_version  = defined('GEP_VERSION') ? GEP_VERSION : 'Unknown';
          ORDER BY total_score DESC LIMIT 10"
     );
     ?>
-    <div class="gep-admin-console" style="margin-bottom:30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: transparent; border: none; padding: 0;">
+    <div class="gep-responsive-grid gep-admin-console" style="margin-bottom:30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: transparent; border: none; padding: 0;">
         
         <!-- Top 10 Leaderboard -->
         <div style="background: #fff; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
@@ -305,7 +305,7 @@ $plugin_version  = defined('GEP_VERSION') ? GEP_VERSION : 'Unknown';
             <h2 style="margin:0;color:#065f46;">📥 Data Export Center</h2>
             <p style="margin: 4px 0 0; color:#6b7280; font-weight: 600; font-size: 13px;">Download portal data in CSV format for offline analysis, reporting, or backup.</p>
         </div>
-        <div class="gep-admin-console-body" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+        <div class="gep-responsive-grid gep-admin-console-body" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
             <!-- Attempts Export -->
             <div style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:20px;text-align:center;">
                 <div style="font-size:36px;margin-bottom:12px;">📊</div>

@@ -711,3 +711,17 @@ input:focus + .gep-option-icon {
     .gep-admin-recent-activity select { min-width: 0 !important; max-width: 100%; }
     #gep-assign-access-form > div:first-of-type { grid-template-columns: minmax(0, 1fr) !important; }
 }
+
+/* Explicitly marked form/report grids collapse before fixed columns overflow. */
+.gep-admin-wrap .gep-responsive-grid > * { min-width: 0; }
+.gep-admin-wrap :is(input, select, textarea) { max-width: 100%; box-sizing: border-box; }
+.gep-admin-wrap :is(h1, h2, h3, label, p) { overflow-wrap: anywhere; }
+@media (max-width: 1100px) {
+    .gep-admin-wrap .gep-responsive-grid { grid-template-columns: minmax(0, 1fr) !important; gap: 20px !important; }
+    .gep-admin-wrap .gep-responsive-grid > * { grid-column: auto !important; }
+    .gep-admin-wrap .gep-admin-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 600px) {
+    .gep-admin-wrap .gep-admin-stats-grid { grid-template-columns: minmax(0, 1fr) !important; }
+    .gep-admin-wrap :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { font-size: 16px; }
+}

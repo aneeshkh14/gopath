@@ -178,7 +178,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                         <span style="width: 4px; height: 18px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 2px; display: inline-block;"></span>
                         <?php echo esc_html( $cat->name ); ?>
                     </h3>
-                    <div class="gep-asset-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px;">
+                    <div class="gep-asset-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 25px;">
                         <?php foreach ( $grouped_tests[$cat->id] as $test ) : 
                             $is_series = ($test->type === 'series' || $test->type === 'bundle');
                             $q_count = isset( $q_count_map[ $test->id ] ) ? $q_count_map[ $test->id ] : 0;
@@ -297,7 +297,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                         <span style="width: 4px; height: 18px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 2px; display: inline-block;"></span>
                         Uncategorized Tests
                     </h3>
-                    <div class="gep-asset-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px;">
+                    <div class="gep-asset-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 25px;">
                         <?php foreach ( $grouped_tests[0] as $test ) : 
                             $is_series = ($test->type === 'series' || $test->type === 'bundle');
                             $q_count = isset( $q_count_map[ $test->id ] ) ? $q_count_map[ $test->id ] : 0;
@@ -542,7 +542,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
 /* Asset Grid */
 .gep-asset-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
     gap: 25px;
 }
 

@@ -38,7 +38,7 @@ $students = $wpdb->get_results($query);
         </div>
     </div>
 
-    <div class="gep-stats-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;">
+    <div class="gep-responsive-grid gep-stats-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;">
         <div class="gep-stat-card" style="background: #fff; padding: 25px; border-radius: 20px; border: 1px solid var(--admin-border); position: relative; overflow: hidden;">
             <span style="display: block; font-size: 11px; font-weight: 800; color: var(--admin-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Total Registered</span>
             <span style="font-size: 32px; font-weight: 900; color: #1e293b;"><?php echo $total_items; ?></span>
@@ -146,7 +146,7 @@ $students = $wpdb->get_results($query);
         <form id="gep-assign-access-form">
             <input type="hidden" name="student_id" id="assign-student-id">
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 25px;">
+            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 25px;">
                 <!-- Courses Column -->
                 <div>
                     <h3 style="margin: 0 0 12px; font-size: 14px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;">

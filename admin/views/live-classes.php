@@ -124,7 +124,7 @@ $recordings = $live_logic->get_live_classes('recorded');
                 <input type="text" name="title" required placeholder="e.g. Masterclass: Advanced History" style="width: 100%;">
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div>
                     <label style="display: block; font-weight: 800; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Lead Instructor</label>
                     <input type="text" name="instructor" required placeholder="Instructor Name" style="width: 100%;">
@@ -138,7 +138,7 @@ $recordings = $live_logic->get_live_classes('recorded');
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div>
                     <label style="display: block; font-weight: 800; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Category</label>
                     <select name="category_id" id="gep_live_category_id" style="width: 100%;">
@@ -161,7 +161,7 @@ $recordings = $live_logic->get_live_classes('recorded');
             </div>
 
             <div id="stream-fields">
-                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px;">
                     <div>
                         <label style="display: block; font-weight: 800; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Delivery Mode</label>
                         <select name="url_type" style="width: 100%;">
@@ -174,7 +174,7 @@ $recordings = $live_logic->get_live_classes('recorded');
                         <input type="text" name="meeting_url" placeholder="https://..." style="width: 100%;">
                     </div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-bottom: 20px;">
                     <div>
                         <label style="display: block; font-weight: 800; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Scheduled At</label>
                         <input type="datetime-local" name="scheduled_at" style="width: 100%;">
