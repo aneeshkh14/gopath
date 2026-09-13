@@ -43,6 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         const modal = document.createElement('div');
+        const opener = document.activeElement;
+        modal.setAttribute('role', 'dialog'); modal.setAttribute('aria-modal', 'true'); modal.setAttribute('aria-label', title);
         modal.style.cssText = `
             background:#1e293b;border:2px solid #ef4444;border-radius:24px;
             padding:40px 48px;max-width:440px;width:90%;text-align:center;
@@ -70,14 +72,22 @@ document.addEventListener('DOMContentLoaded', function() {
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
+        document.getElementById('gep-sec-modal-ok').focus();
+        modal.addEventListener('keydown', e => {
+            if (e.key !== 'Tab') return;
+            const first = document.getElementById('gep-sec-modal-ok'), last = document.getElementById('gep-sec-modal-exit');
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        });
         document.getElementById('gep-sec-modal-ok').addEventListener('click', () => {
             overlay.remove();
+            if (opener && opener.isConnected) opener.focus();
             if (onClose) onClose();
         });
         
         document.getElementById('gep-sec-modal-exit').addEventListener('click', () => {
-            window.onbeforeunload = null;
-            window.location.href = dashboardUrl;
+            overlay.remove();
+            document.dispatchEvent(new Event('gep:request-exam-exit'));
         });
     }
 
@@ -256,8 +266,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ─── 6. Leave/Refresh Warning ─────────────────────────────────────────────
-    window.onbeforeunload = function() {
-        return 'Are you sure you want to leave? Your progress is saved but an exit will be logged as a violation.';
+    const previousUnloadWarning = window.onbeforeunload;
+    window.onbeforeunload = function(e) {
+        if (previousUnloadWarning) previousUnloadWarning(e);
+        e.preventDefault(); e.returnValue = ''; return '';
     };
 
     // ─── Violation Logger ────────────────────────────────────────────────────

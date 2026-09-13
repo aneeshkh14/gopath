@@ -193,6 +193,7 @@ jQuery(document).ready(function($) {
         $.ajax({
             url: gep_ajax.ajax_url,
             type: 'POST',
+            timeout: 20000,
             data: form_data,
             contentType: false,
             processData: false,
@@ -230,6 +231,7 @@ jQuery(document).ready(function($) {
         $.ajax({
             url: gep_ajax.ajax_url,
             type: 'POST',
+            timeout: 20000,
             data: form_data,
             success: function(response) {
                 $btn.prop('disabled', false).text(originalText);
@@ -260,13 +262,14 @@ jQuery(document).ready(function($) {
         $.ajax({
             url: gep_ajax.ajax_url,
             type: 'POST',
+            timeout: 20000,
             data: {
                 action: 'gep_mark_all_notifs_read',
                 nonce: gep_ajax.nonce
             },
             complete: function() { $btn.data('pending', false).removeAttr('aria-disabled'); },
             success: function(response) {
-                if (response.success) {
+                if (response && response.success && (!response.data || response.data.success !== false)) {
                     $('.gep-notif-count').fadeOut(function() { $(this).remove(); });
                     $('.notif-item, .gep-notification-item').removeClass('unread');
                     $btn.text(originalText);
@@ -283,25 +286,28 @@ jQuery(document).ready(function($) {
         });
     });
 
+    var pendingNotificationIds = new Set();
     // Mark individual notification as read on click
     $(document).on('click', '.notif-item.unread, .gep-notification-item.unread', function(e) {
         var $item = $(this);
         var id = $item.data('id');
-        if (!id || $item.data('pending')) return;
+        if (!id || pendingNotificationIds.has(String(id))) return;
+        pendingNotificationIds.add(String(id));
         $item.data('pending', true);
         
         $.ajax({
             url: gep_ajax.ajax_url,
             type: 'POST',
+            timeout: 20000,
             data: {
                 action: 'gep_mark_notif_read',
                 id: id,
                 nonce: gep_ajax.nonce
             },
-            complete: function() { $item.data('pending', false); },
+            complete: function() { pendingNotificationIds.delete(String(id)); $item.data('pending', false); },
             error: function() { show_gep_notification('Could not mark this notification as read. Try again.', 'danger'); },
             success: function(response) {
-                if (response.success) {
+                if (response && response.success && (!response.data || response.data.success !== false)) {
                     $('.notif-item, .gep-notification-item').filter(function() { return String($(this).data('id')) === String(id); }).removeClass('unread').find('.notif-pulse-dot').remove();
                     
                     // Update main student notification page icon/status if clicked there
@@ -319,7 +325,7 @@ jQuery(document).ready(function($) {
                             $countBadge.fadeOut(function() { $(this).remove(); });
                         }
                     }
-                }
+                } else show_gep_notification('Could not mark this notification as read. Try again.', 'danger');
             }
         });
     });

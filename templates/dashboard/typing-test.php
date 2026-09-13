@@ -213,7 +213,7 @@ jQuery(document).ready(function($) {
     let duration = 60; // seconds
     let timeRemaining = 60;
     let timerInterval = null;
-    let started = false;
+    let started = false, finished = false, sessionRevision = 0, startedAt = 0;
     let totalKeystrokes = 0;
     let errorCount = 0;
 
@@ -232,6 +232,8 @@ jQuery(document).ready(function($) {
     });
 
     $('#gep-start-typing-btn').on('click', function() {
+        sessionRevision++; finished = false; startedAt = 0; clearInterval(timerInterval);
+        $('#gep-typing-save-status').text('');
         targetText = paragraphs[$('#gep-typing-paragraph').val()];
         duration = parseInt($('input[name="gep_typing_dur"]:checked').val());
         timeRemaining = duration;
@@ -261,7 +263,7 @@ jQuery(document).ready(function($) {
         $('#gep-errors-label').text('0');
 
         // Enable and focus textarea
-        $('#gep-typing-input').prop('disabled', false).val('').focus();
+        $('#gep-typing-input').prop('disabled', false).attr('maxlength', targetText.length).val('').focus();
     });
 
     function updateTimerLabel() {
@@ -274,12 +276,14 @@ jQuery(document).ready(function($) {
 
     // Interactive keystroke handler
     $('#gep-typing-input').on('input', function(e) {
+        if (finished) return;
         if (!started) {
             startTimer();
             started = true;
         }
 
-        let currentVal = $(this).val();
+        let currentVal = $(this).val().slice(0, targetText.length);
+        $(this).val(currentVal);
         totalKeystrokes = currentVal.length;
 
         errorCount = 0;
@@ -348,8 +352,9 @@ jQuery(document).ready(function($) {
     });
 
     function startTimer() {
+        startedAt = Date.now();
         timerInterval = setInterval(function() {
-            timeRemaining--;
+            timeRemaining = Math.max(0, duration - Math.floor((Date.now() - startedAt) / 1000));
             updateTimerLabel();
 
             // Calculate current WPM
@@ -367,6 +372,10 @@ jQuery(document).ready(function($) {
     }
 
     function endSession() {
+        if (finished) return;
+        finished = true;
+        const revision = sessionRevision;
+        if (startedAt) timeRemaining = Math.max(0, duration - Math.min(duration, Math.max(1, Math.floor((Date.now() - startedAt) / 1000))));
         clearInterval(timerInterval);
         $('#gep-typing-input').prop('disabled', true);
 
@@ -396,10 +405,11 @@ jQuery(document).ready(function($) {
             duration: duration - timeRemaining,
             nonce: '<?php echo wp_create_nonce("gep_student_access"); ?>'
         }, function(response) {
+            if (revision !== sessionRevision) return;
             if (!response.success) {
                 $('#gep-typing-save-status').text('Your result is shown here, but it could not be saved to your history.');
             }
-        }).fail(function() { $('#gep-typing-save-status').text('Could not save your result to history. Check your connection.'); });
+        }).fail(function() { if (revision !== sessionRevision) return; $('#gep-typing-save-status').text('Could not save your result to history. Check your connection.'); });
     }
 
     $('#gep-restart-test').on('click', function() {

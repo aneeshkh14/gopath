@@ -600,8 +600,8 @@ class GEP_Shortcodes {
 		// Load previously saved answers
 		$saved_answers = json_decode( $attempt->answers, true ) ?: array();
 
-		// Calculate remaining time — BUG-12 FIX: use time() not deprecated current_time('timestamp')
-		$start_time       = strtotime( $attempt->start_time );
+		// Convert the stored site-local start time to UTC before comparing with time().
+		$start_time       = (int) get_gmt_from_date( $attempt->start_time, 'U' );
 		$duration_seconds = $test->duration_minutes * 60;
 		$elapsed_seconds  = time() - $start_time;
 		$remaining_seconds = max( 0, $duration_seconds - $elapsed_seconds );

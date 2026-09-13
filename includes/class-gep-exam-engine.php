@@ -97,7 +97,7 @@ class GEP_Exam_Engine {
 
 		$attempt = $wpdb->get_row( $wpdb->prepare( "SELECT a.*, t.duration_minutes FROM $table a JOIN {$wpdb->prefix}gep_tests t ON a.test_id = t.id WHERE a.id = %d", $attempt_id ) );
 		if ( ! $attempt ) return false;
-		if ( $attempt->user_id != get_current_user_id() ) return false;
+		if ( $attempt->user_id != get_current_user_id() || $attempt->status !== 'in_progress' ) return false;
 
 		// BUG-E FIX: Do NOT block save_answer on timer expiry.
 		// The exam JS stops sending saves when the timer hits 0, and auto-submits.
@@ -302,11 +302,16 @@ class GEP_Exam_Engine {
 		if ( trim($user_ans) === '' ) return false;
 
 		if ( $qtype === 'numerical' ) {
+			if ( ! is_numeric(trim((string) $user_ans)) || ! is_numeric(trim((string) $correct_ans)) ) return false;
 			// NTA-style numerical: check within tolerance
 			$tolerance = isset($question->numerical_tolerance) && $question->numerical_tolerance > 0 ? floatval($question->numerical_tolerance) : 0.01;
 			$user_num  = floatval($user_ans);
 			$correct_num = floatval($correct_ans);
 			return abs($user_num - $correct_num) <= $tolerance;
+		} elseif ( $qtype === 'short_answer' ) {
+			// Free text must not inherit MCQ option aliases such as 1 => A.
+			$normalize = static function($text) { return strtolower(preg_replace('/\s+/u', ' ', trim((string) $text))); };
+			return $normalize($user_ans) === $normalize($correct_ans);
 		} elseif ( $qtype === 'true_false' ) {
 			// Case-insensitive true/false
 			return strtolower(trim($user_ans)) === strtolower(trim($correct_ans));

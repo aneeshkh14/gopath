@@ -55,12 +55,15 @@ jQuery(document).ready(function($) {
         const btn = $(this).find('button[type="submit"]');
         const status = $('#support-status');
         
+        if (btn.prop('disabled')) return;
+        if (!$('#support_subject').val().trim() || !$('#support_message').val().trim()) { status.text('Enter a subject and message.').show(); return; }
         btn.prop('disabled', true).text('Sending...');
         status.hide();
 
         $.ajax({
             url: gep_ajax.ajax_url,
             type: 'POST',
+            timeout: 20000,
             data: {
                 action: 'gep_submit_support_ticket',
                 nonce: gep_ajax.nonce,
@@ -68,8 +71,8 @@ jQuery(document).ready(function($) {
                 message: $('#support_message').val()
             },
             success: function(res) {
-                status.show().text(res.data.message);
-                if (res.success) {
+                status.show().text(res && res.data && res.data.message || 'Could not send your message. Please retry.');
+                if (res && res.success) {
                     status.css('color', '#10b981');
                     $('#gep-support-form')[0].reset();
                 } else {

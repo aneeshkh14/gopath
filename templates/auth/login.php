@@ -19,6 +19,8 @@ if ( is_user_logged_in() ) {
                 <?php 
                 if ( $_GET['login_error'] === 'nonce' ) {
                     echo 'Security check failed. Please try again.';
+                } elseif ( $_GET['login_error'] === 'otp_mail_failed' ) {
+                    echo 'We could not send your verification email. Please try logging in again or contact support.';
                 } else {
                     echo 'Invalid username or password. Please try again.';
                 }
@@ -32,7 +34,7 @@ if ( is_user_logged_in() ) {
 
         <?php if ( isset($_GET['view']) && $_GET['view'] === 'otp' && isset($_GET['uid']) ) : ?>
             <form id="gep-otp-form" class="gep-auth-form">
-                <p class="gep-otp-info">We've sent a 6-digit code to your registered email. Please enter it below to verify.</p>
+                <p class="gep-otp-info">We've sent a 6-digit code to your registered email. It expires in 5 minutes. Check your spam folder too.</p>
                 <?php wp_nonce_field( 'gep_otp_nonce', 'gep_nonce' ); ?>
                 <input type="hidden" id="gep_otp_uid" value="<?php echo absint($_GET['uid']); ?>">
                 <div class="gep-form-group">
@@ -72,7 +74,7 @@ if ( is_user_logged_in() ) {
 
         <div class="gep-auth-footer">
             <?php if ( isset($_GET['view']) && $_GET['view'] === 'otp' ) : ?>
-                <a href="<?php echo gep_get_url('login'); ?>" class="gep-link">Back to Login</a>
+                <a href="<?php echo gep_get_url('login'); ?>" class="gep-link">Log in again to request a new code</a>
             <?php else : ?>
                 <p>Don't have an account? <a href="<?php echo gep_get_url('register'); ?>" class="gep-link">Register here</a></p>
             <?php endif; ?>

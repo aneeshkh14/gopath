@@ -2,8 +2,11 @@ jQuery(document).ready(function($) {
     if (typeof GEP_Exam === 'undefined') return;
 
     const langBtn = $('#gep-lang-toggle');
+    // Current exam templates render translations directly and have no legacy controls.
+    if (!langBtn.length && !$('.gep-lang-icon').length) return;
     // Init from PHP session or sessionStorage
-    let currentLang = sessionStorage.getItem('gep_current_lang') || GEP_Exam.lang || 'en';
+    let currentLang = GEP_Exam.lang || 'en';
+    try { currentLang = sessionStorage.getItem('gep_current_lang') || currentLang; } catch (e) {}
     
     // Set initial state
     if (currentLang === 'hi') {
@@ -13,7 +16,7 @@ jQuery(document).ready(function($) {
     // Global toggle (Header)
     langBtn.on('click', function() {
         currentLang = (currentLang === 'en') ? 'hi' : 'en';
-        sessionStorage.setItem('gep_current_lang', currentLang);
+        try { sessionStorage.setItem('gep_current_lang', currentLang); } catch (e) {}
         
         applyLanguageToAll();
         
@@ -72,6 +75,8 @@ jQuery(document).ready(function($) {
         $.ajax({
             url: GEP_Exam.ajaxurl,
             type: 'POST',
+            timeout: 20000,
+            complete: function() { block.removeClass('gep-loading'); },
             data: {
                 action: 'gep_get_translation',
                 nonce: GEP_Exam.nonce,

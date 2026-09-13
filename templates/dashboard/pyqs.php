@@ -275,11 +275,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const target = btn.data('target');
         const originalText = btn.text();
 
+        if (btn.prop('disabled')) return;
         btn.prop('disabled', true).text('⌛ Initializing...');
 
         jQuery.ajax({
             url: ajaxurl,
             type: 'POST',
+            timeout: 20000,
             data: {
                 action: 'gep_start_pyq_practice_test',
                 type: type,

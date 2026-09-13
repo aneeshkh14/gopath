@@ -1,3 +1,6 @@
+<?php if (isset($_GET['message']) && $_GET['message'] === 'failed') : ?>
+<div class="notice notice-error" role="alert"><p>Could not update the coupon. Please try again.</p></div>
+<?php endif; ?>
 <div class="wrap gep-admin-wrap">
     <div class="gep-admin-header" style="margin-bottom: 35px; display: flex; justify-content: space-between; align-items: center;">
         <div>
@@ -73,8 +76,12 @@
                             <td>
                                 <strong class="row-title" style="font-family: monospace; font-size: 16px; letter-spacing: 1px; color: var(--admin-primary);"><?php echo esc_html( $c->code ); ?></strong>
                                 <div class="row-actions">
-                                    <a href="#">Audit Trail</a>
-                                    <a href="#" class="delete">Deactivate</a>
+                                    <form method="post" style="display:inline;">
+                                        <?php wp_nonce_field('gep_coupon_status_' . $c->id, 'gep_coupon_status_nonce'); ?>
+                                        <input type="hidden" name="coupon_id" value="<?php echo absint($c->id); ?>">
+                                        <input type="hidden" name="coupon_status" value="<?php echo $c->status === 'active' ? 'inactive' : 'active'; ?>">
+                                        <button type="submit" class="button-link"><?php echo $c->status === 'active' ? 'Deactivate' : 'Activate'; ?></button>
+                                    </form>
                                 </div>
                             </td>
                             <td>

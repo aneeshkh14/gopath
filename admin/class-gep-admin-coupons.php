@@ -10,7 +10,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 class GEP_Admin_Coupons {
 
 	public function handle_coupon_actions() {
+		if ( ! current_user_can('manage_options') ) return;
 		if ( ! isset( $_GET['page'] ) || $_GET['page'] !== 'gep-coupons' ) return;
+
+		if ( isset($_POST['gep_coupon_status_nonce'], $_POST['coupon_id'], $_POST['coupon_status']) ) {
+			$id = absint($_POST['coupon_id']);
+			check_admin_referer('gep_coupon_status_' . $id, 'gep_coupon_status_nonce');
+			$status = $_POST['coupon_status'] === 'active' ? 'active' : 'inactive';
+			$updated = $this->save_coupon(array('id' => $id, 'status' => $status));
+			wp_safe_redirect(admin_url('admin.php?page=gep-coupons&message=' . ($updated === false ? 'failed' : 'saved')));
+			exit;
+		}
 
 		if ( isset( $_GET['action'] ) && $_GET['action'] === 'delete' && isset( $_GET['id'] ) ) {
 			if ( check_admin_referer( 'gep_coupon_delete_' . $_GET['id'] ) ) {

@@ -705,3 +705,9 @@ input:focus + .gep-option-icon {
     .gep-admin-wrap .button { min-height: 40px; }
 }
 @media (prefers-reduced-motion: reduce) { .gep-admin-wrap *, .gep-modal-overlay * { animation: none !important; transition: none !important; } }
+
+@media (max-width: 782px) {
+    .gep-admin-header, .gep-admin-recent-activity > form { flex-wrap: wrap; gap: 16px !important; }
+    .gep-admin-recent-activity select { min-width: 0 !important; max-width: 100%; }
+    #gep-assign-access-form > div:first-of-type { grid-template-columns: minmax(0, 1fr) !important; }
+}

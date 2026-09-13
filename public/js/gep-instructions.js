@@ -148,9 +148,12 @@ jQuery(document).ready(function($) {
         validateStartButton();
     });
 
+    validateStartButton();
+
     // ─── START EXAM ACTION ─────────────────────────────────────────
     startBtn.on('click', function() {
-        if (starting) return;
+        validateStartButton();
+        if (starting || startBtn.prop('disabled')) return;
         starting = true;
         $('#gep-start-error').text('');
         const testId = GEP_Instructions.test_id;

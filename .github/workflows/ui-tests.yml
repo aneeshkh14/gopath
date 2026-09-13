@@ -14,3 +14,26 @@ jobs:
       - run: npm test
       - name: PHP syntax
         run: find . -path './node_modules' -prune -o -name '*.php' -print0 | xargs -0 -n 1 php -l
+      - name: PHP handler regressions
+        run: php tests/php-regression.php
+  payment-database:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: fixture
+          MYSQL_DATABASE: gep_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost --password=fixture"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Payment transaction and concurrency regressions
+        env:
+          GEP_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=gep_test
+        run: php tests/php-mysql.php

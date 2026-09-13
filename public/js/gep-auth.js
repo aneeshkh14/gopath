@@ -25,7 +25,7 @@ jQuery(function($) {
             timeout: 20000,
             data: { action: 'gep_verify_otp', otp: $code.val(), user_id: $('#gep_otp_uid').val(), nonce: $('#gep_nonce').val() },
             success: function(response) {
-                if (response && response.success && response.data.redirect) {
+                if (response && response.success && response.data && response.data.redirect) {
                     try { sessionStorage.removeItem('gep_current_lang'); } catch (e) {}
                     window.location.href = response.data.redirect;
                 } else {

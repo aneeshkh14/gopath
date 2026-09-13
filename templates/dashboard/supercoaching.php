@@ -580,19 +580,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const filters = document.querySelectorAll('#gep-course-filters .filter-btn');
     const cards = document.querySelectorAll('.gep-premium-grid .gep-card-elite');
     
+    const feedback = document.createElement('p'); feedback.setAttribute('role', 'status');
+    const filterBar = document.getElementById('gep-course-filters');
+    if (filterBar) filterBar.after(feedback);
     filters.forEach(btn => {
         btn.addEventListener('click', function() {
             filters.forEach(f => f.classList.remove('active'));
             this.classList.add('active');
             
             const filterVal = this.dataset.filter;
+            let count = 0;
+            filters.forEach(f => f.setAttribute('aria-pressed', String(f === this)));
             cards.forEach(card => {
                 if (filterVal === 'all' || card.dataset.categoryId === filterVal) {
-                    card.style.display = 'flex';
+                    card.style.display = 'flex'; count++;
                 } else {
                     card.style.display = 'none';
                 }
             });
+            feedback.textContent = count ? count + ' courses shown' : 'No courses in this category. Choose All to see available courses.';
         });
     });
 });

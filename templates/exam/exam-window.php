@@ -459,9 +459,9 @@ foreach ( $section_counters as $cat_key => $val ) {
         <div style="background:#1e293b;border:1px solid #f59e0b;border-radius:20px;padding:24px;width:280px;box-shadow:0 32px 80px rgba(0,0,0,0.6);">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                 <h3 style="margin:0;color:#f1f5f9;font-size:14px;font-weight:800;">🖩 Calculator</h3>
-                <button id="gep-calc-close" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">✕</button>
+                <button type="button" aria-label="Close calculator" id="gep-calc-close" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">✕</button>
             </div>
-            <input id="gep-calc-display" type="text" readonly style="width:100%;padding:12px;background:#0f172a;border:1px solid #334155;border-radius:10px;color:#f1f5f9;font-size:22px;font-weight:800;text-align:right;margin-bottom:12px;box-sizing:border-box;">
+            <input aria-label="Calculator result" id="gep-calc-display" type="text" readonly style="width:100%;padding:12px;background:#0f172a;border:1px solid #334155;border-radius:10px;color:#f1f5f9;font-size:22px;font-weight:800;text-align:right;margin-bottom:12px;box-sizing:border-box;">
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
                 <?php
                 $calc_btns = ['C','±','%','÷','7','8','9','×','4','5','6','-','1','2','3','+','0','.','⌫','='];
@@ -471,6 +471,7 @@ foreach ( $section_counters as $cat_key => $val ) {
                 <button class="gep-calc-key" data-key="<?php echo esc_attr($cb); ?>" style="background:<?php echo $color; ?>;color:#f1f5f9;border:none;border-radius:8px;padding:14px 8px;font-size:16px;font-weight:800;cursor:pointer;transition:all 0.15s;"><?php echo esc_html($cb); ?></button>
                 <?php endforeach; ?>
             </div>
+            <button type="button" id="gep-calc-apply" class="gep-btn" style="width:100%;margin-top:12px;">Use result as my answer</button>
         </div>
     </div>
 
@@ -622,7 +623,7 @@ foreach ( $section_counters as $cat_key => $val ) {
 <!-- Hidden Instructions Modal -->
 <div id="gep-instructions-modal" class="gep-popup-modal" style="display:none;">
     <div class="gep-popup-modal-content">
-        <span class="gep-popup-modal-close" id="gep-inst-close">&times;</span>
+        <button type="button" aria-label="Close instructions" class="gep-popup-modal-close" id="gep-inst-close">&times;</button>
         <h2>Exam Instructions</h2>
         <div class="gep-popup-modal-body">
             <?php echo wp_kses_post( isset($test->instructions) ? $test->instructions : '' ); ?>
@@ -642,7 +643,7 @@ foreach ( $section_counters as $cat_key => $val ) {
 <!-- Hidden Question Paper Modal -->
 <div id="gep-qpaper-modal" class="gep-popup-modal" style="display:none;">
     <div class="gep-popup-modal-content">
-        <span class="gep-popup-modal-close" id="gep-qpaper-close">&times;</span>
+        <button type="button" aria-label="Close question paper" class="gep-popup-modal-close" id="gep-qpaper-close">&times;</button>
         <h2>Question Paper</h2>
         <div class="gep-popup-modal-body">
             <div class="gep-qpaper-list">

@@ -74,7 +74,7 @@ $courses = $wpdb->get_results( "SELECT id, title FROM {$wpdb->prefix}gep_courses
                     </td>
                     <td style="padding-right: 30px; text-align: right;">
                         <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                            <a href="#" class="button button-secondary" style="border-radius: 10px; font-weight: 800; font-size: 12px; padding: 8px 15px;">Preview</a>
+                            <a href="<?php echo esc_url(add_query_arg(array('view' => 'watch', 'id' => $l->course_id, 'lesson' => $l->id), gep_get_url('dashboard'))); ?>" target="_blank" rel="noopener" class="button button-secondary" style="border-radius: 10px; font-weight: 800; font-size: 12px; padding: 8px 15px;">Preview</a>
                             <button type="button" class="button button-secondary" style="border-radius: 10px; font-weight: 800; font-size: 12px; padding: 4px 15px;" 
                                 onclick="editLesson(<?php echo esc_attr(json_encode(array(
                                     'id' => $l->id,

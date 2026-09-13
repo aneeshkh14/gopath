@@ -4646,3 +4646,10 @@ span.sa-text.active { display: inline; }
 #gep-toast { white-space: normal !important; max-width: calc(100vw - 24px); overflow-wrap: anywhere; }
 #gep-modal-overlay :focus-visible { outline: 3px solid #4f46e5; outline-offset: 3px; }
 @media (max-width: 600px) { #gep-modal-overlay > div { padding: 28px 20px !important; } }
+
+/* Auxiliary dialogs fit phones and expose visible keyboard controls. */
+#gep-calculator-modal > div, #gep-security-modal > div { max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px); overflow: auto; box-sizing: border-box; }
+#gep-calc-close, .gep-popup-modal-close { min-width: 44px; min-height: 44px; cursor: pointer; }
+#gep-security-toast { max-width: calc(100vw - 32px); white-space: normal !important; overflow-wrap: anywhere; box-sizing: border-box; }
+#gep-calculator-modal [hidden] { display: none !important; }
+#gep-calculator-modal :focus-visible, .gep-popup-modal :focus-visible, #gep-security-modal :focus-visible { outline: 3px solid #60a5fa; outline-offset: 3px; }

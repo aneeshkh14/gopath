@@ -42,13 +42,13 @@ class GEP_AJAX {
 		$remaining_seconds = 0;
 		$attempt_row = $wpdb->get_row( $wpdb->prepare( "SELECT a.start_time, t.duration_minutes FROM {$wpdb->prefix}gep_attempts a JOIN {$wpdb->prefix}gep_tests t ON a.test_id = t.id WHERE a.id = %d", $attempt_id ) );
 		if ( $attempt_row ) {
-			$start_time = strtotime( $attempt_row->start_time );
+			$start_time = (int) get_gmt_from_date( $attempt_row->start_time, 'U' );
 			$duration_seconds = $attempt_row->duration_minutes * 60;
 			$elapsed_seconds = time() - $start_time;
 			$remaining_seconds = max( 0, $duration_seconds - $elapsed_seconds );
 		}
 
-		if ( $success ) {
+		if ( $success !== false ) {
 			wp_send_json_success( array( 'message' => 'Answer saved', 'remaining_seconds' => $remaining_seconds ) );
 		} else {
 			wp_send_json_error( array( 'message' => 'Failed to save answer' ) );
@@ -68,7 +68,7 @@ class GEP_AJAX {
 			return;
 		}
 
-		$start_time = strtotime( $attempt_row->start_time );
+		$start_time = (int) get_gmt_from_date( $attempt_row->start_time, 'U' );
 		$duration_seconds = $attempt_row->duration_minutes * 60;
 		$elapsed_seconds = time() - $start_time;
 		$remaining_seconds = max( 0, $duration_seconds - $elapsed_seconds );
@@ -272,7 +272,8 @@ class GEP_AJAX {
 
 		$auth = new GEP_Auth();
 		if ( $auth->verify_otp( $user_id, $otp ) ) {
-			$remember = get_transient( 'gep_pending_login_' . $user_id );
+			$pending_login = get_transient( 'gep_pending_login_' . $user_id );
+			$remember = is_array($pending_login) ? ! empty($pending_login['remember']) : (bool) $pending_login;
 			wp_set_current_user( $user_id );
 			wp_set_auth_cookie( $user_id, $remember );
 			delete_transient( 'gep_pending_login_' . $user_id );
@@ -867,14 +868,16 @@ class GEP_AJAX {
 		check_ajax_referer( 'gep_dashboard_nonce', 'nonce' );
 		$id = absint( $_POST['id'] );
 		$success = GEP_Notifications::mark_as_read( $id );
-		wp_send_json_success( array( 'success' => $success ) );
+		if ( $success === false ) wp_send_json_error( array( 'message' => 'Could not update notifications. Please retry.' ) );
+		wp_send_json_success( array( 'success' => true ) );
 	}
 
 	public function gep_mark_all_notifs_read() {
 		if ( ! is_user_logged_in() ) wp_send_json_error();
 		check_ajax_referer( 'gep_dashboard_nonce', 'nonce' );
 		$success = GEP_Notifications::mark_all_read( get_current_user_id() );
-		wp_send_json_success( array( 'success' => $success ) );
+		if ( $success === false ) wp_send_json_error( array( 'message' => 'Could not update notifications. Please retry.' ) );
+		wp_send_json_success( array( 'success' => true ) );
 	}
 
 	public function gep_update_lang() {

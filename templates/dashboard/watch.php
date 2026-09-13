@@ -888,6 +888,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if(!text) { alert('Please enter a question.'); return; }
 
+        if (btn.prop('disabled')) return;
         btn.prop('disabled', true).text('Posting...');
         jQuery.ajax({
             url: gep_ajax.ajax_url,
@@ -922,6 +923,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var lessonId = $btn.data('lesson-id');
         var courseId = $btn.data('course-id');
         
+        if ($btn.prop('disabled')) return;
         $btn.prop('disabled', true).css('opacity', '0.6');
         
         jQuery.ajax({

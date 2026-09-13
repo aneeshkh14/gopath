@@ -178,6 +178,7 @@ $students = $wpdb->get_results($query);
 
 <script>
 jQuery(document).ready(function($) {
+    var accessRevision = 0;
     // Close modal buttons
     $('.gep-close-modal-btn').on('click', function() {
         $('#gep-assign-access-modal').hide();
@@ -185,6 +186,7 @@ jQuery(document).ready(function($) {
 
     // Assign Access Button Click
     $('.gep-assign-access-btn').on('click', function() {
+        var revision = ++accessRevision;
         var userId = $(this).data('userid');
         var userName = $(this).data('username');
         
@@ -204,7 +206,7 @@ jQuery(document).ready(function($) {
             student_id: userId,
             nonce: '<?php echo wp_create_nonce("gep_student_access"); ?>'
         }, function(response) {
-            if (String($('#assign-student-id').val()) !== String(userId)) return;
+            if (revision !== accessRevision) return;
             if (response.success) {
                 $('#gep-assign-access-form button[type="submit"]').prop('disabled', false);
                 var data = response.data;
@@ -216,7 +218,7 @@ jQuery(document).ready(function($) {
                         var checked = data.current_courses.indexOf(c.id.toString()) !== -1 || data.current_courses.indexOf(parseInt(c.id)) !== -1 ? 'checked' : '';
                         coursesHTML += '<label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #334155; cursor: pointer; margin-bottom: 2px;">' +
                             '<input type="checkbox" name="course_ids[]" value="' + c.id + '" ' + checked + '> ' +
-                            '<span>' + c.title + '</span>' +
+                            '<span>' + $('<div>').text(c.title).html() + '</span>' +
                             '</label>';
                     });
                 } else {
@@ -231,7 +233,7 @@ jQuery(document).ready(function($) {
                         var checked = data.current_tests.indexOf(t.id.toString()) !== -1 || data.current_tests.indexOf(parseInt(t.id)) !== -1 ? 'checked' : '';
                         testsHTML += '<label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #334155; cursor: pointer; margin-bottom: 2px;">' +
                             '<input type="checkbox" name="test_ids[]" value="' + t.id + '" ' + checked + '> ' +
-                            '<span>' + t.title + '</span>' +
+                            '<span>' + $('<div>').text(t.title).html() + '</span>' +
                             '</label>';
                     });
                 } else {
@@ -242,7 +244,7 @@ jQuery(document).ready(function($) {
                 alert('Error loading access registry: ' + response.data);
             }
         }).fail(function() {
-            if (String($('#assign-student-id').val()) !== String(userId)) return;
+            if (revision !== accessRevision) return;
             $('#assign-courses-list, #assign-tests-list').text('Could not load access. Close this dialog and retry.');
         });
     });
@@ -253,6 +255,7 @@ jQuery(document).ready(function($) {
         var form = $(this);
         if (form.find('button[type="submit"]').prop('disabled')) return;
         var submitBtn = form.find('button[type="submit"]');
+        var revision = accessRevision;
         submitBtn.prop('disabled', true).text('Saving Changes...');
         
         $.post(ajaxurl, {
@@ -262,6 +265,7 @@ jQuery(document).ready(function($) {
             test_ids: form.find('input[name="test_ids[]"]:checked').map(function() { return this.value; }).get(),
             nonce: '<?php echo wp_create_nonce("gep_student_access"); ?>'
         }, function(response) {
+            if (revision !== accessRevision) return;
             submitBtn.prop('disabled', false).text('Save Enrollment Changes');
             if (response.success) {
                 $('#gep-assign-access-modal').hide();
@@ -271,6 +275,7 @@ jQuery(document).ready(function($) {
                 alert('Failed to update access: ' + response.data);
             }
         }).fail(function() {
+            if (revision !== accessRevision) return;
             submitBtn.prop('disabled', false).text('Save Enrollment Changes');
             alert('Could not save access. Your selections are still here; please try again.');
         });

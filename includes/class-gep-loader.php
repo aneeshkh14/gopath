@@ -343,6 +343,7 @@ class GEP_Loader {
 					'item_id'    => $checkout_item_id,
 					'item_type'  => $checkout_item_type,
 					'key_id'     => get_option( 'gep_razorpay_key_id' ),
+					'user_id'    => get_current_user_id(),
 					'user_name'  => is_user_logged_in() ? wp_get_current_user()->display_name : '',
 					'user_email' => is_user_logged_in() ? wp_get_current_user()->user_email : '',
 				) );

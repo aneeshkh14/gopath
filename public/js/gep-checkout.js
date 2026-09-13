@@ -4,7 +4,15 @@ jQuery(function($) {
     var $pay = $('#gep-pay-button'), $input = $('#gep-coupon-code'), $apply = $('#gep-apply-coupon');
     if (!$pay.length) return;
     var basePrice = Number($('#gep-final-amount').text().replace(/,/g, '')) || 0;
-    var total = basePrice, coupon = '', revision = 0, checking = false, busy = false, pendingPayment = null;
+    var total = basePrice, coupon = '', revision = 0, checking = false, busy = false, verified = false, pendingPayment = null;
+    var recoveryKey = 'gep_payment_' + (GEP_Checkout.user_id || 0) + '_' + GEP_Checkout.item_type + '_' + GEP_Checkout.item_id;
+    function rememberPayment(value) {
+        try { if (value) sessionStorage.setItem(recoveryKey, JSON.stringify(value)); else sessionStorage.removeItem(recoveryKey); } catch (e) {}
+    }
+    try {
+        var saved = JSON.parse(sessionStorage.getItem(recoveryKey));
+        if (saved && ['razorpay_payment_id','razorpay_order_id','razorpay_signature'].every(key => typeof saved[key] === 'string' && saved[key].length > 0)) pendingPayment = saved;
+    } catch (e) {}
     var $tiers = $('input[name="selected_attempts_tier"]');
     function message(res, fallback) { return res && res.data && typeof res.data.message === 'string' ? res.data.message : fallback; }
     function request(data) {
@@ -42,7 +50,7 @@ jQuery(function($) {
         request({ action: 'gep_apply_coupon', coupon_code: code, item_id: GEP_Checkout.item_id, item_type: GEP_Checkout.item_type, attempts: $tiers.filter(':checked').val() || 0 })
             .done(function(res) {
                 if (token !== revision) return;
-                if (res && res.success && isFinite(Number(res.data.new_total))) {
+                if (res && res.success && res.data && Number.isFinite(Number(res.data.new_total)) && Number(res.data.new_total) >= 0 && Number(res.data.new_total) <= basePrice) {
                     coupon = code; total = Number(res.data.new_total);
                     $('#gep-coupon-status').text('Coupon applied. You save ₹' + Number(res.data.discount).toFixed(2) + '.');
                 } else $('#gep-coupon-status').text(message(res, 'This coupon could not be applied.'));
@@ -58,17 +66,18 @@ jQuery(function($) {
         if (!$error.length) $error = $('<div id="gep-payment-error" class="gep-payment-error" role="alert" tabindex="-1"></div>').insertAfter($pay);
         $error.text(text).show().trigger('focus');
     }
-    function release() { busy = false; render(); }
+    function release() { if (verified) return; busy = false; render(); }
     function verify() {
         busy = true; render(); $pay.text('Verifying payment…');
         request($.extend({action: 'gep_verify_payment', item_id: GEP_Checkout.item_id, item_type: GEP_Checkout.item_type}, pendingPayment))
             .done(function(res) {
-                if (res && res.success && res.data.redirect_url) window.location.href = res.data.redirect_url;
+                if (res && res.success && res.data && res.data.redirect_url) { verified = true; rememberPayment(null); $pay.text('Opening your purchases…'); window.location.href = res.data.redirect_url; }
                 else showError(message(res, 'Payment verification is not confirmed.') + ' Retry verification or contact support with payment ID: ' + pendingPayment.razorpay_payment_id + '. Do not pay again.');
             }).fail(function() {
                 showError('We could not confirm payment verification. Retry verification or contact support with payment ID: ' + pendingPayment.razorpay_payment_id + '. Do not pay again.');
             }).always(release);
     }
+    if (pendingPayment) { render(); showError('A previous payment still needs verification. Retry verification before making another payment. Payment ID: ' + pendingPayment.razorpay_payment_id); }
     $pay.on('click', function() {
         if (busy || checking) return;
         $('#gep-payment-error').hide();
@@ -77,6 +86,7 @@ jQuery(function($) {
         request({action: 'gep_create_payment_order', item_id: GEP_Checkout.item_id, item_type: GEP_Checkout.item_type, coupon_code: coupon, attempts: $tiers.filter(':checked').val() || 0})
             .done(function(res) {
                 if (!res || !res.success) { showError(message(res, 'Could not prepare checkout. Please try again.')); release(); return; }
+                if (!res.data) { showError('Checkout returned an incomplete response. Please retry.'); release(); return; }
                 if (res.data.status === 'free') { window.location.href = res.data.redirect; return; }
                 try {
                     var gateway = new Razorpay({
@@ -87,6 +97,7 @@ jQuery(function($) {
                         modal: {ondismiss: function() { if (!pendingPayment) release(); }},
                         handler: function(payment) {
                             pendingPayment = {razorpay_payment_id: payment.razorpay_payment_id, razorpay_order_id: payment.razorpay_order_id, razorpay_signature: payment.razorpay_signature};
+                            rememberPayment(pendingPayment);
                             verify();
                         }
                     });

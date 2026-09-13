@@ -42,50 +42,34 @@ document.addEventListener('DOMContentLoaded', function() {
     let questionStartTime = Date.now(); // NTA-style per-Q time tracking
     let currentFontSize = 16; // Text zoom support — must match --gep-zoom-font-size in gep-exam.css
     
-    // --- Sectional Timings ---
-    let sectionalTimings = [];
-    let hasSectionalTiming = false;
-    let currentSectionIdx = 0;
-    
-    if (examData.sections_data && examData.sections_data.length > 0) {
-        examData.sections_data.forEach((sec, idx) => {
-            let t = parseInt(sec.time_limit) || 0;
-            if (t > 0) hasSectionalTiming = true;
-            sectionalTimings.push({
-                id: 'sec_' + idx,
-                limit_seconds: t * 60,
-                name: sec.name || 'Section ' + (idx + 1)
-            });
-        });
-    }
-
-    if (hasSectionalTiming) {
-        // Enforce sequential sectional time limits
-        let elapsed = parseInt(examData.elapsed_seconds) || 0;
-        for (let i = 0; i < sectionalTimings.length; i++) {
-            let sec = sectionalTimings[i];
-            if (sec.limit_seconds > 0) {
-                if (elapsed >= sec.limit_seconds) {
-                    elapsed -= sec.limit_seconds; // Already spent this section's time
-                } else {
-                    currentSectionIdx = i;
-                    remainingSeconds = sec.limit_seconds - elapsed;
-                    break;
-                }
-            } else {
-                currentSectionIdx = i;
-                // If section has no time limit, it just takes up whatever is left of the total test duration.
-                remainingSeconds = examData.remaining_seconds - parseInt(examData.elapsed_seconds || 0);
-                break;
-            }
+    // Anchor the clock to elapsed wall time so background tabs and device sleep
+    // cannot pause an exam. Heartbeats update this anchor, not a sectional timer.
+    const totalDuration = Math.max(0, Number(examData.remaining_seconds) || 0) + Math.max(0, Number(examData.elapsed_seconds) || 0);
+    let elapsedAtSync = Math.max(0, Number(examData.elapsed_seconds) || 0);
+    let clockSyncedAt = Date.now();
+    let timerExpired = false, heartbeatBusy = false;
+    const sectionalTimings = (examData.sections_data || []).map((sec, idx) => ({
+        id: 'sec_' + idx, limit_seconds: Math.max(0, Number(sec.time_limit) || 0) * 60,
+        name: sec.name || 'Section ' + (idx + 1)
+    }));
+    const hasSectionalTiming = sectionalTimings.some(sec => sec.limit_seconds > 0);
+    function clockState() {
+        const elapsed = elapsedAtSync + Math.max(0, (Date.now() - clockSyncedAt) / 1000);
+        const totalLeft = Math.max(0, totalDuration - elapsed);
+        if (!hasSectionalTiming) return {index: 0, remaining: Math.ceil(totalLeft), expired: totalLeft <= 0};
+        let sectionStart = 0;
+        for (let index = 0; index < sectionalTimings.length; index++) {
+            const limit = sectionalTimings[index].limit_seconds;
+            // An untimed section consumes the remaining total exam time.
+            if (!limit) return {index, remaining: Math.ceil(totalLeft), expired: totalLeft <= 0};
+            const sectionLeft = sectionStart + limit - elapsed;
+            if (sectionLeft > 0) return {index, remaining: Math.ceil(Math.min(totalLeft, sectionLeft)), expired: totalLeft <= 0};
+            sectionStart += limit;
         }
-        
-        // Safety bounds
-        if (currentSectionIdx >= sectionalTimings.length) {
-            currentSectionIdx = sectionalTimings.length - 1;
-            remainingSeconds = 0;
-        }
+        return {index: Math.max(0, sectionalTimings.length - 1), remaining: 0, expired: true};
     }
+    let currentSectionIdx = clockState().index;
+    remainingSeconds = clockState().remaining;
 
     // ─── Modal System (replaces all alert/confirm dialogs) ───────────────────
     function showModal({ title, message, type = 'info', buttons = [], onClose = null }) {
@@ -271,6 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const exitBtn = document.getElementById('gep-exit-btn');
     if (exitBtn) {
         exitBtn.addEventListener('click', function() {
+            if (submitting || submissionRequested || timerExpired) return;
             const destUrl = this.dataset.url;
             showModal({
                 title: 'Exit Exam?',
@@ -279,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 buttons: [
                     { label: 'Cancel', action: 'cancel', primary: false },
                     { label: 'Exit Exam', action: 'exit', primary: true, onClick: async () => {
-                        await flushAnswers();
+                        await captureCurrentAnswer();
                         if (pendingAnswers.size) { showToast('Some answers are not synced. Reconnect and try again.', 'warning', 6000); return; }
                         window.onbeforeunload = null;
                         window.location.href = destUrl;
@@ -287,73 +272,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 ]
             });
         });
+        document.addEventListener('gep:request-exam-exit', () => exitBtn.click());
     }
 
     // ─── Timer ──────────────────────────────────────────────────────────────
-    function startTimer() {
+    function captureCurrentAnswer() {
+        const block = questions[currentQuestionIndex];
+        if (!block) return flushAnswers();
+        const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+        return saveAnswer(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
+    }
+    function updateClock() {
+        if (submitting || submissionRequested || timerExpired) return;
+        const state = clockState();
+        const previousRemaining = remainingSeconds;
+        remainingSeconds = state.remaining;
         updateTimerDisplay();
-        timerInterval = setInterval(() => {
-            remainingSeconds--;
-            updateTimerDisplay();
-            if (remainingSeconds === 300) {
-                showToast('⏰ 5 minutes remaining!', 'warning', 5000);
-            }
-            if (remainingSeconds <= 0) {
-                clearInterval(timerInterval);
-                if (hasSectionalTiming) {
-                    moveToNextSection();
-                } else {
-                    autoSubmitExam();
-                }
-            }
-        }, 1000);
-
-        // Server Time Sync Heartbeat (syncs clock every 30 seconds)
-        setInterval(() => {
-            if (remainingSeconds <= 0) return;
+        if (state.expired) {
+            timerExpired = true;
+            clearInterval(timerInterval);
+            submitExam();
+            return;
+        }
+        if (hasSectionalTiming && state.index > currentSectionIdx) {
+            captureCurrentAnswer();
+            currentSectionIdx = state.index;
+            switchSection(sectionalTimings[currentSectionIdx].id);
+            showToast('Section time ended. Continuing to ' + sectionalTimings[currentSectionIdx].name + '.', 'info', 5000);
+        } else if (previousRemaining > 300 && remainingSeconds <= 300) {
+            showToast('5 minutes remaining!', 'warning', 5000);
+        }
+    }
+    function startTimer() {
+        updateClock();
+        if (!timerExpired) timerInterval = setInterval(updateClock, 1000);
+        // One heartbeat for the entire attempt, including all section transitions.
+        setInterval(async () => {
+            if (heartbeatBusy || timerExpired || submitting || submissionRequested) return;
+            heartbeatBusy = true;
             const formData = new FormData();
             formData.append('action', 'gep_exam_heartbeat');
             formData.append('nonce', examData.nonce);
             formData.append('attempt_id', examData.attempt_id);
-            fetch(examData.ajaxurl, { method: 'POST', body: formData })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.data && typeof data.data.remaining_seconds !== 'undefined') {
-                        remainingSeconds = data.data.remaining_seconds;
-                        updateTimerDisplay();
-                    }
-                }).catch(err => console.error('Heartbeat sync failed:', err));
-        }, 30000);
-    }
-
-    function moveToNextSection() {
-        // Disable everything briefly
-        document.getElementById('gep-exam-main-container').style.opacity = '0.5';
-        document.getElementById('gep-exam-main-container').style.pointerEvents = 'none';
-
-        showModal({
-            title: 'Section Time Expired',
-            message: 'Time for the current section has ended. Your answers are saved and you will now proceed to the next section.',
-            type: 'time',
-            buttons: [{ label: 'Continue', action: 'ok', primary: true, onClick: () => {
-                currentSectionIdx++;
-                if (currentSectionIdx < sectionalTimings.length) {
-                    let sec = sectionalTimings[currentSectionIdx];
-                    remainingSeconds = sec.limit_seconds > 0 ? sec.limit_seconds : Math.max(0, examData.remaining_seconds - parseInt(examData.elapsed_seconds || 0));
-                    
-                    document.getElementById('gep-exam-main-container').style.opacity = '1';
-                    document.getElementById('gep-exam-main-container').style.pointerEvents = 'auto';
-
-                    // Switch to the section tab
-                    const nextTabBtn = document.querySelector(`.gep-tab-btn[data-cat-id="${sec.id}"]`);
-                    if (nextTabBtn) nextTabBtn.click();
-                    
-                    startTimer();
-                } else {
-                    submitExam();
+            try {
+                const data = await postExam(formData);
+                if (data && data.success && data.data && Number.isFinite(Number(data.data.remaining_seconds))) {
+                    elapsedAtSync = totalDuration - Math.max(0, Math.min(totalDuration, Number(data.data.remaining_seconds)));
+                    clockSyncedAt = Date.now();
+                    updateClock();
                 }
-            } }]
-        });
+            } catch (e) { /* Wall clock continues while the network is unavailable. */ }
+            finally { heartbeatBusy = false; }
+        }, 30000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) updateClock(); });
     }
 
     function updateTimerDisplay() {
@@ -367,16 +338,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             timerDisplay.parentElement.classList.remove('timer-danger');
         }
-    }
-
-    function autoSubmitExam() {
-        // Replace alert() with custom modal
-        showModal({
-            title: 'Time\'s Up!',
-            message: 'Your exam time has expired. Your answers are being submitted automatically.',
-            type: 'time',
-            buttons: [{ label: 'OK', action: 'ok', primary: true, onClick: () => submitExam() }]
-        });
     }
 
     // ─── Answer Saving ───────────────────────────────────────────────────────
@@ -737,7 +698,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let activeTab = null;
 
     if (sectionTabs.length > 0) {
-        activeCatId = sectionTabs[0].dataset.catId;
+        activeCatId = hasSectionalTiming ? sectionalTimings[currentSectionIdx].id : sectionTabs[0].dataset.catId;
         activeTab = activeCatId;
         
         sectionTabs.forEach(tab => {
@@ -894,7 +855,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showModal({
                 title: 'Submission not confirmed', message: e.message || 'Could not connect. Please retry submission.', type: 'warning',
                 buttons: [
-                    ...(!submissionRequested ? [{label: 'Back to exam', action: 'cancel'}] : []),
+                    ...(!submissionRequested && !timerExpired ? [{label: 'Back to exam', action: 'cancel'}] : []),
                     {label: 'Retry submission', action: 'retry', primary: true, onClick: () => submitExam()}
                 ]
             });
@@ -902,8 +863,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ─── Init ────────────────────────────────────────────────────────────────
-    startTimer();
-
     examData.saved_answers = examData.saved_answers || {};
     questions.forEach(block => {
         try {
@@ -952,9 +911,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    loadQuestion(0);
+    const firstAvailable = hasSectionalTiming ? Array.from(questions).findIndex(q => q.dataset.catId === sectionalTimings[currentSectionIdx].id) : 0;
+    loadQuestion(Math.max(0, firstAvailable));
     updateSidebarCounters();
     if (pendingAnswers.size) flushAnswers();
+    // Start after hydration/navigation are ready: an expired reload may submit now.
+    startTimer();
 
     // ─── Unified Answer Extractor ────────────────────────────────────────────
     // Works for MCQ (radio), MSQ (checkbox), and short_answer (text)
@@ -1079,6 +1041,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const calcModal = document.getElementById('gep-calculator-modal');
     const calcDisplay = document.getElementById('gep-calc-display');
     const calcClose = document.getElementById('gep-calc-close');
+    const calcApply = document.getElementById('gep-calc-apply');
     let calcExpression = '';
 
     function evaluateSimpleExpression(str) {
@@ -1149,6 +1112,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function openCalc() {
         if (calcModal) {
             calcModal.style.display = 'flex';
+            if (calcApply) calcApply.hidden = !questions[currentQuestionIndex]?.querySelector('.gep-numerical-ans');
             if (calcDisplay) calcDisplay.value = calcExpression || '0';
         }
     }
@@ -1172,13 +1136,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     try {
                         const expr = calcExpression.replace(/×/g,'*').replace(/÷/g,'/');
                         const result = evaluateSimpleExpression(expr);
+                        if (!Number.isFinite(result)) throw new Error('Invalid result');
                         calcExpression = String(parseFloat(result.toFixed(8)));
                         if (calcDisplay) calcDisplay.value = calcExpression;
-                        const block = document.querySelectorAll('.gep-question-block')[currentQuestionIndex];
-                        if (block) {
-                            const numInput = block.querySelector('.gep-numerical-ans');
-                            if (numInput) { numInput.value = calcExpression; numInput.dispatchEvent(new Event('change')); }
-                        }
                     } catch(e) {
                         if (calcDisplay) calcDisplay.value = 'Error';
                         calcExpression = '';
@@ -1195,6 +1155,39 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    if (calcApply) calcApply.addEventListener('click', () => {
+        const value = calcDisplay ? calcDisplay.value : '';
+        if (!value.trim() || !Number.isFinite(Number(value))) { showToast('Calculate a valid number first.', 'warning'); return; }
+        const input = questions[currentQuestionIndex]?.querySelector('.gep-numerical-ans');
+        if (!input) return;
+        input.value = value; input.dispatchEvent(new Event('change')); closeCalc();
+    });
+    // All auxiliary exam dialogs share Escape, focus trapping and focus return.
+    [modalInst, modalQpaper, calcModal].filter(Boolean).forEach(overlay => {
+        const panel = overlay.firstElementChild;
+        if (!panel) return;
+        panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.tabIndex = -1;
+        const heading = panel.querySelector('h2, h3');
+        if (heading) { heading.id = overlay.id + '-title'; panel.setAttribute('aria-labelledby', heading.id); }
+        let opened = false, opener = null;
+        const controls = () => Array.from(panel.querySelectorAll('button, a[href], input, select, textarea, [tabindex="0"]')).filter(el => !el.disabled && !el.hidden && getComputedStyle(el).display !== 'none');
+        new MutationObserver(() => {
+            const visible = getComputedStyle(overlay).display !== 'none';
+            if (visible === opened) return;
+            opened = visible;
+            if (opened) { opener = document.activeElement; (controls()[0] || panel).focus(); }
+            else if (opener && opener.isConnected) opener.focus();
+        }).observe(overlay, {attributes: true, attributeFilter: ['style']});
+        overlay.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { e.preventDefault(); overlay.style.display = 'none'; }
+            if (e.key !== 'Tab') return;
+            const items = controls(), first = items[0], last = items[items.length - 1];
+            if (!first) e.preventDefault();
+            else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        });
+    });
 
     // ─── Text Zoom ───────────────────────────────────────────────────────────
     // A chosen text size should survive a reload — a proctoring lock or a dropped

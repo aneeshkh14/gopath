@@ -1,4 +1,4 @@
-# UI/UX audit and improvements — 2.0.1
+# UI/UX audit and improvements — 2.0.2
 
 Base: `claude/blissful-wozniak-6tqprs` at `55b8bbd`. Implementation branch: `codex/ui-ux-audit`.
 
@@ -70,11 +70,11 @@ Admin views reviewed: dashboard, categories, questions, tests, courses, lessons,
 
 Run `npm ci --ignore-scripts`, `npm run lint`, and `npm test` with Node 22 or newer. Development dependencies are not needed by WordPress. CI also runs PHP syntax checks.
 
-- **29 passing DOM interaction tests** using actual frontend scripts, JSDOM and mocked AJAX/fetch/Razorpay responses.
-- **89 PHP files** parsed by both the PHP parser and the PHP WebAssembly runtime's native `TOKEN_PARSE` tokenizer.
+- **52 passing DOM interaction tests** using actual frontend scripts, JSDOM and mocked AJAX/fetch/Razorpay responses.
+- **89 production PHP files and three test PHP files** parsed by both the PHP parser and the PHP WebAssembly runtime's native `TOKEN_PARSE` tokenizer.
 - **Nine external JavaScript files and 25 static inline scripts** parse successfully. Nine inline scripts containing PHP require rendered runtime coverage; one student-access script is exercised with its nonce substituted in the test.
 - `git diff --check` passes.
-- Asset version bumped to **2.0.1** so browsers request updated scripts/styles.
+- Asset version bumped to **2.0.2** so browsers request updated scripts/styles.
 - Build script excludes test dependencies, CI and audit documents from the installable plugin ZIP.
 
 These tests establish deterministic interaction behavior. They do not establish screen-reader compatibility, CSS layout correctness across real devices, delivery of email/OTP, real payment processing or backend authorization.
@@ -83,9 +83,26 @@ These tests establish deterministic interaction behavior. They do not establish 
 
 1. Install the branch on staging and run student/admin journeys in light/dark mode at narrow phone, tablet and desktop sizes, with keyboard-only navigation, 200% zoom and a screen reader. Check long Hindi/English content, empty/large datasets and nested exam calculator/instruction/question-paper dialogs.
 2. Exercise account creation, OTP expiry/resend, session expiry and password reset with actual email delivery. Verify avatar restrictions and admin impersonation flows.
-3. Run Razorpay sandbox success, dismiss, rejection, delayed webhook, free enrollment and charged-but-verification-response-lost scenarios against WordPress. The verification retry survives while the checkout page stays open; a refresh currently loses its in-memory payment context. Durable reconciliation needs server-backed recovery.
-4. Revisit the existing **sectional timer** before release: source review found elapsed time subtracted again for an untimed section, a global heartbeat replacing a sectional countdown, and a section transition targeting a legacy tab selector. Its expiry dialog also says automatic submission while waiting for a click. This patch improves save/submission reliability but does not redesign timing policy or certify timed exams end-to-end.
+3. Run Razorpay sandbox success, dismiss, rejection, delayed webhook, free enrollment and charged-but-verification-response-lost scenarios against WordPress. Verification recovery now survives a refresh in the same tab using session storage scoped by account and item. Closing the tab or blocking storage still requires support/server reconciliation. Payment transaction guarantees require transactional (InnoDB) tables; verify the staging schema and WordPress object-cache behavior for pass purchases.
+4. **Sectional timer defects found in the first pass are fixed.** Six new regressions cover resume, untimed remainder, section transition, heartbeat, exhausted sections and device-sleep expiry. Validate against real configured exams before release: an untimed section currently consumes the remaining total time, so later sections after it are not reachable by timing policy.
 5. Verify results, percentile/rank calculations, paid/free/expired entitlements, media playback, completion tracking, support delivery and all admin CRUD with seeded staging records. The predictor remains illustrative, not a validated statistical forecast.
 6. Modern browser `inert`, `focus-visible` and dynamic viewport units are used. Older-browser support and assistive-technology behavior need real-device validation.
 
 Do not treat this audit as an exhaustive test certification. The pull request remains a draft until the staging checks above are completed.
+
+## Second pass — deeper reliability checks
+
+The second pass revisited all external scripts, inline interaction scripts and the existing screen inventory. Additional fixes:
+
+- OTP generation now actually calls WordPress email delivery, reports mail failure, preserves unchecked Remember me, expires consistently after five minutes and invalidates a code after five incorrect attempts.
+- Exam clocks use a wall-time anchor, resume the correct section, keep global heartbeats separate from sectional countdowns, and submit at expiry without waiting for a click. Stored WordPress site-local start dates are converted to UTC before duration comparisons.
+- Calculator results require explicit transfer into an answer; division by zero is rejected. Auxiliary and security dialogs receive keyboard focus handling. Exiting captures unblurred text and the security exit uses that same save-aware path.
+- Payment verification locks the exact order and commits access, order status and coupon use together. Replays do not grant extra attempts again. Missing order mappings no longer fall back to an unrelated pending order. Free enrollment records completion; a coupon that expires after preview blocks checkout instead of silently charging full price.
+- Checkout recovery survives same-tab reload and stays locked after successful verification. Notification failures preserve unread state, and mirrored items share a pending-request lock.
+- Admin coupon status controls and lesson preview now work. The payment month selector is generated from recorded months and actually filters results; hardcoded gateway connectivity claims were removed. Stale enrollment loads/saves cannot overwrite another dialog session.
+- Learning/support requests guard duplicate actions. Course filters announce empty results. Typing completion saves once and ignores late errors from a previous session. Result charts tolerate library failure, negative scores and reduced-motion preferences.
+- Numerical grading rejects nonnumeric strings, and free-text answers no longer inherit MCQ option aliases.
+
+Additional verification commands: `php tests/php-regression.php` runs 19 isolated handler scenarios with WordPress I/O stubbed (no real mail or payments). The CI payment-database job runs `tests/php-mysql.php` against a disposable MySQL 8 InnoDB schema, testing replay, rollback/retry, free enrollment and simultaneous callbacks. Its results are recorded in the pull request checks.
+
+Browser limitation: the cloud browser explicitly rejected isolated local/data previews under its URL security policy. No alternative browser or network workaround was used. This pass therefore adds executable DOM/PHP/database evidence, not claims of visual certification on every screen size. A staging URL and authenticated test accounts remain necessary for that part of the user's requested coverage.
