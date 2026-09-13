@@ -93,7 +93,15 @@ function gep_purchase_launch_url( $p ) {
                     $bar_pct       = ( !$is_unlimited && $total_allowed > 0 ) ? min(100, max(0, $used / $total_allowed * 100)) : 0;
                 }
 
-                $launch_url       = gep_purchase_launch_url( $p );
+                $running = false;
+                if ($cat !== 'course' && $cat !== 'series') {
+                    global $wpdb;
+                    $running = (bool) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}gep_attempts WHERE user_id = %d AND test_id = %d AND status = 'in_progress' LIMIT 1", get_current_user_id(), $p->id));
+                }
+                $exhausted = $show_attempts && !$is_unlimited && $available <= 0 && !$running && $cat !== 'series';
+                $launch_url = $exhausted ? add_query_arg('view', 'results', (string) gep_get_url('dashboard')) : gep_purchase_launch_url( $p );
+                if ($exhausted) $launch_label = 'Review Results';
+                elseif ($running) $launch_label = 'Continue Test';
                 $enrollment_date  = $p->enrollment_date ? date( 'M j, Y', strtotime( $p->enrollment_date ) ) : 'Manual Grant';
             ?>
             <div class="gep-purchase-card gep-glass">
@@ -132,7 +140,7 @@ function gep_purchase_launch_url( $p ) {
 
                 <div class="purchase-card-footer">
                     <div class="purchase-status-dot">
-                        <span class="dot-green"></span> Access Active
+                        <span class="<?php echo $exhausted ? 'dot-muted' : 'dot-green'; ?>"></span> <?php echo $exhausted ? 'No attempts remaining' : ($running ? 'Test in progress' : 'Access Active'); ?>
                     </div>
                     <a href="<?php echo esc_url( $launch_url ); ?>" class="purchase-launch-btn">
                         <?php echo $launch_label; ?>
@@ -378,6 +386,8 @@ function gep_purchase_launch_url( $p ) {
     font-weight: 700;
     color: #475569;
 }
+
+.dot-muted { width: 7px; height: 7px; background: #64748b; border-radius: 50%; }
 
 .dot-green {
     width: 7px;

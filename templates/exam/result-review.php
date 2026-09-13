@@ -243,7 +243,7 @@ $ui_strings = array(
     'en' => array(
         'accuracy'    => 'Accuracy',   'correct'   => 'Correct',
         'incorrect'   => 'Incorrect',  'skipped'   => 'Skipped',
-        'score'       => 'Score',      'percentile'=> 'Percentile',
+        'score'       => 'Score',      'percentile'=> 'Score %',
         'questions'   => 'Questions',  'breakdown' => 'Subject-wise Breakdown',
         'back_home'   => 'Dashboard',  'analysis'  => 'Question Analysis',
         'explanation' => 'Explanation','pass_msg'  => 'Congratulations! You Qualified',
@@ -257,7 +257,7 @@ $ui_strings = array(
     'hi' => array(
         'accuracy'    => 'सटीकता',     'correct'   => 'सही',
         'incorrect'   => 'गलत',       'skipped'   => 'छोड़े',
-        'score'       => 'अंक',       'percentile'=> 'प्रतिशत',
+        'score'       => 'अंक',       'percentile'=> 'प्राप्त अंक (%)',
         'questions'   => 'प्रश्न',    'breakdown' => 'विषय-वार विवरण',
         'back_home'   => 'डैशबोर्ड', 'analysis'  => 'प्रश्न विश्लेषण',
         'explanation' => 'व्याख्या', 'pass_msg'  => 'बधाई हो! आप उत्तीर्ण',
@@ -383,8 +383,9 @@ unset( $stat );
 
 $accuracy      = ( $correct + $incorrect > 0 ) ? ( $correct / ( $correct + $incorrect ) ) * 100 : 0;
 $score         = $attempt->score;
-$total_marks   = $test->total_marks ?: 1;
-$score_pct     = min( ( $score / $total_marks ) * 100, 100 );
+$total_marks   = GEP_Result::recorded_total_marks($attempt, $test->total_marks);
+$has_comparable_paper = (int) $test->id !== 999999 && $test->type !== 'random';
+$score_pct     = $total_marks > 0 ? min( ( $score / $total_marks ) * 100, 100 ) : 0;
 $topper_score  = $wpdb->get_var( $wpdb->prepare( "SELECT MAX(score) FROM {$wpdb->prefix}gep_attempts WHERE test_id = %d AND status = 'submitted'", $test->id ) );
 if (!$topper_score) $topper_score = $score; // Fallback to current score if no other attempts
 $circumference = 2 * M_PI * 52; // r=52
@@ -1089,10 +1090,12 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                     <span class="val" style="color:#6366f1;"><?php echo number_format( $score, 1 ); ?><small style="font-size:16px;font-weight:600;color:#94a3b8;"> /<?php echo $total_marks; ?></small></span>
                     <span class="lbl"><?php echo esc_html( $strings['score'] ); ?></span>
                 </div>
+                <?php if ($has_comparable_paper) : ?>
                 <div class="gep-score-cell">
                     <span class="val" style="color:#f59e0b;"><?php echo number_format( $topper_score, 1 ); ?><small style="font-size:16px;font-weight:600;color:#94a3b8;"> /<?php echo $total_marks; ?></small></span>
                     <span class="lbl">Highest Score</span>
                 </div>
+                <?php endif; ?>
                 <div class="gep-score-cell">
                     <span class="val"><?php echo round( isset($attempt->percentage) ? $attempt->percentage : 0, 1 ); ?>%</span>
                     <span class="lbl"><?php echo esc_html( $strings['percentile'] ); ?></span>
@@ -1108,7 +1111,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                 <a href="<?php echo esc_url( gep_get_url( 'dashboard' ) ); ?>" class="gep-btn-result-primary">
                     🏠 <?php echo esc_html( $strings['back_home'] ); ?>
                 </a>
-                <a href="<?php echo esc_url( add_query_arg( array( 'id' => $test->id, 'type' => 'test' ), (string) gep_get_url( 'checkout' ) ) ); ?>" class="gep-btn-result-secondary">
+                <a href="<?php echo esc_url( ((int)$test->id === 999999 ? add_query_arg('view', 'pyqs', (string)gep_get_url('dashboard')) : add_query_arg('id', $test->id, (string)gep_get_url('exam'))) ); ?>" class="gep-btn-result-secondary">
                     🔄 <?php echo esc_html( $strings['retake'] ); ?>
                 </a>
             </div>
@@ -1196,7 +1199,8 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     <div class="gep-analytics-section">
         <div class="gep-section-title">📈 Performance Analytics</div>
 
-        <!-- Percentile Banner -->
+        <!-- Compare only fixed papers; PYQ/custom attempts contain different question sets. -->
+        <?php if ($has_comparable_paper) : ?>
         <div class="gep-percentile-banner">
             <div>
                 <div class="gep-percentile-num"><?php echo $percentile; ?>%</div>
@@ -1211,6 +1215,10 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                 <div style="margin-top:8px;font-size:13px;font-weight:800;color:#6366f1;"><?php echo $rank_label; ?></div>
             </div>
         </div>
+
+        <?php else : ?>
+        <p class="gep-practice-comparison-note">Practice sets contain different questions, so a shared rank or percentile is not shown. Use your score and topic breakdown to review this attempt.</p>
+        <?php endif; ?>
 
         <div class="gep-analytics-charts-grid">
             <!-- CWS Pie -->

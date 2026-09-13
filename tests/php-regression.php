@@ -117,4 +117,17 @@ scenario('payment verification rejects an unconfigured secret',function(){
 scenario('answers outside the running paper are rejected',function(){
  global $wpdb;$wpdb->rows[]=(object)['user_id'=>7,'status'=>'in_progress','question_ids'=>'1,2','answers'=>'{}'];expect((new GEP_Exam_Engine())->save_answer(1,9,'A')===false);expect(!$wpdb->updates);
 });
+scenario('recorded mark total overrides the current catalogue total',function(){
+ expect(GEP_Result::recorded_total_marks((object)['analytics_data'=>'{"total_marks":50}','score'=>1,'percentage'=>2],10)===50.0);
+});
+scenario('legacy results recover total marks from score and percentage',function(){
+ expect(GEP_Result::recorded_total_marks((object)['analytics_data'=>'broken','score'=>1,'percentage'=>2],10)===50.0);
+});
+scenario('zero-score legacy results use a safe fallback without division by zero',function(){
+ expect(GEP_Result::recorded_total_marks((object)['score'=>0,'percentage'=>0],50)===50.0);
+ expect(GEP_Result::recorded_total_marks((object)['analytics_data'=>'{"total_marks":0}'],50)===0);
+});
+scenario('negative-mark scores retain their positive paper total',function(){
+ expect(GEP_Result::recorded_total_marks((object)['score'=>-2,'percentage'=>-4],10)===50.0);
+});
 echo "$passed PHP scenarios passed; $failed failed.\n";exit($failed?1:0);

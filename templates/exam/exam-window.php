@@ -66,7 +66,8 @@ foreach ( $section_counters as $cat_key => $val ) {
             </ul>
         </div>
         
-        <button id="gep-enter-secure-btn" class="gep-enter-secure-btn" style="background: #4f46e5 !important; box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3) !important; font-weight: 800 !important; border-radius: 12px !important; padding: 15px 30px !important; transition: all 0.2s !important;">Initialize Secure Session</button>
+        <p id="gep-fullscreen-feedback" role="alert" hidden></p>
+        <button type="button" id="gep-enter-secure-btn" class="gep-enter-secure-btn" style="background: #4f46e5 !important; box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3) !important; font-weight: 800 !important; border-radius: 12px !important; padding: 15px 30px !important; transition: all 0.2s !important;">Initialize Secure Session</button>
         <div style="margin-top: 18px; text-align: center;">
             <a href="<?php echo esc_url( gep_get_url('dashboard') ); ?>" style="font-size: 13px !important; font-weight: 700 !important; color: #64748b !important; text-decoration: none !important; transition: color 0.2s !important;" onmouseover="this.style.color='#ef4444';" onmouseout="this.style.color='#64748b';">← Exit to Dashboard</a>
         </div>

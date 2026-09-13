@@ -116,7 +116,7 @@ class GEP_Analytics {
             "SELECT COUNT(DISTINCT user_id) FROM {$wpdb->prefix}gep_attempts
              WHERE test_id = %d AND status = 'submitted'", $test_id
         ) );
-        if ( $total <= 1 ) return 100;
+        if ( $total <= 1 ) return 0; // No other learner scored below this attempt.
         $below = (int) $wpdb->get_var( $wpdb->prepare(
             "SELECT COUNT(DISTINCT user_id) FROM (
                 SELECT user_id, MAX(score) as best FROM {$wpdb->prefix}gep_attempts

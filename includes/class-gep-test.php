@@ -122,6 +122,11 @@ class GEP_Test {
 		if ( $test->is_free ) return true;
 
 		global $wpdb;
+		// Match the catalogue: an active mock-test pass grants test access.
+		// Attempt limits and custom-test packages are still enforced separately.
+		$pass_expiry = get_user_meta($user_id, 'gep_pass_expiry', true);
+		if ($pass_expiry && strtotime($pass_expiry) > current_time('timestamp')) return true;
+
 		// 2. Check explicit user test access grant (admin-granted access)
 		$access_table = $wpdb->prefix . 'gep_user_test_access';
 		$access_exists = $wpdb->get_var( $wpdb->prepare( 

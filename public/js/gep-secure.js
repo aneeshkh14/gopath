@@ -95,9 +95,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // ─── 1. Fullscreen Logic ─────────────────────────────────────────────────
     function enterFullscreen() {
         const el = document.documentElement;
-        if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-        else if (el.msRequestFullscreen) el.msRequestFullscreen();
+        const request = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+        const feedback = document.getElementById('gep-fullscreen-feedback');
+        function reportFailure() {
+            if (feedback) {
+                feedback.textContent = 'Fullscreen could not start. Allow fullscreen in your browser and try again, or exit to the dashboard. The exam timer is already running.';
+                feedback.hidden = false;
+            }
+        }
+        if (feedback) feedback.hidden = true;
+        if (!request) { reportFailure(); return; }
+        try { Promise.resolve(request.call(el)).catch(reportFailure); }
+        catch (error) { reportFailure(); }
     }
 
     const enterSecureBtn = document.getElementById('gep-enter-secure-btn');

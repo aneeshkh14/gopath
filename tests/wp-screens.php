@@ -51,7 +51,9 @@ wp_set_current_user(in_array($kind,['admin','admin-reply'],true)?1:($kind==='aut
 $shortcodes=new GEP_Shortcodes();
 try {
     $html=''; $_GET=[]; $_POST=[]; $_REQUEST=[];
-    if ($kind==='visual') {
+    if ($kind==='live-audit') {
+        require __DIR__.'/wp-live-audit.php';
+    } elseif ($kind==='visual') {
         require __DIR__.'/wp-visual.php';
     } elseif ($kind==='customer') {
         require __DIR__.'/wp-customer.php';

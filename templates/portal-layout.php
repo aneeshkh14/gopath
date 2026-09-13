@@ -473,7 +473,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                 </div>
 
                 <a href="<?php echo $get_nav_link('rank-predictor'); ?>" class="<?php echo $current_view === 'rank-predictor' ? 'active' : ''; ?>">
-                    <span class="gep-nav-icon">📈</span> Question Predictor
+                    <span class="gep-nav-icon">📈</span> Rank Estimator
                 </a>
 
                 <div class="gep-nav-group<?php echo $is_misc_open ? ' open' : ''; ?>">

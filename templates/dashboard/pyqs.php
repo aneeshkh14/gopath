@@ -8,7 +8,7 @@
                 Previous Year <span class="gep-text-gradient-primary" style="color: #6366f1;">Questions (PYQs)</span>
             </h2>
             <p style="font-size: 16px; color: #64748b; font-weight: 600; line-height: 1.6; margin: 0 0 35px; max-width: 500px;">
-                Topic-wise and Year-wise interactive previous year papers repository for UGC NET and other exams.
+                Practise previous year questions by topic or year. Quick tests use up to 10 questions; year-wise practice uses up to 50 questions from the selected paper.
             </p>
             <div class="gep-skill-stats" style="display: flex; gap: 30px;">
                 <div class="gep-skill-stat-item" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px 25px; border-radius: 16px; min-width: 140px;">

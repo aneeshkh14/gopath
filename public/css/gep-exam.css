@@ -9,11 +9,11 @@
     --gep-white: #ffffff;
     --gep-header-h: 40px;
     --gep-footer-h: 65px;
-    --gep-sidebar-w: 320px;
 }
 
 /* Exam Layout Wrapper */
 .gep-exam-fullscreen-container {
+    --gep-sidebar-w: 320px;
     width: 100%;
     height: 100vh;
     height: 100dvh;
@@ -4715,3 +4715,10 @@ span.sa-text.active { display: inline; }
 
 /* Rich tables can scroll horizontally without disabling question scrolling or pinch zoom. */
 #gep-question-display { touch-action: auto; }
+
+/* The full palette opener must be visible on laptops as well as phones. */
+.gep-exam-header #gep-palette-toggle { display: inline-flex !important; }
+/* The security card stays light in either theme; its list must follow that surface. */
+#gep-secure-init-overlay .gep-secure-init-card li,
+#gep-secure-init-overlay .gep-secure-init-card li strong { color: #475569 !important; }
+#gep-fullscreen-feedback { color: #991b1b; font-size: 14px; line-height: 1.5; margin: 12px 0; }
