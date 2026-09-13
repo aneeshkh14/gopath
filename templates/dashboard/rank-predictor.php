@@ -4,13 +4,13 @@
     <div class="gep-rank-predictor-wrapper">
         <div class="gep-predictor-header">
             <h2>Rank Predictor</h2>
-            <p>Estimate your All India Rank (AIR) based on your mock test performance and historical data.</p>
+            <p>Explore an illustrative rank estimate from a mock score. This calculator is not based on verified historical results.</p>
         </div>
 
         <div class="gep-content-card">
             <div class="gep-form-grid">
                 <div class="gep-form-group">
-                    <label>Select Exam Category</label>
+                    <label for="gep-exam-type">Select Exam Category</label>
                     <select class="gep-input" id="gep-exam-type">
                         <option value="ssc_cgl">SSC CGL Tier 1 (Total: 200)</option>
                         <option value="ibps_po">IBPS PO Prelims (Total: 100)</option>

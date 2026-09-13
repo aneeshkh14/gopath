@@ -385,6 +385,20 @@ class GEP_Activator {
 		) $charset_collate;";
 		dbDelta( $sql_lectures );
 
+        // Typing history belongs to installation/migration, not a student page request.
+        $table_typing = $wpdb->prefix . 'gep_typing_attempts';
+        dbDelta("CREATE TABLE $table_typing (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            user_id bigint(20) NOT NULL,
+            wpm double NOT NULL,
+            accuracy double NOT NULL,
+            errors int(11) NOT NULL,
+            duration int(11) NOT NULL,
+            created_at datetime NOT NULL,
+            PRIMARY KEY  (id),
+            KEY user_id (user_id)
+        ) $charset_collate;");
+
 		update_option( 'gep_db_version', GEP_DB_VERSION );
 
 		// Set flag to run page creation and seeding on next admin load to prevent activation hook crashes

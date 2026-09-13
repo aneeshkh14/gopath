@@ -151,7 +151,7 @@ class GEP_Dashboard {
 		$table_questions = $wpdb->prefix . 'gep_questions';
 		$table_categories = $wpdb->prefix . 'gep_categories';
 		
-		$attempts = $wpdb->get_results( $wpdb->prepare( "SELECT answers FROM $table_attempts WHERE user_id = %d AND status = 'submitted'", $user_id ) );
+		$attempts = $wpdb->get_results( $wpdb->prepare( "SELECT answers, test_id FROM $table_attempts WHERE user_id = %d AND status = 'submitted'", $user_id ) );
 		
 		if ( empty($attempts) ) {
 			return array();

@@ -160,7 +160,7 @@ define( 'GEP_VERSION', '2.0.3' );
 /**
  * Database version.
  */
-define( 'GEP_DB_VERSION', '1.1.8' );
+define( 'GEP_DB_VERSION', '1.1.9' );
 
 /**
  * The path to the plugin directory.

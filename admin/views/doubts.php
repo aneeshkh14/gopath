@@ -5,6 +5,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 global $wpdb;
 $table = $wpdb->prefix . 'gep_doubts';
+$reply_error = false;
+$reply = '';
+$doubt_id = 0;
 
 // Handle Reply
 if ( isset( $_POST['gep_action'] ) && $_POST['gep_action'] === 'reply_doubt' && isset( $_POST['doubt_id'] ) ) {
@@ -13,18 +16,22 @@ if ( isset( $_POST['gep_action'] ) && $_POST['gep_action'] === 'reply_doubt' && 
     $reply = sanitize_textarea_field( wp_unslash( $_POST['reply'] ) );
 
     if ( ! empty( $reply ) ) {
-        $wpdb->update(
+        $saved = $wpdb->update(
             $table,
             array(
                 'answer' => $reply,
                 'status' => 'resolved',
-                'updated_at' => current_time( 'mysql' )
+                'resolved_at' => current_time( 'mysql' )
             ),
             array( 'id' => $doubt_id ),
             array( '%s', '%s', '%s' ),
             array( '%d' )
         );
-        echo '<div class="notice notice-success is-dismissible"><p>Reply sent successfully. Doubt marked as resolved.</p></div>';
+        $reply_error = $saved === false;
+        echo $reply_error ? '<div class="notice notice-error"><p>Reply could not be saved. Your text is retained below; please retry.</p></div>' : '<div class="notice notice-success is-dismissible"><p>Reply saved. The student can read it in the lesson.</p></div>';
+    } else {
+        $reply_error = true;
+        echo '<div class="notice notice-error"><p>Enter a reply before resolving this question.</p></div>';
     }
 }
 
@@ -37,7 +44,7 @@ if ( isset( $_GET['action'] ) && $_GET['action'] === 'delete' && isset( $_GET['d
 
 $tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'unresolved';
 
-$where_clause = $tab === 'resolved' ? "status = 'resolved'" : "status = 'unresolved'";
+$where_clause = $tab === 'resolved' ? "d.status = 'resolved'" : "d.status = 'unresolved'";
 
 $query = "SELECT d.*, u.display_name, u.user_email, c.title as course_title, l.title as lesson_title 
           FROM $table d
@@ -101,12 +108,13 @@ $doubts = $wpdb->get_results( $query );
                         <a href="<?php echo wp_nonce_url( '?page=gep-doubts&action=delete&doubt=' . $d->id, 'delete_doubt_' . $d->id ); ?>" class="button button-link-delete" onclick="return confirm('Are you sure you want to delete this doubt?');">Delete</a>
 
                         <?php if ( $d->status === 'unresolved' ) : ?>
-                        <div id="reply-doubt-<?php echo $d->id; ?>" style="display: none; margin-top: 10px; background: #fff; padding: 15px; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+                        <div id="reply-doubt-<?php echo $d->id; ?>" style="display: <?php echo $reply_error && $doubt_id === (int)$d->id ? 'block' : 'none'; ?>; margin-top: 10px; background: #fff; padding: 15px; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
                             <form method="post" action="">
                                 <?php wp_nonce_field( 'gep_doubt_reply' ); ?>
                                 <input type="hidden" name="gep_action" value="reply_doubt">
                                 <input type="hidden" name="doubt_id" value="<?php echo esc_attr( $d->id ); ?>">
-                                <textarea name="reply" rows="4" style="width: 100%; margin-bottom: 10px;" placeholder="Type your expert reply here..."></textarea>
+                                <label for="gep-doubt-reply-<?php echo (int)$d->id; ?>">Your reply</label>
+                                <textarea id="gep-doubt-reply-<?php echo (int)$d->id; ?>" name="reply" required rows="4" style="width: 100%; margin-bottom: 10px;" placeholder="Type your reply here..."><?php echo $reply_error && $doubt_id === (int)$d->id ? esc_textarea($reply) : ''; ?></textarea>
                                 <button type="submit" class="button button-primary">Send Reply & Resolve</button>
                                 <button type="button" class="button" onclick="jQuery('#reply-doubt-<?php echo $d->id; ?>').hide();">Cancel</button>
                             </form>

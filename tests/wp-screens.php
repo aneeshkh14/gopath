@@ -3,7 +3,7 @@
 $kind = $argv[1] ?? ''; $view = $argv[2] ?? ''; $state = $argv[3] ?? 'empty';
 $root = getenv('GEP_TEST_WORDPRESS_ROOT');
 if (!$root || !is_file($root.'/wp-load.php')) throw new RuntimeException('Disposable WordPress root required.');
-define('WP_ADMIN', $kind === 'admin');
+define('WP_ADMIN', $kind === 'admin' || $kind === 'admin-reply');
 define('DISABLE_WP_CRON', true);
 $_SERVER['HTTP_HOST']='portal.example'; $_SERVER['REQUEST_METHOD']='GET'; $_SERVER['REQUEST_URI']='/dashboard/';
 ob_start();
@@ -33,6 +33,7 @@ if ($kind==='seed') {
     insert_fixture('lessons',['id'=>901,'course_id'=>901,'title'=>'Fixture lesson','video_source'=>'youtube','video_url'=>'https://www.youtube.com/watch?v=fixture','duration'=>'10:00','description'=>'Lesson notes']);
     insert_fixture('lectures',['title'=>'Lecture without video','description'=>'Coming soon','instructor'=>'Teacher','category_id'=>901,'created_at'=>current_time('mysql')]);
     insert_fixture('live_classes',['title'=>'Fixture live class','instructor'=>'Teacher','scheduled_at'=>current_time('mysql'),'category_id'=>901,'is_free'=>1]);
+    insert_fixture('doubts',['id'=>901,'user_id'=>$student,'course_id'=>901,'lesson_id'=>901,'question'=>'Fixture question','created_at'=>current_time('mysql')]);
     insert_fixture('user_course_access',['user_id'=>$student,'course_id'=>901,'assigned_at'=>current_time('mysql')]);
     insert_fixture('user_test_access',['user_id'=>$student,'test_id'=>901,'assigned_at'=>current_time('mysql')]);
     insert_fixture('orders',['user_id'=>$student,'item_id'=>901,'item_type'=>'course','status'=>'success','amount'=>100,'created_at'=>current_time('mysql')]);
@@ -42,23 +43,42 @@ if ($kind==='seed') {
     check_db();ob_end_clean();echo "PASS WordPress seeded fixtures\n";exit;
 }
 $student=(int)get_option('gep_fixture_student');
-wp_set_current_user($kind==='admin'?1:($kind==='auth'?0:($student?:1)));
+wp_set_current_user(in_array($kind,['admin','admin-reply'],true)?1:($kind==='auth'?0:($student?:1)));
 $shortcodes=new GEP_Shortcodes();
 try {
     $html=''; $_GET=[]; $_POST=[]; $_REQUEST=[];
-    if ($kind==='dashboard') {
+    if ($kind==='journey') {
+        $engine=new GEP_Exam_Engine();$id=$engine->start_attempt(901,$student);
+        if(is_wp_error($id) || !$id)throw new RuntimeException('Could not start fixture exam.');
+        if(!$engine->save_answer($id,901,'A') || !$engine->save_answer($id,902,'0') || !$engine->submit_exam($id))throw new RuntimeException('Exam journey failed.');
+        $result=(new GEP_Result())->get_attempt_result($id);$snapshot=json_decode($result->analytics_data,true);
+        if($result->status!=='submitted' || (float)$result->score!==4.0 || ($snapshot['total_marks']??null)!==4)throw new RuntimeException('Grading snapshot incorrect.');
+        if($engine->save_answer($id,901,'B')!==false)throw new RuntimeException('Closed attempt accepted an edit.');
+        $html='Exam start, answer save, submit and closed-attempt protection passed.';
+    } elseif ($kind==='layout') {
+        $shortcodes->register_shortcodes();
+        $_GET=['view'=>$view];if($view==='exam')$_GET['id']=902;
+        $_SERVER['REQUEST_URI']=$view==='exam'?'/exam/?id=902':'/dashboard/?view='.$view;
+        $page=wp_insert_post(['post_type'=>'page','post_status'=>'publish','post_title'=>'Fixture portal','post_content'=>$view==='exam'?'[gep_exam]':'[gep_dashboard]']);
+        query_posts(['page_id'=>$page]);$GLOBALS['wp']->request=$view==='exam'?'exam':'dashboard';
+        do_action('wp_enqueue_scripts');
+        ob_start();include GEP_PLUGIN_DIR.'templates/portal-layout.php';$html=ob_get_clean();
+        if(strpos($html,'gep-main-content')===false)throw new RuntimeException('Portal landmark missing.');
+    } elseif ($kind==='dashboard') {
         $_GET=['view'=>$view];if($view==='watch')$_GET['id']=901;
         $html=$shortcodes->render_dashboard();
         if($view==='orders' && strpos($html,'Transaction History')===false)throw new RuntimeException('Order route did not render history.');
     } elseif ($kind==='auth') {
         if($view==='otp') {$_GET=['view'=>'otp','uid'=>$student];$view='login';}
         $method='render_'.str_replace('-','_',$view);$html=$shortcodes->$method();
-    } elseif ($kind==='admin') {
+    } elseif ($kind==='admin' || $kind==='admin-reply') {
         require_once ABSPATH.'wp-admin/includes/admin.php';
         $_GET['page']='gep-'.$view;$GLOBALS['pagenow']='admin.php';
+        if($kind==='admin-reply'){$_POST=['gep_action'=>'reply_doubt','doubt_id'=>901,'reply'=>'Fixture reply'];$_REQUEST['_wpnonce']=wp_create_nonce('gep_doubt_reply');}
         $admin=new GEP_Admin();$admin->register_settings();
         $method='display_'.str_replace('-','_',$view);
         ob_start();$admin->$method();$html=ob_get_clean();
+        if($kind==='admin-reply' && $wpdb->get_var("SELECT status FROM {$wpdb->prefix}gep_doubts WHERE id=901")!=='resolved')throw new RuntimeException('Doubt reply did not persist.');
     } elseif ($kind==='checkout') {
         // A fresh student exercises checkout rather than existing access.
         if($state==='seeded'){ $other=get_user_by('login','fixture_buyer');if(!$other){$id=wp_insert_user(['user_login'=>'fixture_buyer','user_pass'=>'local-fixture-only','role'=>'subscriber']);wp_set_current_user($id);}else wp_set_current_user($other->ID);}
