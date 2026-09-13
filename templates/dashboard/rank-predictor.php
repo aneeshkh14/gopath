@@ -18,11 +18,11 @@
                     </select>
                 </div>
                 <div class="gep-form-group">
-                    <label>Average Mock Score</label>
+                    <label for="gep-score-input">Average Mock Score</label>
                     <input type="number" class="gep-input" id="gep-score-input" placeholder="e.g. 145.5" min="0" step="any">
                 </div>
                 <div class="gep-form-group">
-                    <label>Category (Reservation)</label>
+                    <label for="gep-category">Category (Reservation)</label>
                     <select class="gep-input" id="gep-category">
                         <option value="ur">General / UR</option>
                         <option value="obc">OBC-NCL</option>
@@ -31,7 +31,7 @@
                     </select>
                 </div>
                 <div class="gep-form-group">
-                    <label>Difficulty Level</label>
+                    <label for="gep-difficulty">Difficulty Level</label>
                     <select class="gep-input" id="gep-difficulty">
                         <option value="moderate">Moderate (Standard)</option>
                         <option value="easy">Easy (High Cutoff)</option>
@@ -43,7 +43,7 @@
             <button class="gep-btn gep-btn-primary gep-btn-block" id="gep-calculate-rank-btn" style="height: 60px; font-size: 18px; border-radius: 14px; cursor: pointer; border: none; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Calculate My Predicted Rank</button>
             
             <!-- Predicted Output Card (Hidden by Default) -->
-            <div id="gep-predictor-result" style="display: none; margin-top: 35px; padding: 30px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 20px; transition: all 0.3s ease; text-align: left;">
+            <div role="status" id="gep-predictor-result" style="display: none; margin-top: 35px; padding: 30px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 20px; transition: all 0.3s ease; text-align: left;">
                 <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 900; color: #1e3a8a; display: flex; align-items: center; gap: 10px;">📊 Projected Rank Output</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                     <div style="background: #fff; border: 1px solid #dbeafe; padding: 15px; border-radius: 12px; text-align: center;">
@@ -57,8 +57,8 @@
                 </div>
                 <div style="background: #fff; border: 1px solid #dbeafe; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div>
-                        <span style="font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">Admission/Selection chances</span>
-                        <strong id="gep-predicted-chances" style="font-size: 14px; font-weight: 800; color: #10b981;">HIGH CHANCE</strong>
+                        <span style="font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">Illustrative score band</span>
+                        <strong id="gep-predicted-chances" style="font-size: 14px; font-weight: 800; color: #10b981;">HIGH</strong>
                     </div>
                     <span id="gep-chances-badge" style="font-size: 24px;">🟢</span>
                 </div>
@@ -67,7 +67,7 @@
 
             <div id="gep-predictor-static-note" style="margin-top: 40px; padding: 30px; background: #f8fafc; border-radius: 16px; text-align: center;">
                 <p style="color: var(--gep-text-muted); font-size: 14px; margin-bottom: 10px;">PROJECTION SUMMARY</p>
-                <p style="font-size: 13px; font-style: italic;">"Enter your average mock test score above and click calculate to compute your dynamic percentile and rank estimation based on past trends."</p>
+                <p style="font-size: 13px; font-style: italic;">"Enter your average mock test score above and click calculate to compute your dynamic percentile and rank estimation using an illustrative model. This is not an official rank or selection prediction."</p>
             </div>
         </div>
 
@@ -156,19 +156,19 @@ document.addEventListener("DOMContentLoaded", function() {
         const upperRank = Math.round(estimatedRank * 1.15);
         
         // Determine chances
-        let chances = "LOW CHANCE";
+        let chances = "LOW";
         let badge = "🔴";
         let color = "#ef4444";
         if (percentile >= 90) {
-            chances = "VERY HIGH CHANCE";
+            chances = "VERY HIGH";
             badge = "🔥";
             color = "#10b981";
         } else if (percentile >= 75) {
-            chances = "HIGH CHANCE";
+            chances = "HIGH";
             badge = "🟢";
             color = "#10b981";
         } else if (percentile >= 50) {
-            chances = "MODERATE CHANCE";
+            chances = "MODERATE";
             badge = "🟡";
             color = "#f59e0b";
         }
@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function() {
         chancesEl.style.color = color;
         document.getElementById("gep-chances-badge").textContent = badge;
         
-        document.getElementById("gep-predicted-note").innerHTML = "A score of <strong>" + score + "</strong> placing you in the <strong>" + percentile.toFixed(1) + "th percentile</strong> means you are ahead of approximately <strong>" + Math.round(totalCandidates * (percentile/100)).toLocaleString() + "</strong> aspirants who participated in similar mock distributions.";
+        document.getElementById("gep-predicted-note").innerHTML = "A score of <strong>" + score + "</strong> placing you in the <strong>" + percentile.toFixed(1) + "th percentile</strong> means you are ahead of approximately <strong>" + Math.round(totalCandidates * (percentile/100)).toLocaleString() + "</strong> hypothetical candidates in this model. Actual ranks depend on real exam results.";
         
         document.getElementById("gep-predictor-static-note").style.display = "none";
         document.getElementById("gep-predictor-result").style.display = "block";

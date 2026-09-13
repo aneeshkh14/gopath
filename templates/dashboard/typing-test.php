@@ -75,14 +75,14 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
                 <div style="margin-bottom: 30px;">
                     <label style="display: block; font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;"><?php _e( 'Select Test Duration', 'gopath-exam-portal' ); ?></label>
                     <div style="display: flex; gap: 15px;">
-                        <label style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
-                            <input type="radio" name="gep_typing_dur" value="60" checked style="display: none;" aria-label="<?php esc_attr_e( '1 Minute', 'gopath-exam-portal' ); ?>"> <?php _e( '1 Minute', 'gopath-exam-portal' ); ?>
+                        <label class="gep-dur-label" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
+                            <input type="radio" name="gep_typing_dur" value="60" checked class="gep-visually-hidden" aria-label="<?php esc_attr_e( '1 Minute', 'gopath-exam-portal' ); ?>"> <?php _e( '1 Minute', 'gopath-exam-portal' ); ?>
                         </label>
-                        <label style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
-                            <input type="radio" name="gep_typing_dur" value="120" style="display: none;" aria-label="<?php esc_attr_e( '2 Minutes', 'gopath-exam-portal' ); ?>"> <?php _e( '2 Minutes', 'gopath-exam-portal' ); ?>
+                        <label class="gep-dur-label" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
+                            <input type="radio" name="gep_typing_dur" value="120" class="gep-visually-hidden" aria-label="<?php esc_attr_e( '2 Minutes', 'gopath-exam-portal' ); ?>"> <?php _e( '2 Minutes', 'gopath-exam-portal' ); ?>
                         </label>
-                        <label style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
-                            <input type="radio" name="gep_typing_dur" value="300" style="display: none;" aria-label="<?php esc_attr_e( '5 Minutes', 'gopath-exam-portal' ); ?>"> <?php _e( '5 Minutes', 'gopath-exam-portal' ); ?>
+                        <label class="gep-dur-label" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
+                            <input type="radio" name="gep_typing_dur" value="300" class="gep-visually-hidden" aria-label="<?php esc_attr_e( '5 Minutes', 'gopath-exam-portal' ); ?>"> <?php _e( '5 Minutes', 'gopath-exam-portal' ); ?>
                         </label>
                     </div>
                 </div>
@@ -133,7 +133,7 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
             </div>
 
             <!-- Complete Results Badge -->
-            <div id="gep-typing-completed" style="display: none; text-align: center; padding: 20px 0;" role="status">
+            <div id="gep-typing-completed" role="status" style="display: none; text-align: center; padding: 20px 0;" role="status">
                 <div style="font-size: 55px; margin-bottom: 15px;">🏆</div>
                 <h3 style="margin: 0 0 5px; font-size: 22px; font-weight: 900; color: #0f172a;"><?php _e( 'Session Completed!', 'gopath-exam-portal' ); ?></h3>
                 <p style="margin: 0 0 25px; color: #64748b; font-size: 14px; font-weight: 600;"><?php _e( 'Your stats have been computed and saved to your skill academy profile.', 'gopath-exam-portal' ); ?></p>
@@ -157,6 +157,7 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
                     </div>
                 </div>
 
+                <p id="gep-typing-save-status" role="status"></p>
                 <button type="button" id="gep-new-test-btn" style="background: #6366f1; border: none; color: #fff; padding: 12px 30px; border-radius: 12px; font-weight: 800; cursor: pointer;">
                     <?php _e( 'Start New Session', 'gopath-exam-portal' ); ?>
                 </button>
@@ -387,7 +388,7 @@ jQuery(document).ready(function($) {
         $('#gep-typing-completed').show();
 
         // AJAX Save Result to log
-        $.post(ajaxurl, {
+        $.post(gep_ajax.ajax_url, {
             action: 'gep_save_typing_attempt',
             wpm: finalWpm,
             accuracy: finalAcc,
@@ -396,9 +397,9 @@ jQuery(document).ready(function($) {
             nonce: '<?php echo wp_create_nonce("gep_student_access"); ?>'
         }, function(response) {
             if (!response.success) {
-                console.error('Logging failed: ' + response.data);
+                $('#gep-typing-save-status').text('Your result is shown here, but it could not be saved to your history.');
             }
-        });
+        }).fail(function() { $('#gep-typing-save-status').text('Could not save your result to history. Check your connection.'); });
     }
 
     $('#gep-restart-test').on('click', function() {

@@ -27,10 +27,11 @@ mkdir -p "$BUILD/$SLUG"
 # Export the committed tree (git already excludes .git/ and ignored files such as
 # fatal_error.log), then drop the repo-only files that should not ship.
 git -C "$ROOT" archive --format=tar "$REF" | tar -x -C "$BUILD/$SLUG"
-rm -f "$BUILD/$SLUG/build-plugin-zip.sh" "$BUILD/$SLUG/.gitignore"
+rm -f "$BUILD/$SLUG/build-plugin-zip.sh" "$BUILD/$SLUG/.gitignore" "$BUILD/$SLUG/package.json" "$BUILD/$SLUG/package-lock.json"
+rm -rf "$BUILD/$SLUG/tests" "$BUILD/$SLUG/.github" "$BUILD/$SLUG/docs"
 
 ( cd "$BUILD" && zip -qr "$OUT" "$SLUG" )
 rm -rf "$BUILD"
 
 echo "Built: $OUT"
-unzip -l "$OUT" | head -12
+unzip -l "$OUT" | sed -n '1,12p'

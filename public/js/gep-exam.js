@@ -2,8 +2,42 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof GEP_Exam === 'undefined') return;
 
     const examData = GEP_Exam;
+    const questions = document.querySelectorAll('.gep-question-block');
     let currentQuestionIndex = 0;
     let timerInterval;
+    let submitting = false;
+    let submissionRequested = false;
+    const pendingAnswers = new Map();
+    let savePromise = null;
+    const storagePrefix = `gep_pending_${examData.attempt_id}_`;
+    function storePending(id, data) {
+        try {
+            if (data) localStorage.setItem(storagePrefix + id, JSON.stringify(data));
+            else localStorage.removeItem(storagePrefix + id);
+        } catch (e) { /* Saving to the server must work when device storage is unavailable. */ }
+    }
+    async function postExam(formData) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 20000);
+        try {
+            const response = await fetch(examData.ajaxurl, {method: 'POST', body: formData, signal: controller.signal});
+            if (!response.ok) throw new Error('Connection failed.');
+            return await response.json();
+        } finally { clearTimeout(timeout); }
+    }
+    function showSaveStatus(text, failed) {
+        let status = document.getElementById('gep-save-status');
+        if (!status) {
+            status = document.createElement('div');
+            status.id = 'gep-save-status'; status.setAttribute('role', 'status');
+            document.body.appendChild(status);
+        }
+        status.textContent = text;
+        status.classList.toggle('is-pending', !!failed);
+    }
+    window.onbeforeunload = function(e) {
+        if (pendingAnswers.size || submitting || submissionRequested) { e.preventDefault(); e.returnValue = ''; return ''; }
+    };
     let remainingSeconds = examData.remaining_seconds;
     let questionStartTime = Date.now(); // NTA-style per-Q time tracking
     let currentFontSize = 16; // Text zoom support — must match --gep-zoom-font-size in gep-exam.css
@@ -70,6 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         const c = colorMap[type] || colorMap.info;
 
+        const opener = document.activeElement;
         const overlay = document.createElement('div');
         overlay.id = 'gep-modal-overlay';
         overlay.style.cssText = `
@@ -79,6 +114,8 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         const modal = document.createElement('div');
+        modal.setAttribute('role', 'dialog'); modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'gep-dialog-title'); modal.tabIndex = -1;
         modal.style.cssText = `
             background:#ffffff;border:1px solid ${c.border};border-radius:24px;
             padding:40px 48px;max-width:460px;width:90%;text-align:center;
@@ -99,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         modal.innerHTML = `
             <div style="font-size:48px;margin-bottom:16px;">${iconMap[type]}</div>
-            <h3 style="font-size:20px;font-weight:800;color:#1e293b;margin:0 0 10px;letter-spacing:-0.5px;">${title}</h3>
+            <h3 id="gep-dialog-title" style="font-size:20px;font-weight:800;color:#1e293b;margin:0 0 10px;letter-spacing:-0.5px;">${title}</h3>
             <p style="color:#475569;font-size:14px;line-height:1.7;margin:0 0 28px;">${message}</p>
             <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">${btnHTML}</div>
         `;
@@ -119,12 +156,27 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.addEventListener('click', function() {
                 const action = this.dataset.action;
                 overlay.remove();
+                if (opener && opener.isConnected) opener.focus();
                 const handler = buttons.find(b => b.action === action);
                 if (handler && handler.onClick) handler.onClick();
                 if (onClose) onClose(action);
             });
         });
 
+        const focusable = Array.from(modal.querySelectorAll('button'));
+        (focusable[0] || modal).focus();
+        overlay.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const cancel = modal.querySelector('[data-action="cancel"]');
+                if (cancel) { e.preventDefault(); cancel.click(); }
+            }
+            if (e.key === 'Tab') {
+                if (!focusable.length) { e.preventDefault(); return; }
+                const first = focusable[0], last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            }
+        });
         return overlay;
     }
 
@@ -136,6 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const colors = { info:'#6366f1', success:'#10b981', warning:'#f59e0b', danger:'#ef4444' };
         const toast = document.createElement('div');
         toast.id = 'gep-toast';
+        toast.setAttribute('role', 'status');
         toast.style.cssText = `
             position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:100000;
             background:#ffffff;border:1px solid ${colors[type]||colors.info};
@@ -158,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn     = document.getElementById('gep-submit-btn');
 
     // ─── Language Switching ────────────────────────────────────────────────
+    let currentLang = examData.lang || 'en';
     const langBtns = document.querySelectorAll('.gep-lang-btn');
     const ntaLangSelect = document.querySelector('.gep-nta-lang-select');
     
@@ -166,7 +220,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (lang !== 'en' && lang !== 'hi') {
             lang = 'en';
         }
-        sessionStorage.setItem('gep_current_lang', lang);
+        currentLang = lang;
+        try { sessionStorage.setItem('gep_current_lang', lang); } catch (e) {}
 
         langBtns.forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
         
@@ -192,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // A test with a mix of sections is NOT locked here; each section decides for
     // itself in loadQuestion().
     if (examData.lang_locked) {
-        sessionStorage.removeItem('gep_current_lang');
+        try { sessionStorage.removeItem('gep_current_lang'); } catch (e) {}
         switchLanguage(examData.lang || 'en');
     } else {
         langBtns.forEach(btn => {
@@ -207,7 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        let savedLang = sessionStorage.getItem('gep_current_lang') || examData.lang || 'en';
+        let savedLang = examData.lang || 'en';
+        try { savedLang = sessionStorage.getItem('gep_current_lang') || savedLang; } catch (e) {}
         switchLanguage(savedLang);
     }
 
@@ -218,11 +274,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const destUrl = this.dataset.url;
             showModal({
                 title: 'Exit Exam?',
-                message: 'Are you sure you want to exit? Your progress will be saved, but your exam will not be submitted.',
+                message: 'Leave this exam? The timer keeps running while you are away. We will confirm that your answers are saved before leaving.',
                 type: 'warning',
                 buttons: [
                     { label: 'Cancel', action: 'cancel', primary: false },
-                    { label: 'Exit Exam', action: 'exit', primary: true, onClick: () => {
+                    { label: 'Exit Exam', action: 'exit', primary: true, onClick: async () => {
+                        await flushAnswers();
+                        if (pendingAnswers.size) { showToast('Some answers are not synced. Reconnect and try again.', 'warning', 6000); return; }
                         window.onbeforeunload = null;
                         window.location.href = destUrl;
                     }}
@@ -322,43 +380,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ─── Answer Saving ───────────────────────────────────────────────────────
+    // Serialize saves across questions: the server updates one attempt answer map.
     function saveAnswer(questionId, answer, flagged = false) {
-        const btn = document.querySelector(`.gep-palette-btn[data-id="${questionId}"]`);
-        if (btn) btn.classList.add('saving');
-
-        // Compute time spent on this question in ms
-        const timeSpentMs = Date.now() - questionStartTime;
-
-        const formData = new FormData();
-        formData.append('action', 'gep_save_answer');
-        formData.append('nonce', examData.nonce);
-        formData.append('attempt_id', examData.attempt_id);
-        formData.append('question_id', questionId);
-        formData.append('answer', answer);
-        formData.append('flagged', flagged);
-        formData.append('time_ms', timeSpentMs); // per-question time tracking
-
-        // Offline Persistence
-        localStorage.setItem(`gep_pending_${examData.attempt_id}_${questionId}`, JSON.stringify({ answer, flagged, timestamp: Date.now() }));
-
-        fetch(examData.ajaxurl, { method: 'POST', body: formData })
-            .then(r => r.json())
-            .then(data => {
-                if (btn) btn.classList.remove('saving');
-                if (data.success) {
-                    localStorage.removeItem(`gep_pending_${examData.attempt_id}_${questionId}`);
-                    updatePaletteStatus(questionId, answer, flagged);
-                    if (data.data && typeof data.data.remaining_seconds !== 'undefined') {
-                        remainingSeconds = data.data.remaining_seconds;
-                        updateTimerDisplay();
-                    }
-                    if (btn) { btn.classList.add('save-success'); setTimeout(() => btn.classList.remove('save-success'), 1000); }
-                }
-            }).catch(() => {
-                if (btn) btn.classList.remove('saving');
-                showToast('Answer saved locally (offline)', 'warning');
-            });
+        const data = {answer, flagged, timestamp: Date.now(), time_ms: Date.now() - questionStartTime};
+        pendingAnswers.set(String(questionId), data);
+        storePending(questionId, data);
+        updatePaletteStatus(questionId, answer, flagged);
+        return flushAnswers();
     }
+    function flushAnswers() {
+        if (savePromise) return savePromise;
+        savePromise = (async function() {
+            while (pendingAnswers.size) {
+                const [id, data] = pendingAnswers.entries().next().value;
+                const btn = document.querySelector(`.gep-palette-btn[data-id="${id}"]`);
+                if (btn) btn.classList.add('saving');
+                showSaveStatus('Saving answers…', false);
+                const formData = new FormData();
+                Object.entries({action: 'gep_save_answer', nonce: examData.nonce, attempt_id: examData.attempt_id, question_id: id, answer: data.answer, flagged: data.flagged, time_ms: data.time_ms || 0})
+                    .forEach(([key, value]) => formData.append(key, value));
+                try {
+                    const response = await postExam(formData);
+                    if (!response || !response.success) throw new Error('Save not confirmed.');
+                    if (pendingAnswers.get(id) === data) { pendingAnswers.delete(id); storePending(id, null); }
+                } catch (e) {
+                    showSaveStatus('Answers not synced. Keep this page open; reconnect to retry.', true);
+                    return false;
+                } finally { if (btn) btn.classList.remove('saving'); }
+            }
+            showSaveStatus('All answers saved', false);
+            return true;
+        })().finally(() => { savePromise = null; });
+        return savePromise;
+    }
+    window.addEventListener('online', () => { flushAnswers(); });
 
     function updatePaletteStatus(questionId, answer, flagged) {
         const btn = document.querySelector(`.gep-palette-btn[data-id="${questionId}"]`);
@@ -490,7 +545,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (splitWrapper) splitWrapper.classList.add('has-passage');
                         
                         // Sync passage language to currently selected language
-                        const currentLang = sessionStorage.getItem('gep_current_lang') || examData.lang || 'en';
+
                         const targetElement = passageBody || passagePane;
                         targetElement.querySelectorAll('.en-text').forEach(el => el.classList.toggle('active', currentLang === 'en'));
                         targetElement.querySelectorAll('.hi-text').forEach(el => el.classList.toggle('active', currentLang === 'hi'));
@@ -507,7 +562,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Translation Toggle Logic
-        const activeLang = sessionStorage.getItem('gep_current_lang') || examData.lang || 'en';
+        const activeLang = currentLang;
         const langSelector = document.querySelector('.gep-lang-selector');
         if (langSelector) {
             langSelector.querySelectorAll('.gep-lang-btn').forEach(btn => btn.classList.remove('active'));
@@ -572,7 +627,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         showModal({
             title: 'Submit Exam?',
-            message: `You have answered <strong style="color:#10b981">${answered}</strong> out of <strong style="color:#f1f5f9">${total}</strong> questions.<br>
+            message: `You have answered <strong style="color:#10b981">${answered}</strong> out of <strong style="color:inherit">${total}</strong> questions.<br>
                       ${unanswered > 0 ? `<span style="color:#f59e0b">⚠️ ${unanswered} question${unanswered > 1 ? 's' : ''} unanswered.</span><br>` : ''}
                       <br>Once submitted, you cannot change your answers.`,
             type: 'submit',
@@ -811,54 +866,55 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ─── Submit Exam ────────────────────────────────────────────────────────
-    function submitExam() {
-        window.onbeforeunload = null;
-
-        // Show loading state
-        showModal({
-            title: 'Submitting...',
-            message: 'Please wait while your exam is being submitted.',
-            type: 'info',
-            buttons: []
-        });
-
-        const formData = new FormData();
-        formData.append('action', 'gep_submit_exam');
-        formData.append('nonce', examData.nonce);
-        formData.append('attempt_id', examData.attempt_id);
-        formData.append('lang', sessionStorage.getItem('gep_current_lang') || 'en');
-
-        fetch(examData.ajaxurl, { method: 'POST', body: formData })
-            .then(r => { if (!r.ok) throw new Error('Network error'); return r.json(); })
-            .then(data => {
-                const modal = document.getElementById('gep-modal-overlay');
-                if (modal) modal.remove();
-
-                if (data.success) {
-                    window.onbeforeunload = null;
-                    window.location.href = data.data.redirect_url;
-                } else {
-                    showModal({
-                        title: 'Submission Error',
-                        message: data.data ? data.data.message : 'An error occurred. Redirecting to results...',
-                        type: 'danger',
-                        buttons: [{ label: 'Go to Results', action: 'ok', primary: true, onClick: () => {
-                            window.onbeforeunload = null;
-                            window.location.href = examData.ajaxurl.replace('wp-admin/admin-ajax.php', 'result/?id=' + examData.attempt_id);
-                        }}]
-                    });
-                }
-            }).catch(() => {
-                const modal = document.getElementById('gep-modal-overlay');
-                if (modal) modal.remove();
-                window.onbeforeunload = null;
-                window.location.href = examData.ajaxurl.replace('wp-admin/admin-ajax.php', 'result/?id=' + examData.attempt_id);
+    async function submitExam() {
+        if (submitting) return;
+        submitting = true;
+        showModal({title: 'Submitting…', message: 'Saving your answers and confirming submission. Keep this page open.', buttons: []});
+        try {
+            // Once submission is sent, retry that idempotent endpoint only: a lost
+            // response may mean the attempt is already closed to answer writes.
+            if (!submissionRequested) {
+                // Include text currently being edited, even if its change event has not fired.
+                const block = questions[currentQuestionIndex];
+                if (block) {
+                    const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+                    await saveAnswer(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
+                } else await flushAnswers();
+                if (pendingAnswers.size) throw new Error('Some answers have not reached the server. Reconnect and retry submission.');
+            }
+            const formData = new FormData();
+            formData.append('action', 'gep_submit_exam'); formData.append('nonce', examData.nonce);
+            formData.append('attempt_id', examData.attempt_id); formData.append('lang', currentLang);
+            submissionRequested = true;
+            const data = await postExam(formData);
+            if (!data || !data.success || !data.data || !data.data.redirect_url) throw new Error('The server has not confirmed submission. Please retry.');
+            window.onbeforeunload = null;
+            window.location.href = data.data.redirect_url;
+        } catch (e) {
+            showModal({
+                title: 'Submission not confirmed', message: e.message || 'Could not connect. Please retry submission.', type: 'warning',
+                buttons: [
+                    ...(!submissionRequested ? [{label: 'Back to exam', action: 'cancel'}] : []),
+                    {label: 'Retry submission', action: 'retry', primary: true, onClick: () => submitExam()}
+                ]
             });
+        } finally { submitting = false; }
     }
 
     // ─── Init ────────────────────────────────────────────────────────────────
     startTimer();
 
+    examData.saved_answers = examData.saved_answers || {};
+    questions.forEach(block => {
+        try {
+            const raw = localStorage.getItem(storagePrefix + block.dataset.id);
+            if (!raw) return;
+            const data = JSON.parse(raw);
+            if (!data || typeof data.answer !== 'string' || typeof data.flagged !== 'boolean') return;
+            pendingAnswers.set(String(block.dataset.id), data);
+            examData.saved_answers[block.dataset.id] = data;
+        } catch (e) {}
+    });
     // Hydrate saved answers (supports both MCQ radio and MSQ comma-separated)
     if (examData.saved_answers && typeof examData.saved_answers === 'object') {
         Object.keys(examData.saved_answers).forEach(qId => {
@@ -882,13 +938,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 } else {
                     // Radio: restore single selection
-                    const radio = block.querySelector(`input[value="${data.answer}"]`);
+                    const radio = Array.from(block.querySelectorAll('input[type="radio"]')).find(input => input.value === data.answer);
                     if (radio) {
                         radio.checked = true;
                         const card = radio.closest('.gep-option-card');
                         if (card) card.classList.add('selected');
                     }
-                    const textInput = block.querySelector('.gep-text-ans');
+                    const textInput = block.querySelector('.gep-text-ans, .gep-numerical-ans');
                     if (textInput) textInput.value = data.answer;
                 }
             }
@@ -898,6 +954,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     loadQuestion(0);
     updateSidebarCounters();
+    if (pendingAnswers.size) flushAnswers();
 
     // ─── Unified Answer Extractor ────────────────────────────────────────────
     // Works for MCQ (radio), MSQ (checkbox), and short_answer (text)
@@ -980,11 +1037,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const palBtn = document.querySelector(`.gep-palette-btn[data-id="${questionId}"]`);
             const isFlagged = palBtn && (palBtn.classList.contains('flagged') || palBtn.classList.contains('answered-flagged'));
             saveAnswer(questionId, this.value.trim(), isFlagged);
-            if (this.value.trim()) showToast('✅ Numerical answer saved', 'success', 2000);
+
         });
-        input.addEventListener('blur', function() {
-            if (this.value.trim()) this.dispatchEvent(new Event('change'));
-        });
+
     });
 
     // ─── Clear Response ──────────────────────────────────────────────────────
@@ -999,7 +1054,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const qtype = container ? container.dataset.qtype : 'mcq';
 
             if (qtype === 'short_answer') {
-                const textInput = block.querySelector('.gep-text-ans');
+                const textInput = block.querySelector('.gep-text-ans, .gep-numerical-ans');
                 if (textInput) textInput.value = '';
             } else if (qtype === 'numerical') {
                 const numInput = block.querySelector('.gep-numerical-ans');

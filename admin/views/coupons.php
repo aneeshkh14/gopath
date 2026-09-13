@@ -112,7 +112,7 @@
                             <div style="font-size: 40px; margin-bottom: 15px;">🎟️</div>
                             <h3>No active promotions</h3>
                             <p>Boost your sales by creating your first discount coupon code.</p>
-                            <button class="button button-primary">Create First Coupon</button>
+                            <button type="button" class="button button-primary" onclick="document.getElementById('add-coupon-modal').style.display='flex'">Create First Coupon</button>
                         </td>
                     </tr>
                 <?php endif; ?>

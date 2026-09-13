@@ -15,23 +15,23 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             <div class="gep-hero-content">
                 <span class="gep-badge-promo">🚀 THE FUTURE OF LEARNING</span>
                 <h1>Master Your Exams with <span class="gep-text-gradient">Intelligence.</span></h1>
-                <p>Join 100,000+ aspirants using GoPath's high-fidelity testing engine and premium video courses to crack UPSC, SSC, and Banking exams.</p>
+                <p>Prepare with subject-wise mock tests, Sanskrit practice, previous year papers, and video lessons. Review each attempt and choose what to study next.</p>
                 <div class="gep-hero-actions">
-                    <a href="<?php echo gep_get_url('register'); ?>" class="gep-btn-hero-primary">Start Free Trial</a>
+                    <a href="<?php echo gep_get_url('register'); ?>" class="gep-btn-hero-primary">Create free account</a>
                     <a href="<?php echo gep_get_url('dashboard'); ?>?view=tests" class="gep-btn-hero-outline">Explore Test Series</a>
                 </div>
                 <div class="gep-hero-stats">
-                    <div class="stat"><strong>500+</strong> Mock Tests</div>
-                    <div class="stat"><strong>20k+</strong> PYQ Questions</div>
-                    <div class="stat"><strong>98%</strong> Success Rate</div>
+                    <div class="stat"><strong>Mock tests</strong> Practice by subject</div>
+                    <div class="stat"><strong>Past papers</strong> Know the question pattern</div>
+                    <div class="stat"><strong>Solutions</strong> Learn from each attempt</div>
                 </div>
             </div>
             <div class="gep-hero-visual">
                 <div class="gep-floating-card">
                     <div class="card-icon">🏆</div>
                     <div class="card-text">
-                        <span>Current Rank</span>
-                        <strong>#124 / 15k</strong>
+                        <span>Your next step</span>
+                        <strong>Practice with purpose</strong>
                     </div>
                 </div>
                 <div class="gep-main-viz">
@@ -47,23 +47,23 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="gep-container">
             <div class="gep-section-title">
                 <h2>Why Choose GoPath?</h2>
-                <p>Built by educators, powered by neural precision.</p>
+                <p>Practice, understand your mistakes, and build confidence.</p>
             </div>
             <div class="gep-features-grid">
                 <div class="gep-feature-card">
                     <div class="icon">🧬</div>
-                    <h3>AI Question Injector</h3>
-                    <p>Experience dynamically generated mock tests that adapt to your performance level.</p>
+                    <h3>Practice Your Way</h3>
+                    <p>Choose a full test or build a practice set from available subjects and topics.</p>
                 </div>
                 <div class="gep-feature-card">
                     <div class="icon">🛡️</div>
-                    <h3>Proctor Intelligence</h3>
-                    <p>Advanced anti-cheat violations engine ensures a fair and competitive environment.</p>
+                    <h3>Exam-style Practice</h3>
+                    <p>Get familiar with timed questions, the question palette, and marking answers for review.</p>
                 </div>
                 <div class="gep-feature-card">
                     <div class="icon">📈</div>
-                    <h3>Neural Analytics</h3>
-                    <p>Get deep insights into your weak areas with our high-fidelity result review system.</p>
+                    <h3>Understand Your Results</h3>
+                    <p>Review solutions and subject-wise performance to plan your next study session.</p>
                 </div>
             </div>
         </div>
@@ -73,12 +73,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <section class="gep-social">
         <div class="gep-container">
             <div class="gep-trust-banner">
-                <span>TRUSTED BY TOPPERS FROM</span>
+                <span>BUILD YOUR STUDY ROUTINE</span>
                 <div class="logos">
-                    <span class="logo">UPSC</span>
-                    <span class="logo">SSC</span>
-                    <span class="logo">GATE</span>
-                    <span class="logo">IBPS</span>
+                    <span class="logo">Practice</span>
+                    <span class="logo">Review</span>
+                    <span class="logo">Improve</span>
+                    <span class="logo">Repeat</span>
                 </div>
             </div>
         </div>
@@ -89,7 +89,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="gep-container">
             <div class="gep-cta-box">
                 <h2>Ready to claim your officer rank?</h2>
-                <p>Sign up today and get access to 5 premium mock tests for free.</p>
+                <p>Create an account to explore available tests and start your preparation.</p>
                 <a href="<?php echo gep_get_url('register'); ?>" class="gep-btn gep-btn-primary gep-btn-lg">Join GoPath Now</a>
             </div>
         </div>

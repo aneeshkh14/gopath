@@ -4,11 +4,13 @@ jQuery(document).ready(function($) {
     const agreeCheck = $('#agree-terms');
     const startBtn = $('#start-exam-btn');
     const originalBtnText = startBtn.text();
+    var starting = false;
+    function showError(message) {
+        if (!$('#gep-start-error').length) startBtn.before('<p id="gep-start-error" role="alert"></p>');
+        $('#gep-start-error').text(message);
+    }
 
-    // ─── DECLARATION CHECKBOX ──────────────────────────────────────
-    agreeCheck.on('change', function() {
-        startBtn.prop('disabled', !$(this).is(':checked'));
-    });
+
 
     // ─── LANGUAGE SELECT DROPDOWN ──────────────────────────────────
     $('#gep-inst-lang-select').on('change', function() {
@@ -20,6 +22,7 @@ jQuery(document).ready(function($) {
         $.ajax({
             url: GEP_Instructions.ajaxurl,
             type: 'POST',
+            timeout: 20000,
             data: {
                 action: 'gep_update_lang',
                 lang: lang
@@ -42,15 +45,16 @@ jQuery(document).ready(function($) {
     var activeSubjectId = null;
 
     if ($('#gep-random-selector-wrap').length) {
-        $.post(GEP_Instructions.ajaxurl, {
-            action: 'gep_get_random_test_config'
-        }, function(res) {
+        $.ajax({url: GEP_Instructions.ajaxurl, type: 'POST', timeout: 20000, data: {action: 'gep_get_random_test_config'}}).done(function(res) {
             if (res.success && res.data.length) {
                 subjectsConfig = res.data;
                 renderSubjectTabs();
             } else {
                 $('#gep-subject-tabs').html('<div style="color: #ef4444; font-weight: 700; font-size: 13px;">No subjects/topics configured in the question bank.</div>');
             }
+        }).fail(function() {
+            $('#gep-subject-tabs').empty().append($('<button type="button">Retry loading subjects</button>').on('click', function() { location.reload(); }));
+            showError('Could not load subjects. Check your connection and retry.');
         });
     }
 
@@ -58,7 +62,7 @@ jQuery(document).ready(function($) {
         var html = '';
         subjectsConfig.forEach(function(sub, idx) {
             var activeClass = idx === 0 ? 'background: #2563eb; color: #fff;' : 'background: #f1f5f9; color: #475569;';
-            html += '<button type="button" class="gep-sub-tab" data-id="' + sub.id + '" style="border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; transition: all 0.3s; ' + activeClass + '">' + sub.name + '</button>';
+            html += '<button type="button" class="gep-sub-tab" data-id="' + sub.id + '" style="border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; transition: all 0.3s; ' + activeClass + '">' + $('<div>').text(sub.name).html() + '</button>';
         });
         $('#gep-subject-tabs').html(html);
         
@@ -76,17 +80,18 @@ jQuery(document).ready(function($) {
 
     function selectSubject(subId) {
         activeSubjectId = subId;
-        var subject = subjectsConfig.find(function(s) { return s.id === subId; });
+        var subject = subjectsConfig.find(function(s) { return String(s.id) === String(subId); });
         if (!subject) return;
 
         var html = '';
         subject.topics.forEach(function(topic) {
+            if (Number(topic.question_count) < 1) return;
             html += '<div class="gep-topic-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: #f8fafc; border-radius: 12px; border: 1.5px solid #f1f5f9; margin-bottom: 8px;">' +
                 '<label style="display: flex; align-items: center; gap: 10px; font-weight: 700; color: #1e293b; cursor: pointer; flex: 1; margin: 0;">' +
                     '<input type="checkbox" class="gep-topic-cb" value="' + topic.id + '" style="accent-color: #2563eb; width: 16px; height: 16px;">' +
-                    '<span>' + topic.name + ' <small style="color: #94a3b8; font-weight: 600;">(Available: ' + topic.question_count + ')</small></span>' +
+                    '<span>' + $('<div>').text(topic.name).html() + ' <small style="color: #94a3b8; font-weight: 600;">(Available: ' + topic.question_count + ')</small></span>' +
                 '</label>' +
-                '<input type="number" class="gep-topic-count" min="1" max="' + topic.question_count + '" value="5" data-max="' + topic.question_count + '" style="width: 75px; text-align: center; border-radius: 8px; border: 1.5px solid #cbd5e1; font-weight: 800; padding: 6px; display: none;">' +
+                '<input type="number" class="gep-topic-count" aria-label="Number of questions" min="1" max="' + topic.question_count + '" value="5" data-max="' + topic.question_count + '" style="width: 75px; text-align: center; border-radius: 8px; border: 1.5px solid #cbd5e1; font-weight: 800; padding: 6px; display: none;">' +
             '</div>';
         });
         $('#gep-topics-container').html(html);
@@ -131,6 +136,7 @@ jQuery(document).ready(function($) {
         var isAgreed = $('#agree-terms').is(':checked');
         var isRandom = $('#gep-random-selector-wrap').length > 0;
         
+        if (starting) { startBtn.prop('disabled', true); return; }
         if (isRandom) {
             $('#start-exam-btn').prop('disabled', !(isAgreed && total > 0));
         } else {
@@ -144,13 +150,15 @@ jQuery(document).ready(function($) {
 
     // ─── START EXAM ACTION ─────────────────────────────────────────
     startBtn.on('click', function() {
+        if (starting) return;
+        starting = true;
+        $('#gep-start-error').text('');
         const testId = GEP_Instructions.test_id;
         
         startBtn.prop('disabled', true).text('STARTING...');
 
         // Clear instructions step and current lang session storage once test starts
-        sessionStorage.removeItem('gep_inst_step');
-        sessionStorage.removeItem('gep_current_lang');
+        try { sessionStorage.removeItem('gep_inst_step'); sessionStorage.removeItem('gep_current_lang'); } catch (e) {}
 
         // Collect custom selections for random tests
         var selected_topics = [];
@@ -170,6 +178,7 @@ jQuery(document).ready(function($) {
         $.ajax({
             url: GEP_Instructions.ajaxurl,
             type: 'POST',
+            timeout: 20000,
             data: {
                 action: 'gep_start_exam',
                 nonce: GEP_Instructions.nonce,
@@ -180,14 +189,14 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     location.reload(); 
                 } else {
-                    alert(response.data.message || 'Failed to start exam.');
-                    startBtn.prop('disabled', false).text(originalBtnText);
+                    showError(response.data && response.data.message || 'Failed to start exam.');
+                    starting = false; startBtn.text(originalBtnText); validateStartButton();
                 }
             },
             error: function(xhr, status, error) {
                 console.error('GEP_EXAM_START_ERROR:', {status, error, response: xhr.responseText});
-                alert('Connection error (' + status + '). Please check your internet and try again.');
-                startBtn.prop('disabled', false).text(originalBtnText);
+                showError('Could not connect. Check your connection and try again.');
+                starting = false; startBtn.text(originalBtnText); validateStartButton();
             }
         });
     });

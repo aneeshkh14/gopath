@@ -24,9 +24,9 @@ if ( empty( $first_name ) && ! empty( $user->display_name ) ) {
         <div class="gep-profile-avatar">
             <?php echo get_avatar($user->ID, 120); ?>
             <input type="file" id="gep-avatar-upload" style="display:none;" accept="image/*">
-            <div class="gep-avatar-edit" title="Upload New Photo" onclick="document.getElementById('gep-avatar-upload').click();">
+            <button type="button" aria-label="Upload new profile photo" class="gep-avatar-edit" title="Upload New Photo" onclick="document.getElementById('gep-avatar-upload').click();">
                 <i class="dashicons dashicons-camera"></i>
-            </div>
+            </button>
         </div>
         <div class="gep-profile-intro">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -107,31 +107,31 @@ if ( empty( $first_name ) && ! empty( $user->display_name ) ) {
                     </div>
                     <div class="gep-grid-2">
                         <div class="gep-form-group">
-                            <label style="color: #fff;">First Name</label>
-                            <input type="text" name="first_name" class="gep-input" value="<?php echo esc_attr($first_name); ?>" required placeholder="e.g. Ugant">
+                            <label for="gep-profile-field-0" style="color: #fff;">First Name</label>
+                            <input id="gep-profile-field-0" type="text" name="first_name" class="gep-input" value="<?php echo esc_attr($first_name); ?>" required placeholder="e.g. Ugant">
                         </div>
                         <div class="gep-form-group">
-                            <label style="color: #fff;">Last Name</label>
-                            <input type="text" name="last_name" class="gep-input" value="<?php echo esc_attr($last_name); ?>" required placeholder="e.g. Kumar">
+                            <label for="gep-profile-field-1" style="color: #fff;">Last Name</label>
+                            <input id="gep-profile-field-1" type="text" name="last_name" class="gep-input" value="<?php echo esc_attr($last_name); ?>" required placeholder="e.g. Kumar">
                         </div>
                     </div>
                     <div class="gep-grid-2">
                         <div class="gep-form-group">
-                            <label>Phone Number</label>
-                            <input type="tel" name="phone" class="gep-input" value="<?php echo esc_attr($phone); ?>" placeholder="+91 00000 00000">
+                            <label for="gep-profile-field-2">Phone Number</label>
+                            <input id="gep-profile-field-2" type="tel" name="phone" class="gep-input" value="<?php echo esc_attr($phone); ?>" placeholder="+91 00000 00000">
                         </div>
                         <div class="gep-form-group">
-                            <label>Email Address</label>
+                            <label for="gep-profile-field-3">Email Address</label>
                             <div class="gep-input-readonly-wrapper">
-                                <input type="email" value="<?php echo esc_attr($user->user_email); ?>" disabled class="gep-input gep-input-readonly">
+                                <input id="gep-profile-field-3" type="email" value="<?php echo esc_attr($user->user_email); ?>" disabled class="gep-input gep-input-readonly">
                                 <span class="gep-lock-icon">🔒</span>
                             </div>
                         </div>
                     </div>
                     <div class="gep-grid-2">
                         <div class="gep-form-group">
-                            <label>Bio / Description</label>
-                            <textarea name="bio" class="gep-input" rows="3" placeholder="Tell us a bit about yourself..."><?php echo esc_textarea($bio); ?></textarea>
+                            <label for="gep-profile-field-4">Bio / Description</label>
+                            <textarea id="gep-profile-field-4" name="bio" class="gep-input" rows="3" placeholder="Tell us a bit about yourself..."><?php echo esc_textarea($bio); ?></textarea>
                         </div>
                         <div class="gep-form-group">
                             <label>Preferred Language</label>
@@ -182,8 +182,8 @@ if ( empty( $first_name ) && ! empty( $user->display_name ) ) {
                             <small class="gep-info-text" style="display: block; margin-top: 10px; color: #94a3b8;">Select your target segments to personalize your dashboard. Only content from these segments will be shown.</small>
                         </div>
                         <div class="gep-form-group">
-                            <label>Highest Qualification</label>
-                            <input type="text" name="qualification" class="gep-input" value="<?php echo esc_attr($qualification); ?>" placeholder="e.g. B.Tech, MBA, PhD">
+                            <label for="gep-profile-field-5">Highest Qualification</label>
+                            <input id="gep-profile-field-5" type="text" name="qualification" class="gep-input" value="<?php echo esc_attr($qualification); ?>" placeholder="e.g. B.Tech, MBA, PhD">
                         </div>
                     </div>
                 </section>
@@ -203,12 +203,12 @@ if ( empty( $first_name ) && ! empty( $user->display_name ) ) {
                         </div>
                     </div>
                     <div class="gep-form-group" style="max-width: 400px; position: relative;">
-                        <label>New Access Code (Password)</label>
+                        <label for="gep-new-password">New Password</label>
                         <div style="position: relative;">
-                            <input type="password" name="new_password" id="gep-new-password" class="gep-input" placeholder="Min. 8 characters">
-                            <span class="gep-password-toggle" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.6;"><i class="dashicons dashicons-visibility"></i></span>
+                            <input type="password" name="new_password" id="gep-new-password" minlength="8" autocomplete="new-password" class="gep-input" placeholder="Min. 8 characters">
+                            <button type="button" aria-label="Show password" aria-pressed="false" class="gep-password-toggle" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.6;"><i class="dashicons dashicons-visibility"></i></button>
                         </div>
-                        <small class="gep-info-text">Leave blank to keep your current neural access code.</small>
+                        <small class="gep-info-text">Leave blank to keep your current password.</small>
                     </div>
                 </section>
 
@@ -259,7 +259,7 @@ if ( empty( $first_name ) && ! empty( $user->display_name ) ) {
                         <span class="gep-btn-text">Save All Changes</span>
                         <span class="gep-spinner" style="display:none;"></span>
                     </button>
-                    <div id="gep-profile-msg" style="margin-top: 15px; display: none;"></div>
+                    <div id="gep-profile-msg" role="status" style="margin-top: 15px; display: none;"></div>
                 </div>
             </form>
         </div>
@@ -272,6 +272,7 @@ jQuery(document).ready(function($) {
     $('.gep-password-toggle').on('click', function() {
         var input = $('#gep-new-password');
         var icon = $(this).find('i');
+        $(this).attr('aria-pressed', String(input.attr('type') === 'password')).attr('aria-label', input.attr('type') === 'password' ? 'Hide password' : 'Show password');
         if (input.attr('type') === 'password') {
             input.attr('type', 'text');
             icon.removeClass('dashicons-visibility').addClass('dashicons-hidden');
@@ -295,6 +296,10 @@ jQuery(document).ready(function($) {
         $('#tab-' + tabId).addClass('active');
     });
 
+    document.getElementById('gep-profile-update-form').addEventListener('invalid', function(e) {
+        var section = e.target.closest('.gep-form-section');
+        if (section) $('.gep-profile-nav a[data-tab="' + section.id.replace('tab-', '') + '"]').trigger('click');
+    }, true);
     // Form Submission
     $('#gep-profile-update-form').on('submit', function(e) {
         e.preventDefault();
@@ -304,6 +309,7 @@ jQuery(document).ready(function($) {
         var spinner = btn.find('.gep-spinner');
         var msgBox = $('#gep-profile-msg');
 
+        if (btn.prop('disabled')) return;
         btn.prop('disabled', true);
         btnText.text('Saving Changes...');
         spinner.show();
@@ -312,6 +318,7 @@ jQuery(document).ready(function($) {
         $.ajax({
             url: gep_ajax.ajax_url,
             type: 'POST',
+            timeout: 20000,
             data: form.serialize() + '&action=gep_update_profile',
             success: function(response) {
                 if (response.success) {
@@ -321,7 +328,7 @@ jQuery(document).ready(function($) {
                         location.reload();
                     }, 1500);
                 } else {
-                    msgBox.html('<div class="gep-alert gep-alert-danger">' + (response.data || 'Failed to update profile.') + '</div>').fadeIn();
+                    msgBox.empty().append($('<div class="gep-alert gep-alert-danger">').text(typeof response.data === 'string' ? response.data : response.data && response.data.message || 'Failed to update profile.')).fadeIn();
                     btn.prop('disabled', false);
                     btnText.text('Save All Changes');
                 }
@@ -356,6 +363,7 @@ jQuery(document).ready(function($) {
         $.ajax({
             url: gep_ajax.ajax_url,
             type: 'POST',
+            timeout: 20000,
             data: form_data,
             contentType: false,
             processData: false,
@@ -363,9 +371,10 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     $('.gep-profile-avatar img').attr('src', response.data.image_url);
                 } else {
-                    alert(response.data || 'Failed to upload avatar.');
+                    alert(typeof response.data === 'string' ? response.data : response.data && response.data.message || 'Failed to upload photo.');
                 }
             },
+            error: function() { alert('Could not upload your photo. Please check your connection and try again.'); },
             complete: function() {
                 $('.gep-profile-avatar').css('opacity', '1');
             }

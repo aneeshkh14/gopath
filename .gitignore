@@ -4,3 +4,6 @@ fatal_error.log
 # Build output
 /build/
 /*.zip
+
+# Development-only regression tools
+/node_modules/

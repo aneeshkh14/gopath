@@ -1,0 +1,91 @@
+# UI/UX audit and improvements — 2.0.1
+
+Base: `claude/blissful-wozniak-6tqprs` at `55b8bbd`. Implementation branch: `codex/ui-ux-audit`.
+
+## Scope and evidence
+
+This is a broad source review with targeted interaction regression tests, **not a claim that every possible session or device has passed end-to-end testing**. The repository contains 89 PHP files, nine external JavaScript files, 30 screen templates plus the portal layout, and 17 admin views.
+
+The existing public homepage and its test-series/sign-in path were inspected in the browser. The homepage's secondary CTA was unreadable in the light theme. Authenticated screens were reviewed from their templates, scripts and handlers. No staging WordPress installation, student/admin credentials, payment sandbox credentials or email delivery environment was available. The modified branch has not been deployed or browser-rendered in WordPress.
+
+## Implemented improvements
+
+| Area | Problem addressed | Result |
+| --- | --- | --- |
+| Navigation | Competing menu handlers, inaccessible mobile drawer, incorrect custom-test link | One drawer controller, Escape/backdrop close, focus return/trap, inert hidden navigation, correct random-test and year-wise links |
+| Discovery | Incomplete search coverage, unclear filter results, inaccessible details modal | Search includes horizontal cards; combined filters show counts, no-match state and reset; details dialog supports keyboard use |
+| Home/dashboard | Invisible light-theme CTA, unsupported statistics, motion and wheel hijacking | Theme-aware CTA, honest feature descriptions, manual carousel, no wheel interception; inactive slides excluded from keyboard navigation |
+| Authentication | Fragile OTP entry, missing frontend AJAX URL, poor password discoverability | Pasteable six-digit OTP field, explicit verification, duplicate prevention, network recovery, password visibility controls and autocomplete |
+| Exam setup | Start enabled without a valid custom selection; configuration failures stuck loading | Consent and topic validation, empty-topic exclusion, string-ID compatibility, readable errors and retry |
+| Exam answers | Concurrent writes could overwrite the attempt answer map; offline saves silently failed | Serialized saves, newest-value tracking, local pending recovery, online retry, visible sync status, numeric answer restoration |
+| Exam submission | Redirect despite failure; edited text not captured; retries could write to a closed attempt | Flush before submit, require server confirmation, retry the idempotent submission endpoint after an ambiguous response, warn before leaving unsynced work |
+| Checkout | Duplicate checkout implementation; stale coupon totals; repeated orders; unclear verification failures | One canonical checkout, coupon revision tracking, order lock while gateway is open, same-payment verification retry and payment-ID guidance |
+| Account/support | Missing labels, hidden invalid fields, weak error recovery | Associated labels, reveal invalid profile section, safe error text, retained values, request timeouts, avatar-upload failure feedback |
+| Notifications | Duplicate mark-all IDs, panel closed during internal actions | Shared action classes, proper bell button/expanded state, keyboard items, outside/Escape dismissal and a full-list link |
+| Learning | Dead class actions, inaccessible skill cards, silent doubt errors | Working schedule/support/class links, keyboard activation, escaped doubt text and actionable request failures |
+| Mobile/accessibility | Unbounded dialogs, hidden mobile search, rigid grids and missing focus feedback | Bounded dialogs, visible mobile search, stacked support/pass/profile-stat grids, reduced motion and focus outlines |
+| Admin | Stale enrollment loads, save enabled before data arrived, missing error recovery | Ignore another student's stale response, block premature saves, retain selections on failure, dialog naming/focus, scrollable tables, clearer action labels |
+
+## Screen inventory
+
+“Source” below means source inspection, not a successful logged-in browser session. Shared navigation, theme and dialog changes affect multiple screens.
+
+| Screen/view | Review and implementation coverage |
+| --- | --- |
+| Home | Public browser baseline; CTA contrast, copy and responsive stat wrapping |
+| Login | Public sign-in path baseline; OTP/password/error handling regression tests |
+| Register | Source; labels, autocomplete, reveal password |
+| Forgot password | Source; labels, autocomplete, reveal password; email delivery pending |
+| Dashboard main | Source; manual carousel, accessible slide state, search and navigation tests |
+| Browse tests | Source; combined search/filter/reset and dialog interaction tests |
+| Get pass | Source; responsive plan grid; routes through checkout |
+| My purchases | Source; shared navigation/theme; entitlement combinations pending |
+| Orders | Source; shared navigation/theme; payment-history data states pending |
+| Results | Source; added discoverable sidebar route; live scoring/data states pending |
+| Profile | Source; invalid hidden section, duplicate submit and error retention tests |
+| Notifications | Source; panel keyboard/dismissal tests; full-list action markup |
+| Support | Source; labels, status feedback, mobile grid |
+| Policies | Source; accessible before login; back/forward section selection |
+| About | Source; shared theme/navigation |
+| PYQs | Source; year-wise deep-link selection |
+| Rank predictor | Source; explicitly labels estimates illustrative; removes unsupported certainty |
+| Skill academy | Source; keyboard cards, counts from available data, removes invented price claims |
+| Supercoaching | Source; shared navigation/theme; content/entitlement states pending |
+| Lectures | Source; shared navigation/theme; content/entitlement states pending |
+| Watch | Source; named doubt input, escaped content, load/post failure feedback |
+| Live classes | Source; schedule anchor, working educator link, accurate class-link action |
+| Typing test | Source; correct AJAX URL, keyboard-accessible duration controls, save failure feedback |
+| Exam instructions | Source; custom configuration, consent, retry regression tests |
+| Exam window | Source; save ordering, offline/reload/storage-denied and submission tests |
+| Exam result review | Source; live attempt/scoring and long-content states pending |
+| Exam series view | Source; shared navigation/theme; paid/free/expired access pending |
+| Checkout | Source; coupon races, repeated order prevention, failed verification and gateway errors tested with mocks |
+| Payment success | Source, including shortcode-rendered status; plainer confirmation copy |
+| Payment failure | Source, including shortcode-rendered status; charged-but-unconfirmed guidance |
+| Portal layout | Source; mobile drawer, search, notification and resize DOM interaction tests |
+
+Admin views reviewed: dashboard, categories, questions, tests, courses, lessons, lectures, live classes, students, attempts, reports, payments, coupons, notifications, doubts, violations and settings. Shared dialog/table/focus improvements apply across their existing markup. Targeted tests cover enrollment load/save failures, question retrieval failure and modal focus restoration. CRUD, uploads, email, exports and destructive settings were not exercised against a live database.
+
+## Repeatable verification
+
+Run `npm ci --ignore-scripts`, `npm run lint`, and `npm test` with Node 22 or newer. Development dependencies are not needed by WordPress. CI also runs PHP syntax checks.
+
+- **29 passing DOM interaction tests** using actual frontend scripts, JSDOM and mocked AJAX/fetch/Razorpay responses.
+- **89 PHP files** parsed by both the PHP parser and the PHP WebAssembly runtime's native `TOKEN_PARSE` tokenizer.
+- **Nine external JavaScript files and 25 static inline scripts** parse successfully. Nine inline scripts containing PHP require rendered runtime coverage; one student-access script is exercised with its nonce substituted in the test.
+- `git diff --check` passes.
+- Asset version bumped to **2.0.1** so browsers request updated scripts/styles.
+- Build script excludes test dependencies, CI and audit documents from the installable plugin ZIP.
+
+These tests establish deterministic interaction behavior. They do not establish screen-reader compatibility, CSS layout correctness across real devices, delivery of email/OTP, real payment processing or backend authorization.
+
+## Remaining staging work and known risks
+
+1. Install the branch on staging and run student/admin journeys in light/dark mode at narrow phone, tablet and desktop sizes, with keyboard-only navigation, 200% zoom and a screen reader. Check long Hindi/English content, empty/large datasets and nested exam calculator/instruction/question-paper dialogs.
+2. Exercise account creation, OTP expiry/resend, session expiry and password reset with actual email delivery. Verify avatar restrictions and admin impersonation flows.
+3. Run Razorpay sandbox success, dismiss, rejection, delayed webhook, free enrollment and charged-but-verification-response-lost scenarios against WordPress. The verification retry survives while the checkout page stays open; a refresh currently loses its in-memory payment context. Durable reconciliation needs server-backed recovery.
+4. Revisit the existing **sectional timer** before release: source review found elapsed time subtracted again for an untimed section, a global heartbeat replacing a sectional countdown, and a section transition targeting a legacy tab selector. Its expiry dialog also says automatic submission while waiting for a click. This patch improves save/submission reliability but does not redesign timing policy or certify timed exams end-to-end.
+5. Verify results, percentile/rank calculations, paid/free/expired entitlements, media playback, completion tracking, support delivery and all admin CRUD with seeded staging records. The predictor remains illustrative, not a validated statistical forecast.
+6. Modern browser `inert`, `focus-visible` and dynamic viewport units are used. Older-browser support and assistive-technology behavior need real-device validation.
+
+Do not treat this audit as an exhaustive test certification. The pull request remains a draft until the staging checks above are completed.

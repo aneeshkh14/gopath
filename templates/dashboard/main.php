@@ -86,7 +86,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
     $slide3_bg    = ! empty( $slide3_img ) ? "linear-gradient(180deg, rgba(9, 9, 11, 0.4) 0%, rgba(9, 9, 11, 0.85) 100%), url('" . esc_url($slide3_img) . "') no-repeat center center / cover" : "linear-gradient(135deg, #09090b 0%, #581c87 100%)";
     ?>
     <!-- Hero Slideshow Carousel Section -->
-    <div class="gep-dashboard-carousel">
+    <div class="gep-dashboard-carousel" role="region" aria-roledescription="carousel" aria-label="Featured learning">
         <div class="gep-carousel-slides">
             
             <!-- Slide 1: Mission Officer -->
@@ -144,9 +144,9 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
 
         <!-- Carousel Bottom Dots -->
         <div class="gep-carousel-dots" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10;">
-            <span class="gep-carousel-dot active" data-index="0" style="width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s;"></span>
-            <span class="gep-carousel-dot" data-index="1" style="width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s;"></span>
-            <span class="gep-carousel-dot" data-index="2" style="width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s;"></span>
+            <button type="button" class="gep-carousel-dot active" data-index="0" aria-label="Show featured slide 1"></button>
+            <button type="button" class="gep-carousel-dot" data-index="1" aria-label="Show featured slide 2"></button>
+            <button type="button" class="gep-carousel-dot" data-index="2" aria-label="Show featured slide 3"></button>
         </div>
     </div>
 
@@ -224,7 +224,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
                     </a>
                 <?php endif; ?>
             </div>
-            <div class="gep-hscroll-row">
+            <div class="gep-hscroll-row" tabindex="0" role="region" aria-label="<?php echo esc_attr($title); ?>">
                 <?php foreach ( $tests as $t ) { echo $gep_hcard_render( $t ); } ?>
             </div>
         </section>

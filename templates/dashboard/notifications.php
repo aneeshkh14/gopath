@@ -7,7 +7,7 @@
             <p class="section-subtitle">Real-time alerts, system updates, and exam notices</p>
         </div>
         <?php if ( ! empty( $notifications ) ) : ?>
-            <button id="gep-mark-all-read" class="gep-btn-sovereign-action">
+            <button class="gep-mark-all-read gep-btn-sovereign-action">
                 <span class="icon">✓</span> Mark all as read
             </button>
         <?php endif; ?>
@@ -17,13 +17,13 @@
         <?php if ( ! empty( $notifications ) ) : ?>
             <div class="gep-notification-list">
                 <?php foreach ( $notifications as $notif ) : ?>
-                    <div class="gep-notification-item <?php echo $notif->is_read ? '' : 'unread'; ?>" data-id="<?php echo $notif->id; ?>">
+                    <div role="button" tabindex="0" class="gep-notification-item <?php echo $notif->is_read ? '' : 'unread'; ?>" data-id="<?php echo $notif->id; ?>">
                         <div class="notif-badge-icon">
                             <span class="icon"><?php echo $notif->is_read ? '🔔' : '⚡'; ?></span>
                         </div>
                         <div class="notif-details">
                             <div class="notif-meta-row">
-                                <span class="notif-category">SYSTEM PROTOCOL</span>
+                                <span class="notif-category">UPDATE</span>
                                 <span class="notif-timestamp"><?php echo human_time_diff( strtotime( $notif->created_at ), current_datetime()->getTimestamp() ); ?> ago</span>
                             </div>
                             <h4 class="notif-item-title"><?php echo esc_html( $notif->title ); ?></h4>
@@ -38,8 +38,8 @@
         <?php else : ?>
             <div class="gep-notifications-empty-state">
                 <div class="empty-icon-box">📭</div>
-                <h4>Sovereign Calm</h4>
-                <p>Your intelligence feed is clear. There are no pending alerts or broadcasts in your console.</p>
+                <h4>You’re all caught up</h4>
+                <p>New exam alerts and course updates will appear here.</p>
             </div>
         <?php endif; ?>
     </div>

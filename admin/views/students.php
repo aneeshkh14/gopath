@@ -188,6 +188,7 @@ jQuery(document).ready(function($) {
         var userId = $(this).data('userid');
         var userName = $(this).data('username');
         
+        $('#gep-assign-access-form button[type="submit"]').prop('disabled', true);
         $('#assign-student-id').val(userId);
         $('#assign-modal-title').text('Grant Access: ' + userName);
         
@@ -203,7 +204,9 @@ jQuery(document).ready(function($) {
             student_id: userId,
             nonce: '<?php echo wp_create_nonce("gep_student_access"); ?>'
         }, function(response) {
+            if (String($('#assign-student-id').val()) !== String(userId)) return;
             if (response.success) {
+                $('#gep-assign-access-form button[type="submit"]').prop('disabled', false);
                 var data = response.data;
                 
                 // Render Courses
@@ -238,6 +241,9 @@ jQuery(document).ready(function($) {
             } else {
                 alert('Error loading access registry: ' + response.data);
             }
+        }).fail(function() {
+            if (String($('#assign-student-id').val()) !== String(userId)) return;
+            $('#assign-courses-list, #assign-tests-list').text('Could not load access. Close this dialog and retry.');
         });
     });
 
@@ -245,6 +251,7 @@ jQuery(document).ready(function($) {
     $('#gep-assign-access-form').on('submit', function(e) {
         e.preventDefault();
         var form = $(this);
+        if (form.find('button[type="submit"]').prop('disabled')) return;
         var submitBtn = form.find('button[type="submit"]');
         submitBtn.prop('disabled', true).text('Saving Changes...');
         
@@ -263,6 +270,9 @@ jQuery(document).ready(function($) {
             } else {
                 alert('Failed to update access: ' + response.data);
             }
+        }).fail(function() {
+            submitBtn.prop('disabled', false).text('Save Enrollment Changes');
+            alert('Could not save access. Your selections are still here; please try again.');
         });
     });
 });

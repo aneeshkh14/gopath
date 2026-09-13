@@ -455,7 +455,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                              </div>
                         </div>
                         <div class="gep-admin-console-footer" style="padding: 20px;">
-                            <button type="submit" name="submit" class="button button-primary" style="width: 100%; height: 55px; border-radius: 14px; font-weight: 900; font-size: 16px;">🚀 Commit to Repository</button>
+                            <button type="submit" name="submit" class="button button-primary" style="width: 100%; height: 55px; border-radius: 14px; font-weight: 900; font-size: 16px;">🚀 Save Test</button>
                         </div>
                     </div>
 

@@ -85,75 +85,96 @@ jQuery(document).ready(function($) {
         window.location.href = url.toString();
     });
 
-    // Real-time Search Filter
-    $('#gep-header-search-input').on('keyup', function() {
-        var value = $(this).val().toLowerCase();
-        
-        // Filter Course Cards
-        $('.gep-course-card').filter(function() {
-            $(this).toggle($(this).find('h4').text().toLowerCase().indexOf(value) > -1);
+    // Search the rendered cards; keep the test hub's category/type filters together.
+    var $search = $('#gep-header-search-input');
+    var $hubSearch = $('#gep-test-search');
+    var $cards = $('.gep-main-inner').find('.gep-hcard, .gep-course-card, .gep-test-card, .gep-asset-card');
+    if (!$hubSearch.length && !$cards.length) {
+        $search.attr('placeholder', 'Search the test catalogue...').attr('aria-label', 'Search the test catalogue');
+    }
+    function filterPage() {
+        var value = $.trim($search.val() || '').toLocaleLowerCase();
+        if ($hubSearch.length) {
+            $hubSearch.val(value).trigger('input');
+            return;
+        }
+        if (!$cards.length) return;
+        var matches = 0;
+        $cards.each(function() {
+            var show = $(this).text().toLocaleLowerCase().indexOf(value) !== -1;
+            $(this).toggle(show);
+            if (show) matches++;
         });
-
-        // Filter Test Cards
-        $('.gep-test-card').filter(function() {
-            $(this).toggle($(this).find('h4').text().toLowerCase().indexOf(value) > -1);
-        });
+        if (!$('#gep-search-feedback').length) {
+            $('.gep-main-inner').prepend('<div id="gep-search-feedback" class="gep-search-feedback" role="status"></div>');
+        }
+        $('#gep-search-feedback').text(value ? (matches ? matches + ' matching items on this page.' : 'No matches on this page. Try another term or browse Test Series.') : '').toggle(!!value);
+    }
+    $search.on('input', filterPage);
+    $('#gep-header-search-form').on('submit', function(e) {
+        if ($cards.length || $hubSearch.length) { e.preventDefault(); filterPage(); }
     });
+    if ($search.val()) filterPage();
 
-    // ── Mobile Sidebar Toggle ────────────────────────────────────────────────
-    // FIX 1: Always start with sidebar CLOSED on every page load (clears stale state)
+    // One owner for the mobile drawer. Native click also handles touch and keyboard.
     var $sidebar = $('.gep-dashboard-sidebar');
-    $sidebar.removeClass('active');
-    $('body').css('overflow', '');
-
-    // FIX 2: Inject backdrop and ensure it starts hidden
-    if ( ! $('#gep-sidebar-backdrop').length ) {
+    var $toggle = $('#gep-menu-toggle');
+    var $main = $('.gep-dashboard-content');
+    if ($sidebar.length && !$('#gep-sidebar-backdrop').length) {
         $('body').append('<div id="gep-sidebar-backdrop" class="gep-sidebar-backdrop"></div>');
     }
     var $backdrop = $('#gep-sidebar-backdrop');
-    $backdrop.removeClass('active');
-
-    function openSidebar() {
-        $sidebar.addClass('active');
-        $backdrop.addClass('active');
-        $('body').css('overflow', 'hidden');
-    }
-    function closeSidebar() {
-        $sidebar.removeClass('active');
+    function closeSidebar(restoreFocus) {
+        $sidebar.removeClass('active').removeAttr('role aria-modal');
         $backdrop.removeClass('active');
-        $('body').css('overflow', '');
+        $('html').removeClass('gep-menu-open');
+        $main.prop('inert', false);
+        $toggle.attr({'aria-expanded': 'false', 'aria-label': 'Open menu'});
+        $sidebar.prop('inert', window.innerWidth <= 1024);
+        if (restoreFocus && $toggle.length) $toggle[0].focus();
     }
-
-    // FIX 3: Use document-level delegation for reliable mobile touch (catches button regardless of DOM timing)
-    $(document).on('click touchend', '#gep-menu-toggle, .gep-mobile-toggle, .gep-sidebar-toggle', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        if ( $sidebar.hasClass('active') ) {
-            closeSidebar();
-        } else {
-            openSidebar();
+    function openSidebar() {
+        $sidebar.prop('inert', false).addClass('active').attr({'role': 'dialog', 'aria-modal': 'true'});
+        $backdrop.addClass('active');
+        $('html').addClass('gep-menu-open');
+        $toggle.attr({'aria-expanded': 'true', 'aria-label': 'Close menu'});
+        $('#gep-menu-close').trigger('focus');
+        $main.prop('inert', true);
+    }
+    closeSidebar(false);
+    $toggle.on('click', function() { $sidebar.hasClass('active') ? closeSidebar(true) : openSidebar(); });
+    $('#gep-menu-close, #gep-sidebar-backdrop').on('click', function() { closeSidebar(true); });
+    $sidebar.find('a').on('click', function() { if (window.innerWidth <= 1024) closeSidebar(false); });
+    $(window).on('resize', function() { closeSidebar(false); });
+    $(document).on('keydown', function(e) {
+        if (!$sidebar.hasClass('active')) return;
+        if (e.key === 'Escape') { e.preventDefault(); closeSidebar(true); }
+        if (e.key === 'Tab') {
+            var $focusable = $sidebar.find('a, button, input, select').filter(':visible').filter(':enabled');
+            var first = $focusable[0], last = $focusable[$focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         }
     });
+    $('.gep-dashboard-nav a.active').attr('aria-current', 'page');
 
-    // Close when backdrop clicked/touched
-    $(document).on('click touchend', '#gep-sidebar-backdrop', function(e) {
-        e.preventDefault();
-        closeSidebar();
-    });
-
-    // Close when a nav link is tapped (mobile UX)
-    $sidebar.find('a').on('click', function() {
-        if ( window.innerWidth <= 1024 ) {
-            closeSidebar();
-        }
-    });
-
-
-
-    if (window.location.hash) {
-        var hash = window.location.hash.replace('#', '');
-        $('.gep-dashboard-nav a[data-tab="' + hash + '"]').click();
+    var $bell = $('#gep-notif-trigger'), $panel = $('#gep-notif-panel');
+    function closeNotifications(restoreFocus) {
+        $panel.removeClass('active'); $bell.attr('aria-expanded', 'false');
+        if (restoreFocus) $bell.trigger('focus');
     }
+    $bell.on('click', function() {
+        var open = !$panel.hasClass('active');
+        $panel.toggleClass('active', open); $bell.attr('aria-expanded', String(open));
+    });
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.gep-header-notification-wrapper').length) closeNotifications(false);
+    }).on('keydown', function(e) {
+        if (e.key === 'Escape' && $panel.hasClass('active')) closeNotifications(true);
+    });
+    $(document).on('keydown', '.notif-item[role="button"], .gep-notification-item[role="button"], .gep-skill-card[role="button"]', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $(this).trigger('click'); }
+    });
 
     // Avatar Upload Handler — BUG-21 FIX: Add error handler so button doesn't get stuck
     $('#gep-avatar-input').on('change', function() {
@@ -227,13 +248,14 @@ jQuery(document).ready(function($) {
     });
 
     // Mark all notifications as read
-    $(document).on('click', '#gep-mark-all-read', function(e) {
+    $(document).on('click', '#gep-mark-all-read, .gep-mark-all-read', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
         var $btn = $(this);
+        if ($btn.data('pending')) return;
         var originalText = $btn.text();
-        $btn.text('Marking...');
+        $btn.data('pending', true).attr('aria-disabled', 'true').text('Marking…');
         
         $.ajax({
             url: gep_ajax.ajax_url,
@@ -242,6 +264,7 @@ jQuery(document).ready(function($) {
                 action: 'gep_mark_all_notifs_read',
                 nonce: gep_ajax.nonce
             },
+            complete: function() { $btn.data('pending', false).removeAttr('aria-disabled'); },
             success: function(response) {
                 if (response.success) {
                     $('.gep-notif-count').fadeOut(function() { $(this).remove(); });
@@ -264,7 +287,8 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.notif-item.unread, .gep-notification-item.unread', function(e) {
         var $item = $(this);
         var id = $item.data('id');
-        if (!id) return;
+        if (!id || $item.data('pending')) return;
+        $item.data('pending', true);
         
         $.ajax({
             url: gep_ajax.ajax_url,
@@ -274,9 +298,11 @@ jQuery(document).ready(function($) {
                 id: id,
                 nonce: gep_ajax.nonce
             },
+            complete: function() { $item.data('pending', false); },
+            error: function() { show_gep_notification('Could not mark this notification as read. Try again.', 'danger'); },
             success: function(response) {
                 if (response.success) {
-                    $item.removeClass('unread');
+                    $('.notif-item, .gep-notification-item').filter(function() { return String($(this).data('id')) === String(id); }).removeClass('unread').find('.notif-pulse-dot').remove();
                     
                     // Update main student notification page icon/status if clicked there
                     if ($item.hasClass('gep-notification-item')) {
@@ -299,119 +325,22 @@ jQuery(document).ready(function($) {
     });
 
     function show_gep_notification(message, type) {
-        var $notif = $('<div class="gep-alert gep-alert-' + type + '" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: none;">' + message + '</div>');
+        var $notif = $('<div class="gep-alert gep-alert-' + type + ' gep-toast" role="status"></div>').text(message).hide();
         $('body').append($notif);
         $notif.fadeIn().delay(3000).fadeOut(function() { $(this).remove(); });
     }
 
-    // Hero Slideshow Carousel Logic
+    // Deliberate carousel navigation: no moving target while reading or tabbing.
     (function() {
-        var $slides = $('.gep-carousel-slide');
-        var $dots = $('.gep-carousel-dot');
-        var currentSlide = 0;
-        var slideInterval;
-
+        var $slides = $('.gep-carousel-slide'), $dots = $('.gep-carousel-dot');
+        if (!$slides.length) return;
         function showSlide(index) {
-            if ($slides.length === 0) return;
-            $slides.removeClass('active');
-            $dots.removeClass('active');
-
-            currentSlide = (index + $slides.length) % $slides.length;
-            $slides.eq(currentSlide).addClass('active');
-            $dots.eq(currentSlide).addClass('active');
-        }
-
-        function nextSlide() {
-            showSlide(currentSlide + 1);
-        }
-
-        function startAutoplay() {
-            clearInterval(slideInterval);
-            slideInterval = setInterval(nextSlide, 5000);
-        }
-
-        if ($slides.length > 0) {
-            $dots.on('click', function() {
-                var index = parseInt($(this).data('index'), 10);
-                showSlide(index);
-                startAutoplay();
+            $slides.each(function(i) {
+                $(this).toggleClass('active', i === index).attr('aria-hidden', String(i !== index)).prop('inert', i !== index);
             });
-
-            // Touch Swipe Gesture Support with Passive Listeners
-            var startX = 0;
-            var endX = 0;
-            var isDragging = false;
-
-            var carouselEl = document.querySelector('.gep-dashboard-carousel');
-            if (carouselEl) {
-                carouselEl.addEventListener('touchstart', function(e) {
-                    startX = e.touches[0].clientX;
-                    endX = 0;
-                }, { passive: true });
-
-                carouselEl.addEventListener('touchmove', function(e) {
-                    endX = e.touches[0].clientX;
-                }, { passive: true });
-
-                carouselEl.addEventListener('touchend', function() {
-                    var diff = startX - endX;
-                    if (Math.abs(diff) > 50 && endX !== 0) {
-                        if (diff > 0) {
-                            nextSlide();
-                        } else {
-                            showSlide(currentSlide - 1);
-                        }
-                        startAutoplay();
-                    }
-                    startX = 0;
-                    endX = 0;
-                }, { passive: true });
-            }
-
-            // Mouse Drag Gesture Support (Bind document-level listeners ONLY when dragging is active)
-            $('.gep-dashboard-carousel').on('mousedown', function(e) {
-                startX = e.clientX;
-                endX = 0;
-                isDragging = true;
-
-                $(document).on('mousemove.gep_carousel', function(ev) {
-                    if (isDragging) {
-                        endX = ev.clientX;
-                    }
-                });
-
-                $(document).on('mouseup.gep_carousel', function() {
-                    if (isDragging) {
-                        isDragging = false;
-                        var diff = startX - endX;
-                        if (Math.abs(diff) > 75 && endX !== 0) {
-                            if (diff > 0) {
-                                nextSlide();
-                            } else {
-                                showSlide(currentSlide - 1);
-                            }
-                            startAutoplay();
-                        }
-                        startX = 0;
-                        endX = 0;
-                    }
-                    // Unbind namespace listeners instantly to free CPU cycles
-                    $(document).off('.gep_carousel');
-                });
-            });
-
-            startAutoplay();
+            $dots.removeClass('active').attr('aria-pressed', 'false').eq(index).addClass('active').attr('aria-pressed', 'true');
         }
+        $dots.on('click', function() { showSlide(Number($(this).data('index'))); });
+        showSlide(0);
     })();
-
-    // ─── Horizontal test-card rows: convert vertical mouse-wheel to horizontal
-    // scroll on desktop (mobile/touch already scrolls natively via overflow-x). ───
-    document.querySelectorAll('.gep-hscroll-row').forEach(function(row) {
-        row.addEventListener('wheel', function(e) {
-            if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; // let native horizontal wheel/trackpad through
-            if (row.scrollWidth <= row.clientWidth) return; // nothing to scroll
-            e.preventDefault();
-            row.scrollLeft += e.deltaY;
-        }, { passive: false });
-    });
 });

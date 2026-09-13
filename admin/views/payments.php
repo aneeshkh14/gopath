@@ -32,7 +32,7 @@
                 <option value="0">All Historical Data</option>
                 <option value="202605" selected>May 2026 (Active Cycle)</option>
             </select>
-            <button type="submit" class="button button-primary" style="height: 50px; border-radius: 14px; padding: 0 35px; font-weight: 900; font-size: 14px; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.25); letter-spacing: 0.5px;">Filter Intelligence</button>
+            <button type="submit" class="button button-primary" style="height: 50px; border-radius: 14px; padding: 0 35px; font-weight: 900; font-size: 14px; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.25); letter-spacing: 0.5px;">Filter Payments</button>
         </form>
     </div>
 

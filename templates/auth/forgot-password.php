@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             
             <div class="gep-form-group">
                 <label for="user_login">Username or Email</label>
-                <input type="text" name="user_login" id="user_login" class="gep-input" required placeholder="Enter your email">
+                <input type="text" name="user_login" id="user_login" autocomplete="username" class="gep-input" required placeholder="Enter your email">
             </div>
 
             <button type="submit" name="gep_forgot_submit" class="gep-btn gep-btn-primary gep-btn-block">Send Reset Link</button>

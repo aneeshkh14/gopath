@@ -29,6 +29,8 @@ class GEP_Shortcodes {
 	}
 
 	public function render_login() {
+		wp_enqueue_style( 'gep-auth-css' );
+		wp_enqueue_script( 'gep-auth-js' );
 		ob_start();
 		include GEP_PLUGIN_DIR . 'templates/auth/login.php';
 		return ob_get_clean();
@@ -98,13 +100,12 @@ class GEP_Shortcodes {
 				<div class="gep-glass" style="max-width:480px;width:100%;padding:56px 48px;border-radius:32px;text-align:center;">
 					<div style="width:80px;height:80px;background:rgba(16,185,129,0.12);border-radius:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:40px;">✅</div>
 					<h2 style="font-size:26px;font-weight:900;letter-spacing:-1px;margin:0 0 12px;color:#0f172a;">You Already Have Access!</h2>
-					<p style="color:#64748b;font-size:15px;line-height:1.6;margin:0 0 32px;">You have lifetime access to this ' . esc_html( $label ) . '. No need to purchase again.</p>
+					<p style="color:#64748b;font-size:15px;line-height:1.6;margin:0 0 32px;">You already have access to this ' . esc_html( $label ) . '. No need to purchase again.</p>
 					<a href="' . $go_url . '" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:14px;font-weight:800;font-size:15px;text-decoration:none;margin-bottom:16px;">
 						' . ( $item_type === 'course' ? '▶ Start Learning' : '📝 Go to My Purchases' ) . '
 					</a>
 					<br>
 					<a href="' . $dashboard_url . '" style="color:#6366f1;font-size:14px;font-weight:600;text-decoration:none;">← Back to Dashboard</a>
-					<script>setTimeout(function(){ window.location.href="' . $go_url . '"; }, 3000);</script>
 				</div>
 			</div>';
 		}
@@ -121,7 +122,7 @@ class GEP_Shortcodes {
 					<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
 				</div>
 				<h1>Enrollment <span class="gep-text-gradient-primary">Confirmed</span></h1>
-				<p>Welcome to the inner circle. Your intelligence assets have been provisioned and your access is now active.</p>
+				<p>Your access is active. Open your dashboard to start learning.</p>
 				<div class="status-actions">
 					<a href="'.gep_get_url('dashboard').'" class="gep-btn-sovereign-primary">Enter Dashboard</a>
 				</div>
@@ -144,8 +145,8 @@ class GEP_Shortcodes {
 				<div class="status-icon-wrap failed">
 					<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
 				</div>
-				<h1>Transmission <span style="color:#ef4444;">Interrupted</span></h1>
-				<p>We encountered a protocol error during payment verification. Your transaction could not be finalized.</p>
+				<h1>Payment <span style="color:#ef4444;">Not Confirmed</span></h1>
+				<p>We could not confirm your payment. If you were charged, contact support with your payment ID before trying again.</p>
 				<div class="status-actions">
 					<a href="'.gep_get_url('dashboard').'" class="gep-btn-sovereign-primary" style="background:#ef4444;">Back to Dashboard</a>
 				</div>
@@ -155,6 +156,11 @@ class GEP_Shortcodes {
 
 	public function render_dashboard() {
 		if ( ! is_user_logged_in() ) {
+			if ( isset($_GET['view']) && $_GET['view'] === 'policies' ) {
+				ob_start();
+				include GEP_PLUGIN_DIR . 'templates/dashboard/policies.php';
+				return ob_get_clean();
+			}
 			return $this->render_login();
 		}
 		

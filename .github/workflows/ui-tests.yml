@@ -1,0 +1,16 @@
+name: UI regression checks
+on: [push, pull_request]
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm test
+      - name: PHP syntax
+        run: find . -path './node_modules' -prune -o -name '*.php' -print0 | xargs -0 -n 1 php -l

@@ -264,6 +264,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    const initialTab = new URLSearchParams(window.location.search).get('tab');
+    tabs.forEach(btn => { if (btn.dataset.tab === initialTab) btn.click(); });
     // 2. AJAX Dynamic Quiz Launch
     const ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';
     

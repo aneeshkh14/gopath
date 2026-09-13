@@ -1,64 +1,50 @@
-jQuery(document).ready(function($) {
-    // OTP Verification
-    $('#gep-verify-otp-btn').on('click', function() {
-        const btn = $(this);
-        const code = $('#gep_otp_code').val();
-        const userId = $('#gep_otp_uid').val();
-        const errorMsg = $('#gep-otp-error');
-
-        if (code.length !== 6) {
-            errorMsg.text('Please enter a 6-digit code').show();
+jQuery(function($) {
+    'use strict';
+    var $form = $('#gep-otp-form'), $code = $('#gep_otp_code');
+    var $btn = $('#gep-verify-otp-btn'), $error = $('#gep-otp-error');
+    var verifying = false;
+    $code.on('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+        this.removeAttribute('aria-invalid');
+        $error.hide();
+    });
+    $form.on('submit', function(e) {
+        e.preventDefault();
+        if (verifying) return;
+        if (!/^\d{6}$/.test($code.val())) {
+            $error.text('Enter the 6-digit code from your email.').show();
+            $code.attr('aria-invalid', 'true').trigger('focus');
             return;
         }
-
-        btn.prop('disabled', true).text('Verifying...');
-        errorMsg.hide();
-
+        verifying = true;
+        $btn.prop('disabled', true).text('Verifying…');
+        $error.hide();
         $.ajax({
-            url: ajaxurl,
+            url: GEP_Auth.ajaxurl,
             method: 'POST',
-            data: {
-                action: 'gep_verify_otp',
-                otp: code,
-                user_id: userId,
-                nonce: $('#gep_nonce').val()
-            },
+            timeout: 20000,
+            data: { action: 'gep_verify_otp', otp: $code.val(), user_id: $('#gep_otp_uid').val(), nonce: $('#gep_nonce').val() },
             success: function(response) {
-                if (response.success) {
-                    sessionStorage.removeItem('gep_current_lang');
+                if (response && response.success && response.data.redirect) {
+                    try { sessionStorage.removeItem('gep_current_lang'); } catch (e) {}
                     window.location.href = response.data.redirect;
                 } else {
-                    btn.prop('disabled', false).text('Verify & Login');
-                    errorMsg.text(response.data.message).show();
+                    $error.text(response && response.data && response.data.message || 'The code could not be verified. Check it and try again.').show();
+                    $code.attr('aria-invalid', 'true').trigger('focus');
                 }
-            }
+            },
+            error: function() { $error.text('Could not connect. Your code is still here; please try again.').show(); },
+            complete: function() { verifying = false; $btn.prop('disabled', false).text('Verify & Login'); }
         });
     });
-
-    // Handle OTP input formatting and auto-focus
-    $('.gep-otp-box').on('input', function() {
-        this.value = this.value.replace(/[^0-9]/g, '');
-        if (this.value) {
-            $(this).next('.gep-otp-box').focus();
-        }
-        collectOTP();
-    });
-
-    $('.gep-otp-box').on('keydown', function(e) {
-        if (e.key === 'Backspace' && !this.value) {
-            $(this).prev('.gep-otp-box').focus();
-        }
-    });
-
-    function collectOTP() {
-        let code = '';
-        $('.gep-otp-box').each(function() {
-            code += $(this).val();
+    // Password managers and paste remain available; revealing is always explicit.
+    $('.gep-auth-card input[type="password"]').each(function() {
+        var input = this;
+        var $toggle = $('<button type="button" class="gep-auth-password-toggle" aria-pressed="false">Show password</button>');
+        $toggle.attr('aria-controls', input.id).insertAfter(input).on('click', function() {
+            var show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            $(this).attr('aria-pressed', String(show)).text(show ? 'Hide password' : 'Show password');
         });
-        $('#gep_otp_code').val(code);
-        
-        if (code.length === 6) {
-            $('#gep-verify-otp-btn').click();
-        }
-    }
+    });
 });

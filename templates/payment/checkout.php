@@ -64,10 +64,10 @@ if ( ! isset($item) || ! $item ) {
                         
                         <div class="gep-coupon-section-modern">
                             <div class="input-wrap">
-                                <input type="text" id="gep-coupon-code" placeholder="HAVE A COUPON?">
+                                <input type="text" id="gep-coupon-code" aria-label="Coupon code" aria-describedby="gep-coupon-status" placeholder="HAVE A COUPON?">
                                 <button type="button" id="gep-apply-coupon">APPLY</button>
                             </div>
-                            <div id="gep-coupon-status"></div>
+                            <div id="gep-coupon-status" role="status" aria-live="polite"></div>
                         </div>
 
                         <div class="summary-divider"></div>
@@ -76,7 +76,7 @@ if ( ! isset($item) || ! $item ) {
                             <span class="label">Total Amount</span>
                             <div class="final-price-wrap">
                                 <span class="currency">₹</span>
-                                <span class="value" id="gep-final-amount"><?php echo number_format($item->price, 2); ?></span>
+                                <span class="value" id="gep-final-amount" aria-live="polite"><?php echo number_format($item->price, 2); ?></span>
                             </div>
                         </div>
                     </div>

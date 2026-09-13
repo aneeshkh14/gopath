@@ -4638,3 +4638,11 @@ span.sa-text.active { display: inline; }
 }
 
 
+
+/* Save feedback stays legible on narrow screens. */
+#gep-save-status { position: fixed; bottom: 4px; left: 50%; transform: translateX(-50%); z-index: 10001; max-width: calc(100vw - 24px); padding: 4px 10px; border-radius: 6px; font-size: 12px; line-height: 1.4; background: #ecfdf5; color: #065f46; pointer-events: none; }
+#gep-save-status.is-pending { background: #fffbeb; color: #92400e; }
+#gep-modal-overlay > div { max-height: calc(100dvh - 24px); overflow: auto; }
+#gep-toast { white-space: normal !important; max-width: calc(100vw - 24px); overflow-wrap: anywhere; }
+#gep-modal-overlay :focus-visible { outline: 3px solid #4f46e5; outline-offset: 3px; }
+@media (max-width: 600px) { #gep-modal-overlay > div { padding: 28px 20px !important; } }

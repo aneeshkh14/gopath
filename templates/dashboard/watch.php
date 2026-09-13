@@ -134,10 +134,10 @@ $progress_percent = $total_lessons > 0 ? round(($completed_lessons / $total_less
                             <div class="gep-doubt-engine">
                                 <?php if ($current_lesson) : ?>
                                     <div class="doubt-input-area">
-                                        <textarea id="gep-doubt-text" placeholder="Ask a question about this lesson..."></textarea>
+                                        <textarea aria-label="Your question about this lesson" id="gep-doubt-text" placeholder="Ask a question about this lesson..."></textarea>
                                         <button id="gep-submit-doubt" class="button button-primary" data-lesson-id="<?php echo esc_attr($current_lesson->id); ?>" data-course-id="<?php echo esc_attr($course_id); ?>">Post Doubt</button>
                                     </div>
-                                    <div id="gep-doubt-list" class="doubt-feed" style="margin-top: 25px;">
+                                    <div id="gep-doubt-list" role="status" class="doubt-feed" style="margin-top: 25px;">
                                         <!-- Doubts loaded via AJAX -->
                                         <div style="text-align: center; color: var(--admin-muted); font-size: 14px; padding: 20px;">Loading doubts...</div>
                                     </div>
@@ -850,6 +850,7 @@ document.addEventListener('DOMContentLoaded', function() {
         jQuery.ajax({
             url: gep_ajax.ajax_url,
             type: 'POST',
+            timeout: 20000,
             data: { action: 'gep_get_doubts', lesson_id: lessonId, course_id: courseId, nonce: gep_ajax.nonce },
             success: function(res) {
                 if(res.success) {
@@ -860,11 +861,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         res.data.forEach(function(d) {
                             html += '<div style="background: #f8fafc; border: 1px solid var(--admin-border); border-radius: 12px; padding: 15px; margin-bottom: 15px;">';
                             html += '<div style="font-size: 11px; font-weight: 800; color: var(--admin-muted); text-transform: uppercase; margin-bottom: 5px;">STUDENT QUESTION</div>';
-                            html += '<div style="font-size: 14px; color: var(--admin-text); font-weight: 600; margin-bottom: 10px;">' + d.question + '</div>';
+                            html += '<div style="font-size: 14px; color: var(--admin-text); font-weight: 600; margin-bottom: 10px;">' + jQuery('<div>').text(d.question).html() + '</div>';
                             if (d.answer) {
                                 html += '<div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px;">';
                                 html += '<div style="font-size: 11px; font-weight: 800; color: #166534; text-transform: uppercase; margin-bottom: 3px;">EXPERT REPLY</div>';
-                                html += '<div style="font-size: 13px; color: #166534; font-weight: 600;">' + d.answer + '</div>';
+                                html += '<div style="font-size: 13px; color: #166534; font-weight: 600;">' + jQuery('<div>').text(d.answer).html() + '</div>';
                                 html += '</div>';
                             } else {
                                 html += '<div style="font-size: 11px; color: #d97706; font-weight: 700; margin-top: 5px;">⏳ Awaiting Expert Reply</div>';
@@ -873,8 +874,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                     }
                     doubtList.html(html);
-                }
-            }
+                } else doubtList.text('Could not load the discussion. Open this tab again to retry.');
+            },
+            error: function() { doubtList.text('Could not load the discussion. Open this tab again to retry.'); }
         });
     }
 
@@ -890,6 +892,7 @@ document.addEventListener('DOMContentLoaded', function() {
         jQuery.ajax({
             url: gep_ajax.ajax_url,
             type: 'POST',
+            timeout: 20000,
             data: { action: 'gep_post_doubt', lesson_id: lessonId, course_id: courseId, question: text, nonce: gep_ajax.nonce },
             success: function(res) {
                 btn.prop('disabled', false).text('Post Doubt');
@@ -897,9 +900,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     jQuery('#gep-doubt-text').val('');
                     loadDoubts();
                 } else {
-                    alert('Error posting doubt. Try again.');
+                    alert('Could not post your question. Your text is still here; please try again.');
                 }
-            }
+            },
+            error: function() { alert('Could not connect. Your question is still here; please try again.'); },
+            complete: function() { btn.prop('disabled', false).text('Post Doubt'); }
         });
     });
 
@@ -922,6 +927,7 @@ document.addEventListener('DOMContentLoaded', function() {
         jQuery.ajax({
             url: gep_ajax.ajax_url,
             type: 'POST',
+            timeout: 20000,
             data: {
                 action: 'gep_toggle_lesson_completion',
                 lesson_id: lessonId,

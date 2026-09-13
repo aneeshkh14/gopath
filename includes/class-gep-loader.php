@@ -240,6 +240,7 @@ class GEP_Loader {
 		);
 		
 		wp_register_script( 'gep-auth-js', GEP_PLUGIN_URL . 'public/js/gep-auth.js', array('jquery'), GEP_VERSION, array( 'in_footer' => true, 'strategy' => 'defer' ) );
+		wp_localize_script( 'gep-auth-js', 'GEP_Auth', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
 		wp_register_script( 'gep-dashboard-js', GEP_PLUGIN_URL . 'public/js/gep-dashboard.js', array('jquery'), GEP_VERSION, array( 'in_footer' => true, 'strategy' => 'defer' ) );
 		wp_register_script( 'gep-instructions-js', GEP_PLUGIN_URL . 'public/js/gep-instructions.js', array('jquery'), GEP_VERSION, array( 'in_footer' => true, 'strategy' => 'defer' ) ); 
 		wp_register_script( 'gep-exam-js', GEP_PLUGIN_URL . 'public/js/gep-exam.js', array('jquery'), GEP_VERSION, array( 'in_footer' => true, 'strategy' => 'defer' ) );
@@ -262,6 +263,7 @@ class GEP_Loader {
 		$gep_chrome_shortcodes = array(
 			'gep_dashboard', 'gep_result', 'gep_checkout',
 			'gep_payment_success', 'gep_payment_failed', 'gep_home',
+			'gep_login', 'gep_register', 'gep_forgot_password',
 		);
 		$gep_needs_chrome = ( is_front_page() && is_user_logged_in() );
 		if ( ! $gep_needs_chrome && is_a( $post, 'WP_Post' ) ) {
