@@ -1,7 +1,7 @@
 <?php
 // Isolated handler tests: WordPress I/O is stubbed; no mail, DB or payments leave this process.
 define('ABSPATH', __DIR__ . '/'); define('MINUTE_IN_SECONDS', 60);
-class WP_Error { public $code; public function __construct($code, $message='') {$this->code=$code;} public function get_error_code(){return $this->code;} }
+class WP_Error { public $code; public $message; public function __construct($code, $message='') {$this->code=$code;$this->message=$message;} public function get_error_code(){return $this->code;} public function get_error_message(){return $this->message;} }
 class JsonResponse extends Exception {public $success;public $data;public function __construct($success,$data){$this->success=$success;$this->data=$data;}}
 class RedirectResponse extends Exception {}
 function is_wp_error($x){return $x instanceof WP_Error;}
@@ -32,6 +32,7 @@ function absint($value){return abs((int)$value);}
 function sanitize_text_field($value){return trim($value);}
 function sanitize_textarea_field($value){return trim($value);}
 function wp_unslash($value){return $value;}
+function wp_timezone(){return new DateTimeZone('UTC');}
 function current_time($type){return $type === 'timestamp' ? time() : date('Y-m-d H:i:s');}
 function get_gmt_from_date($date,$format){return (new DateTimeImmutable($date,new DateTimeZone('Asia/Kolkata')))->setTimezone(new DateTimeZone('UTC'))->format($format);}
 function wp_send_json_success($data=[]){throw new JsonResponse(true,$data);}
@@ -58,3 +59,5 @@ function response($fn){try{$fn();}catch(JsonResponse $r){return $r;}throw new Ex
 function wp_remote_post($url,$args){return ['response'=>['code'=>200],'body'=>json_encode(['id'=>'order_fixture','amount'=>10000,'currency'=>'INR'])];}
 function wp_remote_retrieve_response_code($response){return $response['response']['code'];}
 function wp_remote_retrieve_body($response){return $response['body'];}
+
+require __DIR__.'/../admin/class-gep-admin-coupons.php';

@@ -1,55 +1,59 @@
+<?php $coupon_values = GEP_Admin_Coupons::$form_values; $coupon_error = GEP_Admin_Coupons::$form_error; ?>
 <?php if (isset($_GET['message']) && $_GET['message'] === 'failed') : ?>
 <div class="notice notice-error" role="alert"><p>Could not update the coupon. Please try again.</p></div>
 <?php endif; ?>
+<?php if ($coupon_error) : ?><div class="notice notice-error" role="alert"><p><?php echo esc_html($coupon_error); ?></p></div><?php elseif (isset($_GET['message']) && $_GET['message'] === 'saved') : ?><div class="notice notice-success" role="status"><p>Coupon saved.</p></div><?php endif; ?>
 <div class="wrap gep-admin-wrap">
     <div class="gep-admin-header" style="margin-bottom: 35px; display: flex; justify-content: space-between; align-items: center;">
         <div>
-            <h1 style="margin: 0;">Discount & Revenue Shields</h1>
+            <h1 style="margin: 0;">Coupons</h1>
             <p style="color: var(--admin-muted); font-weight: 600;">Manage promotional codes and student acquisition campaigns.</p>
         </div>
         <button onclick="document.getElementById('add-coupon-modal').style.display='flex'" class="button button-primary" style="height: 50px; border-radius: 12px; padding: 0 30px; font-weight: 800; font-size: 14px;">+ Generate Coupon</button>
     </div>
 
     <!-- Generate Coupon Modal -->
-    <div id="add-coupon-modal" class="gep-modal-overlay">
+    <div id="add-coupon-modal" class="gep-modal-overlay" <?php if ($coupon_error) echo 'style="display:flex"'; ?>>
         <div class="gep-modal-content" style="width: 500px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h2 style="margin: 0; font-weight: 900; font-size: 22px;">Generate Revenue Shield</h2>
-                <button onclick="document.getElementById('add-coupon-modal').style.display='none'" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--admin-muted);">&times;</button>
+                <h2 style="margin: 0; font-weight: 900; font-size: 22px;">Create Coupon</h2>
+                <button type="button" aria-label="Close coupon form" onclick="document.getElementById('add-coupon-modal').style.display='none'" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--admin-muted);">&times;</button>
             </div>
             
+            <?php if ($coupon_error) : ?><p role="alert" style="color:#b91c1c;"><?php echo esc_html($coupon_error); ?></p><?php endif; ?>
             <form method="post" action="">
                 <?php wp_nonce_field('gep_coupon_action', 'gep_coupon_nonce'); ?>
                 <div style="margin-bottom: 25px;">
-                    <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Coupon Identity (Code)</label>
-                    <input type="text" name="code" placeholder="e.g. WELCOME10" required style="font-family: monospace; font-size: 18px; font-weight: 900; text-transform: uppercase;">
+                    <label for="gep-coupon-code" style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Coupon Code</label>
+                    <input type="text" name="code" id="gep-coupon-code" maxlength="50" value="<?php echo esc_attr($coupon_values['code'] ?? ''); ?>" placeholder="e.g. WELCOME10" required style="font-family: monospace; font-size: 18px; font-weight: 900; text-transform: uppercase;">
                 </div>
 
                 <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 25px;">
                     <div>
-                        <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Benefit Value</label>
-                        <input type="number" name="value" placeholder="10" required>
+                        <label for="gep-coupon-value" style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Discount Value</label>
+                        <input type="number" name="value" id="gep-coupon-value" min="0.01" step="0.01" value="<?php echo esc_attr($coupon_values['value'] ?? ''); ?>" placeholder="10" required>
                     </div>
                     <div>
-                        <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Logic Type</label>
-                        <select name="type">
-                            <option value="percent">Percentage (%)</option>
-                            <option value="fixed">Fixed (INR)</option>
+                        <label for="gep-coupon-type" style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Discount Type</label>
+                        <select name="type" id="gep-coupon-type">
+                            <option value="percent" <?php selected($coupon_values['type'] ?? 'percent', 'percent'); ?>>Percentage (%)</option>
+                            <option value="fixed" <?php selected($coupon_values['type'] ?? 'percent', 'fixed'); ?>>Fixed (INR)</option>
                         </select>
                     </div>
                 </div>
 
                 <div style="margin-bottom: 25px;">
-                    <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Usage Velocity (Limit)</label>
-                    <input type="number" name="usage_limit" value="100" placeholder="0 for unlimited">
+                    <label for="gep-coupon-limit" style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Usage Limit (0 = unlimited)</label>
+                    <input type="number" name="usage_limit" id="gep-coupon-limit" min="0" step="1" value="<?php echo esc_attr($coupon_values['usage_limit'] ?? 100); ?>" placeholder="0 for unlimited">
                 </div>
 
                 <div style="margin-bottom: 35px;">
-                    <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Expiration Term</label>
-                    <input type="date" name="expiry_date" value="<?php echo date('Y-m-d', strtotime('+30 days')); ?>">
+                    <label for="gep-coupon-expiry" style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Expiry Date</label>
+                    <p>Valid through the end of the selected day in the site timezone. Leave blank for no expiry.</p>
+                    <input type="date" name="expiry_date" id="gep-coupon-expiry" value="<?php echo esc_attr($coupon_values['expiry_date'] ?? wp_date('Y-m-d', strtotime('+30 days'))); ?>">
                 </div>
 
-                <button type="submit" name="gep_add_coupon" class="button button-primary" style="width: 100%; height: 55px; border-radius: 14px; font-weight: 900; font-size: 16px;">🚀 Authorize Coupon</button>
+                <button type="submit" name="gep_add_coupon" class="button button-primary" style="width: 100%; height: 55px; border-radius: 14px; font-weight: 900; font-size: 16px;">Save Coupon</button>
             </form>
         </div>
     </div>
@@ -59,11 +63,11 @@
             <thead>
                 <tr>
                     <th>Coupon Code</th>
-                    <th>Discount Logic</th>
-                    <th>Benefit Value</th>
-                    <th>Velocity (Usage)</th>
+                    <th>Discount Type</th>
+                    <th>Discount Value</th>
+                    <th>Usage</th>
                     <th>Term / Expiry</th>
-                    <th style="text-align: right;">Shield Status</th>
+                    <th style="text-align: right;">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -89,7 +93,7 @@
                             </td>
                             <td>
                                 <span style="font-weight: 900; font-size: 16px; color: #10b981;">
-                                    <?php echo $c->type === 'percent' ? $c->value . '%' : '₹' . number_format($c->value, 0); ?>
+                                    <?php echo $c->type === 'percent' ? $c->value . '%' : '₹' . number_format($c->value, 2); ?>
                                 </span>
                             </td>
                             <td>
