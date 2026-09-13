@@ -675,10 +675,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
             else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         });
-        // Close before opening another dialog; restore the exam's interactivity.
-        examSidebar.addEventListener('click', e => {
-            if (e.target.closest('#gep-submit-btn, #gep-btn-instructions, #gep-btn-qpaper')) setPaletteOpen(false);
-        }, true);
+        // Each action closes the palette in its own click handler. Hiding or
+        // making the clicked sidebar inert during capture can interrupt a tap.
         window.addEventListener('resize', syncPaletteVisibility);
         syncPaletteVisibility();
     }
@@ -848,7 +846,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeInst = document.getElementById('gep-inst-close');
 
     if (btnInst && modalInst) {
-        btnInst.addEventListener('click', () => { modalInst.style.display = 'flex'; });
+        btnInst.addEventListener('click', () => {
+            setPaletteOpen(false);
+            modalInst.style.display = 'flex';
+        });
         if (closeInst) closeInst.addEventListener('click', () => { modalInst.style.display = 'none'; });
         modalInst.addEventListener('click', (e) => { if (e.target === modalInst) modalInst.style.display = 'none'; });
     }
@@ -858,7 +859,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeQpaper = document.getElementById('gep-qpaper-close');
 
     if (btnQpaper && modalQpaper) {
-        btnQpaper.addEventListener('click', () => { modalQpaper.style.display = 'flex'; });
+        btnQpaper.addEventListener('click', () => {
+            setPaletteOpen(false);
+            modalQpaper.style.display = 'flex';
+        });
         if (closeQpaper) closeQpaper.addEventListener('click', () => { modalQpaper.style.display = 'none'; });
         modalQpaper.addEventListener('click', (e) => { if (e.target === modalQpaper) modalQpaper.style.display = 'none'; });
     }
@@ -1186,14 +1190,23 @@ document.addEventListener('DOMContentLoaded', function() {
         panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.tabIndex = -1;
         const heading = panel.querySelector('h2, h3');
         if (heading) { heading.id = overlay.id + '-title'; panel.setAttribute('aria-labelledby', heading.id); }
-        let opened = false, opener = null;
+        let opened = false, opener = null, previousLayoutInert;
+        // Reference dialogs are siblings of the grid. The calculator is
+        // inside it, so do not make the calculator's own ancestor inert.
+        const blocksLayout = examLayout && !examLayout.contains(overlay);
         const controls = () => Array.from(panel.querySelectorAll('button, a[href], input, select, textarea, [tabindex="0"]')).filter(el => !el.disabled && !el.hidden && getComputedStyle(el).display !== 'none');
         new MutationObserver(() => {
             const visible = getComputedStyle(overlay).display !== 'none';
             if (visible === opened) return;
             opened = visible;
-            if (opened) { opener = document.activeElement; (controls()[0] || panel).focus(); }
-            else if (opener && opener.isConnected) opener.focus();
+            if (opened) {
+                opener = document.activeElement;
+                if (blocksLayout) { previousLayoutInert = examLayout.inert; examLayout.inert = true; }
+                (controls()[0] || panel).focus();
+            } else {
+                if (blocksLayout) examLayout.inert = previousLayoutInert;
+                if (opener && opener.isConnected) opener.focus();
+            }
         }).observe(overlay, {attributes: true, attributeFilter: ['style']});
         overlay.addEventListener('keydown', e => {
             if (e.key === 'Escape') { e.preventDefault(); overlay.style.display = 'none'; }
@@ -1397,4 +1410,3 @@ document.addEventListener('DOMContentLoaded', function() {
     //    and the palette could not be scrolled at all. Nothing replaces it.
 
 });
-
