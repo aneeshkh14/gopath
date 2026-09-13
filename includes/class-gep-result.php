@@ -52,7 +52,7 @@ class GEP_Result {
 
 		$test_logic = new GEP_Test();
 		$test = $test_logic->get_test( $attempt->test_id );
-		
+
 		$question_ids = $test_logic->get_test_questions( $test->id, $attempt->id );
 		$question_logic = new GEP_Question();
 		$questions = $question_logic->get_questions_by_ids( $question_ids );
@@ -86,14 +86,14 @@ class GEP_Result {
 		global $wpdb;
 		$attempts_table = $wpdb->prefix . 'gep_attempts';
 		$tests_table = $wpdb->prefix . 'gep_tests';
-		
-		$results = $wpdb->get_results( $wpdb->prepare( 
-			"SELECT a.*, COALESCE(t.total_marks, 0) AS total_marks, COALESCE(t.title, 'PYQ Practice Test') as test_name 
-			 FROM $attempts_table a 
-			 LEFT JOIN $tests_table t ON a.test_id = t.id 
-			 WHERE a.user_id = %d AND a.status = 'submitted' 
-			 ORDER BY a.end_time DESC, a.id DESC", 
-			$user_id 
+
+		$results = $wpdb->get_results( $wpdb->prepare(
+			"SELECT a.*, COALESCE(t.total_marks, 0) AS total_marks, COALESCE(t.title, 'PYQ Practice Test') as test_name
+			 FROM $attempts_table a
+			 LEFT JOIN $tests_table t ON a.test_id = t.id
+			 WHERE a.user_id = %d AND a.status = 'submitted'
+			 ORDER BY a.end_time DESC, a.id DESC",
+			$user_id
 		) );
 
 		foreach ( $results as $r ) {

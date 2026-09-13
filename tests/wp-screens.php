@@ -50,7 +50,23 @@ wp_set_current_user(in_array($kind,['admin','admin-reply'],true)?1:($kind==='aut
 $shortcodes=new GEP_Shortcodes();
 try {
     $html=''; $_GET=[]; $_POST=[]; $_REQUEST=[];
-    if ($kind==='pass-renewal') {
+    if ($kind==='pass-concurrent') {
+        if(!function_exists('pcntl_fork'))throw new RuntimeException('pcntl is required.');
+        update_option('gep_razorpay_key_secret',base64_encode('fixture-secret'));
+        $before=get_user_meta($student,'gep_pass_expiry',true);
+        foreach([1,2] as $n)insert_fixture('orders',['user_id'=>$student,'item_id'=>1,'item_type'=>'pass','status'=>'pending','amount'=>99,'razorpay_order_id'=>'fixture_order_'.$n,'created_at'=>current_time('mysql')]);
+        $wpdb->close();$children=[];
+        foreach([1,2] as $n){
+            $pid=pcntl_fork();if($pid===-1)throw new RuntimeException('Could not fork.');
+            if($pid===0){$wpdb->db_connect();$order='fixture_order_'.$n;$payment='fixture_payment_'.$n;$ok=(new GEP_Payment())->verify_payment($order,$payment,hash_hmac('sha256',$order.'|'.$payment,'fixture-secret'));while(ob_get_level())ob_end_clean();exit($ok?0:1);}
+            $children[]=$pid;
+        }
+        foreach($children as $pid){pcntl_waitpid($pid,$status);if(pcntl_wexitstatus($status)!==0)throw new RuntimeException('Concurrent pass verification failed.');}
+        $wpdb->db_connect();wp_cache_delete($student,'user_meta');
+        $expected=date('Y-m-d H:i:s',strtotime('+60 days',strtotime($before)));
+        if(get_user_meta($student,'gep_pass_expiry',true)!==$expected)throw new RuntimeException('Concurrent renewals lost time.');
+        $html='Both concurrent pass renewals preserved their purchased duration.';
+    } elseif ($kind==='pass-renewal') {
         $expires=date('Y-m-d H:i:s', current_time('timestamp') + 60 * DAY_IN_SECONDS);
         update_user_meta($student, 'gep_pass_expiry', $expires);
         insert_fixture('coupons',['code'=>'FIXTUREFREE','type'=>'percent','value'=>100]);

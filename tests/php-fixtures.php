@@ -7,6 +7,8 @@ class RedirectResponse extends Exception {}
 function is_wp_error($x){return $x instanceof WP_Error;}
 function media_handle_upload(){}
 function wp_cache_delete(...$args){}
+function get_user_meta($id,$key,$single=true){return $GLOBALS['user_meta'][$id][$key] ?? ''; }
+function update_user_meta($id,$key,$value){$GLOBALS['user_meta'][$id][$key]=$value;return true;}
 function get_current_user_id(){return $GLOBALS['uid'];}
 function is_user_logged_in(){return $GLOBALS['uid'] > 0;}
 function wp_set_current_user($id){$GLOBALS['uid']=$id;}
@@ -35,13 +37,13 @@ function get_gmt_from_date($date,$format){return (new DateTimeImmutable($date,ne
 function wp_send_json_success($data=[]){throw new JsonResponse(true,$data);}
 function wp_send_json_error($data=[]){throw new JsonResponse(false,$data);}
 class TestDb {
- public $prefix='wp_', $results=[], $rows=[], $updates=[], $inserts=[], $queries=[], $update_result=1;
+ public $prefix='wp_', $users='wp_users', $vars=[], $results=[], $rows=[], $updates=[], $inserts=[], $queries=[], $update_result=1;
  function prepare($query,...$args){return $query;}
  function get_row($query){return array_shift($this->rows);}
  function update($table,$data,$where,...$args){$this->updates[]=[$table,$data,$where];return $this->update_result;}
  function insert($table,$data){$this->inserts[]=[$table,$data];return 1;}
  function query($query){$this->queries[]=$query;return 1;}
- function get_var($query){return null;}
+ function get_var($query){return array_shift($this->vars);}
  function get_results($query){return $this->results;}
 }
 require __DIR__.'/../includes/class-gep-auth.php';

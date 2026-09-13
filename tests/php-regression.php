@@ -3,7 +3,7 @@ require __DIR__.'/php-fixtures.php';
 $passed=0;$failed=0;
 function scenario($name,$fn){
  global $passed,$failed,$wpdb,$uid,$options,$transients,$mail_ok,$cookie;
- $wpdb=new TestDb();$uid=7;$options=['gep_enable_otp'=>'yes','gep_razorpay_key_secret'=>base64_encode('test-secret')];$transients=[];$mail_ok=true;$cookie=null;$_POST=[];$_GET=[];
+ $wpdb=new TestDb();$uid=7;$options=['gep_enable_otp'=>'yes','gep_razorpay_key_secret'=>base64_encode('test-secret')];$transients=[];$mail_ok=true;$cookie=null;$GLOBALS['user_meta']=[];$_POST=[];$_GET=[];
  try{$fn();$passed++;echo "PASS $name\n";}catch(Throwable $e){$failed++;echo "FAIL $name: {$e->getMessage()}\n";}
 }
 scenario('OTP is emailed, single use and has the same advertised expiry',function(){
@@ -82,5 +82,13 @@ scenario('subject tracker ignores corrupt and empty answers while preserving zer
 scenario('order history labels passes and keeps deleted items visible',function(){
  global $wpdb;$wpdb->results=[(object)['item_type'=>'pass','item_id'=>2,'item_title'=>null],(object)['item_type'=>'course','item_id'=>9,'item_title'=>null],(object)['item_type'=>'test','item_id'=>2,'item_title'=>'Mock test']];$orders=(new GEP_Payment())->get_user_orders(7);
  expect($orders[0]->item_title==='Yearly Mock Test Pass Pro');expect($orders[1]->item_title==='Unavailable item #9');expect($orders[2]->item_title==='Mock test');
+});
+scenario('renewing a pass preserves remaining access time',function(){
+ global $wpdb;$old=date('Y-m-d H:i:s',time()+60*86400);update_user_meta(7,'gep_pass_expiry',$old);$wpdb->rows[]=(object)['id'=>4,'user_id'=>7,'item_id'=>1,'item_type'=>'pass','status'=>'pending'];$wpdb->vars=[7];
+ $signature=hash_hmac('sha256','order_test|pay_test','test-secret');expect((new GEP_Payment())->verify_payment('order_test','pay_test',$signature));expect(get_user_meta(7,'gep_pass_expiry',true)===date('Y-m-d H:i:s',strtotime('+30 days',strtotime($old))));
+});
+scenario('an expired pass renewal starts from now',function(){
+ global $wpdb;update_user_meta(7,'gep_pass_expiry',date('Y-m-d H:i:s',time()-86400));$wpdb->rows[]=(object)['id'=>4,'user_id'=>7,'item_id'=>2,'item_type'=>'pass','status'=>'pending'];$wpdb->vars=[7];$before=time();
+ $signature=hash_hmac('sha256','order_test|pay_test','test-secret');expect((new GEP_Payment())->verify_payment('order_test','pay_test',$signature));expect(abs(strtotime(get_user_meta(7,'gep_pass_expiry',true))-strtotime('+365 days',$before))<=1);
 });
 echo "$passed PHP scenarios passed; $failed failed.\n";exit($failed?1:0);

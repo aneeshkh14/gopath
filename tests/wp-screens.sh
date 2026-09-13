@@ -19,5 +19,6 @@ for view in home payment-success payment-failed; do php tests/wp-screens.php pag
 php tests/wp-screens.php admin-reply doubts seeded || failures=$((failures+1))
 php tests/wp-screens.php journey exam seeded || failures=$((failures+1))
 php tests/wp-screens.php pass-renewal pass seeded || failures=$((failures+1))
+php tests/wp-screens.php pass-concurrent pass seeded || failures=$((failures+1))
 if ((failures)); then echo "$failures WordPress rendering cases failed"; exit 1; fi
-echo '108 WordPress rendering and journey cases passed (plus fixture setup).'
+echo '109 WordPress rendering and journey cases passed (plus fixture setup).'

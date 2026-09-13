@@ -6,7 +6,7 @@ Base: `claude/blissful-wozniak-6tqprs` at `55b8bbd`. Implementation branch: `cod
 
 This is a broad source review with targeted interaction regression tests, **not a claim that every possible session or device has passed end-to-end testing**. The repository contains 89 PHP files, nine external JavaScript files, 30 screen templates plus the portal layout, and 17 admin views.
 
-The existing public homepage and its test-series/sign-in path were inspected in the browser. The homepage's secondary CTA was unreadable in the light theme. Authenticated screens were reviewed from their templates, scripts and handlers. No staging WordPress installation, student/admin credentials, payment sandbox credentials or email delivery environment was available. The modified branch has not been deployed or browser-rendered in WordPress.
+The existing public homepage and its test-series/sign-in path were inspected in the browser. The homepage's secondary CTA was unreadable in the light theme. Authenticated screens were reviewed from their templates, scripts and handlers. No externally accessible staging WordPress installation, student/admin credentials, payment sandbox credentials or email delivery environment was available. The third pass added a disposable WordPress 7.1/MySQL CI installation with fixture accounts. Student/admin screens and full portal layouts render there without invoking a browser. The modified branch has not been deployed to the user’s site or visually browser-tested.
 
 ## Implemented improvements
 
@@ -40,8 +40,8 @@ The existing public homepage and its test-series/sign-in path were inspected in 
 | Browse tests | Source; combined search/filter/reset and dialog interaction tests |
 | Get pass | Source; responsive plan grid; routes through checkout |
 | My purchases | Source; shared navigation/theme; entitlement combinations pending |
-| Orders | Source; shared navigation/theme; payment-history data states pending |
-| Results | Source; added discoverable sidebar route; live scoring/data states pending |
+| Orders | New navigation route; real WordPress rendering and MySQL history isolation, pass/course/test/deleted-item records |
+| Results | WordPress rendering with completed attempts; consistent grading and latest-response subject summaries |
 | Profile | Source; invalid hidden section, duplicate submit and error retention tests |
 | Notifications | Source; panel keyboard/dismissal tests; full-list action markup |
 | Support | Source; labels, status feedback, mobile grid |
@@ -62,19 +62,19 @@ The existing public homepage and its test-series/sign-in path were inspected in 
 | Checkout | Source; coupon races, repeated order prevention, failed verification and gateway errors tested with mocks |
 | Payment success | Source, including shortcode-rendered status; plainer confirmation copy |
 | Payment failure | Source, including shortcode-rendered status; charged-but-unconfirmed guidance |
-| Portal layout | Source; mobile drawer, search, notification and resize DOM interaction tests |
+| Portal layout | Full WordPress rendering with empty/populated dashboard, purchases, orders and exam; mobile drawer, search, notification and resize DOM tests |
 
-Admin views reviewed: dashboard, categories, questions, tests, courses, lessons, lectures, live classes, students, attempts, reports, payments, coupons, notifications, doubts, violations and settings. Shared dialog/table/focus improvements apply across their existing markup. Targeted tests cover enrollment load/save failures, question retrieval failure and modal focus restoration. CRUD, uploads, email, exports and destructive settings were not exercised against a live database.
+Admin views reviewed: dashboard, categories, questions, tests, courses, lessons, lectures, live classes, students, attempts, reports, payments, coupons, notifications, doubts, violations and settings. Shared dialog/table/focus improvements apply across their existing markup. Targeted DOM tests cover enrollment load/save failures, question retrieval failure and modal focus restoration. All 17 admin views render against WordPress/MySQL with empty and populated fixtures; the doubt-reply flow also persists a reply. Other admin CRUD, real uploads, email, exports and destructive settings still require staging coverage.
 
 ## Repeatable verification
 
 Run `npm ci --ignore-scripts`, `npm run lint`, and `npm test` with Node 22 or newer. Development dependencies are not needed by WordPress. CI also runs PHP syntax checks.
 
-- **52 passing DOM interaction tests** using actual frontend scripts, JSDOM and mocked AJAX/fetch/Razorpay responses.
-- **89 production PHP files and four test PHP files** parsed by both the PHP parser and the PHP WebAssembly runtime's native `TOKEN_PARSE` tokenizer.
+- **69 passing DOM interaction tests** using actual frontend scripts, JSDOM and mocked AJAX/fetch/Razorpay responses.
+- **89 production PHP files and five test PHP files** pass PHP parsing; CI also runs native `php -l`.
 - **Nine external JavaScript files and 25 static inline scripts** parse successfully. All 30 template/admin inline script or JSON blocks also parse after PHP rendering with deterministic fixtures, including the PHP-generated blocks. Shortcode-embedded strings are covered by PHP parsing.
 - `git diff --check` passes.
-- Asset version bumped to **2.0.2** so browsers request updated scripts/styles.
+- Asset version bumped to **2.0.3** so browsers request updated scripts/styles.
 - Build script excludes test dependencies, CI and audit documents from the installable plugin ZIP.
 
 These tests establish deterministic interaction behavior. They do not establish screen-reader compatibility, CSS layout correctness across real devices, delivery of email/OTP, real payment processing or backend authorization.
@@ -83,8 +83,8 @@ These tests establish deterministic interaction behavior. They do not establish 
 
 1. Install the branch on staging and run student/admin journeys in light/dark mode at narrow phone, tablet and desktop sizes, with keyboard-only navigation, 200% zoom and a screen reader. Check long Hindi/English content, empty/large datasets and nested exam calculator/instruction/question-paper dialogs.
 2. Exercise account creation, OTP expiry/resend, session expiry and password reset with actual email delivery. Verify avatar restrictions and admin impersonation flows.
-3. Run Razorpay sandbox success, dismiss, rejection, delayed webhook, free enrollment and charged-but-verification-response-lost scenarios against WordPress. Verification recovery now survives a refresh in the same tab using session storage scoped by account and item. Closing the tab or blocking storage still requires support/server reconciliation. Payment transaction guarantees require transactional (InnoDB) tables; verify the staging schema and WordPress object-cache behavior for pass purchases.
-4. **Sectional timer defects found in the first pass are fixed.** Six new regressions cover resume, untimed remainder, section transition, heartbeat, exhausted sections and device-sleep expiry. Validate against real configured exams before release: an untimed section currently consumes the remaining total time, so later sections after it are not reachable by timing policy.
+3. Run Razorpay sandbox success, dismiss, rejection, delayed webhook and charged-but-verification-response-lost scenarios on staging. Free/full-discount enrollment is covered by MySQL integration; pass renewal uses real WordPress user metadata in CI. Verification recovery now survives a refresh in the same tab using session storage scoped by account and item. Closing the tab or blocking storage still requires support/server reconciliation. Payment transaction guarantees require transactional (InnoDB) tables; verify the staging schema and WordPress object-cache behavior for pass purchases.
+4. **Sectional timer defects found in the first pass are fixed.** Regressions cover resume, untimed remainder, section transition, delayed heartbeat, exhausted sections, device-sleep expiry and navigation at section boundaries. Validate against real configured exams before release: an untimed section currently consumes the remaining total time, so later sections after it are not reachable by timing policy.
 5. Verify results, percentile/rank calculations, paid/free/expired entitlements, media playback, completion tracking, support delivery and all admin CRUD with seeded staging records. The predictor remains illustrative, not a validated statistical forecast.
 6. Modern browser `inert`, `focus-visible` and dynamic viewport units are used. Older-browser support and assistive-technology behavior need real-device validation.
 
@@ -103,9 +103,9 @@ The second pass revisited all external scripts, inline interaction scripts and t
 - Learning/support requests guard duplicate actions. Course filters announce empty results. Typing completion saves once and ignores late errors from a previous session. Result charts tolerate library failure, negative scores and reduced-motion preferences.
 - Numerical grading rejects nonnumeric strings, and free-text answers no longer inherit MCQ option aliases.
 
-Additional verification commands: `php tests/php-regression.php` runs 19 isolated handler scenarios with WordPress I/O stubbed (no real mail or payments). The CI payment-database job runs `tests/php-mysql.php` against a disposable MySQL 8 InnoDB schema, testing replay, rollback/retry, free/full-discount enrollment and simultaneous callbacks. All four MySQL scenarios passed in GitHub Actions run 34746936327; the UI/PHP job also passed. This verifies actual transaction rollback and parallel-callback behavior against MySQL, while WordPress service functions and payment-provider calls remain isolated.
+Additional verification commands: `php tests/php-regression.php` runs 19 isolated handler scenarios with WordPress I/O stubbed (no real mail or payments). The CI payment-database job runs `tests/php-mysql.php` against a disposable MySQL 8 InnoDB schema, testing replay, rollback/retry, free/full-discount enrollment and simultaneous callbacks. All four MySQL scenarios passed in GitHub Actions run 34746936327; the UI/PHP job also passed. This verifies actual transaction rollback and parallel-callback behavior against MySQL, while payment-provider calls remain isolated. The third-pass WordPress suite additionally exercises real user metadata and pass renewal.
 
-Browser limitation: the cloud browser explicitly rejected isolated local/data previews under its URL security policy. No alternative browser or network workaround was used. This pass therefore adds executable DOM/PHP/database evidence, not claims of visual certification on every screen size. A staging URL and authenticated test accounts remain necessary for that part of the user's requested coverage.
+Browser limitation: the cloud browser explicitly rejected isolated local/data previews under its URL security policy. No alternative browser or network workaround was used. The later WordPress CI job performs server-side PHP rendering only. This pass therefore adds executable DOM/PHP/database evidence, not claims of visual certification on every screen size. A staging URL and authenticated test accounts remain necessary for that part of the user's requested coverage.
 
 ## Third pass — interrupted sessions and real WordPress rendering
 
@@ -113,4 +113,19 @@ Additional fixes cover timed-section navigation through Next/Previous/palette, d
 
 Transaction history now has a real dashboard route, lists tests/courses/passes through the current schema and keeps deleted-item orders visible. Purchasing a course no longer marks an unrelated test with the same numeric ID as owned. Result summaries use the latest answered response per question and the exam engine's grading rules. New submissions snapshot their maximum marks; history uses the recorded percentage. Narrow-screen result/lecture grids and unavailable lecture links were corrected.
 
-Local verification at this checkpoint: 69 DOM cases, 22 PHP handler/data cases and syntax checks pass. The database suite now adds order-history isolation and overlapping item-ID coverage. A new CI job installs disposable WordPress and renders guest, student and admin screens against MySQL, using empty and populated fixtures. Its results will be recorded after execution. These server-rendering checks do not execute a browser or establish device layout correctness.
+The first real WordPress run exposed 22 failed rendering cases from shared dashboard query fields, a student-page typing-table creation path and an ambiguous admin doubt query. Fixes now select the needed test ID, avoid test-only columns in course queries, create typing history during activation/migration (schema 1.1.9), and use the correct doubt status and reply timestamp fields. Purchase cards use the engine's attempt allowance. Pass renewals preserve existing access time and serialize per-account updates; checkout permits renewal after an earlier purchase.
+
+Verification is now organized into four suites:
+
+| Suite | Cases | Scope |
+| --- | ---: | --- |
+| Frontend DOM | 69 | Actual scripts with simulated AJAX, gateway and clock events |
+| Isolated PHP | 24 | Actual handlers/data logic with WordPress I/O fixtures |
+| MySQL integration | 5 | Payment replay, rollback, free enrollment, simultaneous callback and account-scoped order history |
+| WordPress 7.1 + MySQL | 109 | 105 server-rendered screen/layout states, exam submission, admin doubt reply, active-pass renewal and simultaneous pass renewals |
+
+The WordPress suite covers all 19 dashboard routes, 17 admin views, three checkout types, exam instructions/window/series/custom/missing-item states, result review, four auth states, three public/status pages and four full portal layouts. Empty and populated cases include missing-item fallbacks; populated cases use fixture students, completed/in-progress exams, courses, lessons, typing history, notifications and orders. They are rendering checks, not 109 browser journeys. Mail and external provider calls are disabled.
+
+Run `php tests/php-regression.php` for isolated PHP tests. The workflow provisions the two disposable databases; `bash tests/wp-screens.sh` requires `GEP_TEST_WORDPRESS_ROOT` and refuses any database name except `gep_wordpress`. WP-CLI installation follows the [official download](https://developer.wordpress.org/cli/commands/core/download/) and [installation](https://developer.wordpress.org/cli/commands/core/install/) commands, with email notification disabled.
+
+CI run [34748491520](https://github.com/aneeshkh14/gopath/actions/runs/34748491520) passed all 108 WordPress cases present at that revision, including full layouts, exam submission, admin replies and renewal. The additional concurrent-renewal case and the 24-case PHP suite are included in the final PR checks. The PR links the final run for its latest revision. These checks do not execute a browser or establish device layout correctness.
