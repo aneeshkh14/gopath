@@ -181,6 +181,7 @@ class GEP_Payment {
 	 * Verify payment signature.
 	 */
 	public function verify_payment( $razorpay_order_id, $razorpay_payment_id, $razorpay_signature, $item_id = 0, $item_type = 'test' ) {
+        if (empty($this->key_secret) || !$razorpay_order_id || !$razorpay_payment_id) return false;
 		$expected_signature = hash_hmac( 'sha256', $razorpay_order_id . '|' . $razorpay_payment_id, $this->key_secret );
 		
 		if ( ! hash_equals( $expected_signature, $razorpay_signature ) ) {

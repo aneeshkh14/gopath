@@ -4712,3 +4712,6 @@ span.sa-text.active { display: inline; }
 .gep-exam-sidebar.active .gep-sidebar-bottom-actions,
 .gep-exam-sidebar.active .gep-palette-legend { display: block !important; }
 .gep-exam-sidebar.active .gep-palette-legend { display: grid !important; }
+
+/* Rich tables can scroll horizontally without disabling question scrolling or pinch zoom. */
+#gep-question-display { touch-action: auto; }

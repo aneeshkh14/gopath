@@ -111,4 +111,10 @@ scenario('failed gateway order mapping stops checkout before payment',function()
 scenario('random test purchase requires an attempts package',function(){
  global $wpdb;$wpdb->rows[]=(object)['price'=>100,'type'=>'random'];expect(is_wp_error((new GEP_Payment())->create_order(4)));expect(!$wpdb->inserts);
 });
+scenario('payment verification rejects an unconfigured secret',function(){
+ global $wpdb;$GLOBALS['options']['gep_razorpay_key_secret']='';$signature=hash_hmac('sha256','order|payment','');expect(!(new GEP_Payment())->verify_payment('order','payment',$signature));expect(!$wpdb->queries);
+});
+scenario('answers outside the running paper are rejected',function(){
+ global $wpdb;$wpdb->rows[]=(object)['user_id'=>7,'status'=>'in_progress','question_ids'=>'1,2','answers'=>'{}'];expect((new GEP_Exam_Engine())->save_answer(1,9,'A')===false);expect(!$wpdb->updates);
+});
 echo "$passed PHP scenarios passed; $failed failed.\n";exit($failed?1:0);

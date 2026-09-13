@@ -596,7 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function triggerSubmitModal() {
-        setPaletteOpen(false, false);
+        setPaletteOpen(false);
         if (submitting || submissionRequested || timerExpired) return;
         // Include the current unblurred value in the confirmation summary.
         const block = questions[currentQuestionIndex];
@@ -677,7 +677,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         // Close before opening another dialog; restore the exam's interactivity.
         examSidebar.addEventListener('click', e => {
-            if (e.target.closest('#gep-submit-btn, #gep-btn-instructions, #gep-btn-qpaper')) setPaletteOpen(false, false);
+            if (e.target.closest('#gep-submit-btn, #gep-btn-instructions, #gep-btn-qpaper')) setPaletteOpen(false);
         }, true);
         window.addEventListener('resize', syncPaletteVisibility);
         syncPaletteVisibility();

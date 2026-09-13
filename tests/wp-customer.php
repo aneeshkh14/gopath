@@ -1,5 +1,6 @@
 <?php
 // Loaded by wp-screens.php only against the disposable real WordPress database.
+require_once __DIR__.'/../admin/class-gep-admin-tests.php';
 function customer_assert($ok, $message) { if (!$ok) throw new RuntimeException($message); }
 function customer_paper($extra = array()) {
     return array_merge(array('title'=>'Customer regression paper','slug'=>'customer-'.wp_generate_uuid4(),'type'=>'single','status'=>'publish','is_free'=>1,'price'=>0,'duration_minutes'=>10,'attempt_limit'=>0,'translated_data'=>'{}'),$extra);

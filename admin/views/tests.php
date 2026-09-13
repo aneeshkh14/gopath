@@ -236,7 +236,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                             <?php 
                                 $series_ids = '';
                                 if($test && $test->type === 'series') {
-                                    $series_ids = implode(',', $wpdb->get_col($wpdb->prepare("SELECT test_id FROM {$wpdb->prefix}gep_test_series WHERE series_id = %d ORDER BY order_no ASC", $test->id)));
+                                    $series_ids = GEP_Admin_Tests::$submitted_test ? sanitize_text_field($_POST['series_test_ids'] ?? '') : implode(',', $wpdb->get_col($wpdb->prepare("SELECT test_id FROM {$wpdb->prefix}gep_test_series WHERE series_id = %d ORDER BY order_no ASC", $test->id)));
                                 }
                                 
                                 // Fetch all published Single Tests to add

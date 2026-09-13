@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 if ( ! isset($item) || ! $item ) {
     wp_die('Invalid selection.');
 }
+$checkout_price = !empty($item->is_free) ? 0 : $item->price;
 // NOTE: Razorpay SDK + GEP_Checkout JS object are enqueued in class-gep-loader.php
 // during wp_enqueue_scripts so they load before wp_head() fires.
 ?>
@@ -59,7 +60,7 @@ if ( ! isset($item) || ! $item ) {
                         <?php else : ?>
                             <div class="summary-row">
                                 <span class="label">Original Price</span>
-                                <span class="value">₹<?php echo number_format($item->price, 2); ?></span>
+                                <span class="value">₹<?php echo number_format($checkout_price, 2); ?></span>
                             </div>
                         <?php endif; ?>
                         
@@ -77,13 +78,13 @@ if ( ! isset($item) || ! $item ) {
                             <span class="label">Total Amount</span>
                             <div class="final-price-wrap">
                                 <span class="currency">₹</span>
-                                <span class="value" id="gep-final-amount" aria-live="polite"><?php echo number_format($item->price, 2); ?></span>
+                                <span class="value" id="gep-final-amount" aria-live="polite"><?php echo number_format($checkout_price, 2); ?></span>
                             </div>
                         </div>
                     </div>
 
                     <button type="button" id="gep-pay-button" class="btn-pay-sovereign">
-                        <?php if ( $item->price <= 0 ) : ?>
+                        <?php if ( $checkout_price <= 0 ) : ?>
                             <span>Complete Enrollment</span>
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                         <?php else : ?>
