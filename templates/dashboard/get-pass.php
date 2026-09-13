@@ -53,7 +53,7 @@ $is_active = $pass_expiry && strtotime( $pass_expiry ) > current_time( 'timestam
                 <li>✓ <?php _e( 'Full access to all Exams &amp; PYQs', 'gopath-exam-portal' ); ?></li>
                 <li>✓ <?php _e( 'Bilingual support (English &amp; Hindi)', 'gopath-exam-portal' ); ?></li>
                 <li>✓ <?php _e( 'Core Dashboard Analytics', 'gopath-exam-portal' ); ?></li>
-                <li>✓ <?php _e( 'Doubt solver access', 'gopath-exam-portal' ); ?></li>
+                <li>✓ <?php _e( 'Help through the support form', 'gopath-exam-portal' ); ?></li>
                 <li style="color: #94a3b8; text-decoration: line-through;">✗ <?php _e( 'Extra test attempts allocation', 'gopath-exam-portal' ); ?></li>
             </ul>
 
@@ -81,9 +81,9 @@ $is_active = $pass_expiry && strtotime( $pass_expiry ) > current_time( 'timestam
                 <li>✓ <?php _e( 'Full access to all Exams &amp; PYQs', 'gopath-exam-portal' ); ?></li>
                 <li>✓ <?php _e( 'Bilingual support (English &amp; Hindi)', 'gopath-exam-portal' ); ?></li>
                 <li>✓ <?php _e( 'Core Dashboard Analytics', 'gopath-exam-portal' ); ?></li>
-                <li>✓ <?php _e( 'Doubt solver access', 'gopath-exam-portal' ); ?></li>
-                <li>✓ <?php _e( 'Unlimited extra attempts', 'gopath-exam-portal' ); ?></li>
-                <li>✓ <?php _e( 'Priority support &amp; assistance', 'gopath-exam-portal' ); ?></li>
+                <li>✓ <?php _e( 'Help through the support form', 'gopath-exam-portal' ); ?></li>
+                <li>✓ <?php _e( 'Test limits apply; custom-test attempt packages are separate', 'gopath-exam-portal' ); ?></li>
+                <li>✓ <?php _e( 'Support through the help centre', 'gopath-exam-portal' ); ?></li>
             </ul>
 
             <a href="<?php echo add_query_arg( array('id' => 2, 'type' => 'pass'), (string) gep_get_url('checkout') ); ?>" style="margin-top: auto; display: block; text-align: center; background: #6366f1; color: #fff; border-radius: 14px; padding: 14px 20px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 10px rgba(99,102,241,0.25); transition: all 0.2s;">
@@ -94,7 +94,7 @@ $is_active = $pass_expiry && strtotime( $pass_expiry ) > current_time( 'timestam
         <!-- Lifetime Card -->
         <div class="gep-pricing-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 35px; display: flex; flex-direction: column; transition: all 0.3s; position: relative;">
             <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 900; color: #0f172a;"><?php _e( 'Lifetime Pass Ultimate', 'gopath-exam-portal' ); ?></h3>
-            <p style="margin: 0 0 25px; color: #64748b; font-size: 13px; font-weight: 600; min-height: 40px;"><?php _e( 'Never pay again. Access all future mock exams, courses, and updates.', 'gopath-exam-portal' ); ?></p>
+            <p style="margin: 0 0 25px; color: #64748b; font-size: 13px; font-weight: 600; min-height: 40px;"><?php _e( 'Access current and future mock tests. Courses are purchased separately.', 'gopath-exam-portal' ); ?></p>
             
             <div style="margin-bottom: 30px;">
                 <span style="font-size: 36px; font-weight: 950; color: #0f172a;">₹599</span>
@@ -106,7 +106,7 @@ $is_active = $pass_expiry && strtotime( $pass_expiry ) > current_time( 'timestam
                 <li>✓ <?php _e( 'Unlocks all FUTURE added mock tests', 'gopath-exam-portal' ); ?></li>
                 <li>✓ <?php _e( 'Bilingual support (English &amp; Hindi)', 'gopath-exam-portal' ); ?></li>
                 <li>✓ <?php _e( 'Full Core Dashboard Analytics', 'gopath-exam-portal' ); ?></li>
-                <li>✓ <?php _e( 'Priority VIP teacher support', 'gopath-exam-portal' ); ?></li>
+                <li>✓ <?php _e( 'Support through the help centre', 'gopath-exam-portal' ); ?></li>
                 <li>✓ <?php _e( 'Lifetime valid - never expires', 'gopath-exam-portal' ); ?></li>
             </ul>
 

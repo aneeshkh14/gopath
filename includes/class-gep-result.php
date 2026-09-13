@@ -40,6 +40,19 @@ class GEP_Result {
 		return $stats;
 	}
 
+
+    /** Use the mark total recorded with the attempt, including virtual PYQ papers. */
+    public static function recorded_total_marks( $attempt, $fallback = 0 ) {
+        $snapshot = json_decode( $attempt->analytics_data ?? '', true );
+        if ( isset($snapshot['total_marks']) && is_numeric($snapshot['total_marks']) ) {
+            return max(0, (float) $snapshot['total_marks']);
+        }
+        if ( isset($attempt->percentage, $attempt->score) && (float) $attempt->percentage != 0 ) {
+            return max(0, round((float) $attempt->score * 100 / (float) $attempt->percentage, 4));
+        }
+        return max(0, (float) $fallback);
+    }
+
 	public function get_attempt_result( $attempt_id ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'gep_attempts';
@@ -97,9 +110,7 @@ class GEP_Result {
 		) );
 
 		foreach ( $results as $r ) {
-            $snapshot = json_decode($r->analytics_data ?? '', true);
-            if (isset($snapshot['total_marks'])) $r->total_marks = (float)$snapshot['total_marks'];
-            elseif ((float)$r->percentage != 0) $r->total_marks = round((float)$r->score * 100 / (float)$r->percentage, 4);
+            $r->total_marks = self::recorded_total_marks($r, $r->total_marks);
 			if ( $r->test_id == 999999 && ! empty( $r->analytics_data ) ) {
 				$analytics = json_decode( $r->analytics_data, true );
 				if ( isset( $analytics['practice_title'] ) ) {

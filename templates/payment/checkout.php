@@ -116,15 +116,15 @@ $checkout_price = !empty($item->is_free) ? 0 : $item->price;
                     <div class="info-item-glass">
                         <div class="info-icon">💎</div>
                         <div class="info-text">
-                            <h5>Premium Quality</h5>
-                            <p>Learn from top-tier instructors and cinema-grade videos.</p>
+                            <h5>Review Your Selection</h5>
+                            <p>Check the selected item and price before completing payment.</p>
                         </div>
                     </div>
                     <div class="info-item-glass">
                         <div class="info-icon">🤝</div>
                         <div class="info-text">
-                            <h5>24/7 Support</h5>
-                            <p>Our dedicated support team is here for your success.</p>
+                            <h5>Help &amp; Support</h5>
+                            <p>Use the dashboard support form for questions about your purchase.</p>
                         </div>
                     </div>
                 </div>

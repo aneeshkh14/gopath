@@ -143,10 +143,11 @@ $is_hindi = $_gep_lang === 'hi';
     // 1) Today's Special Tests — safest available signal (no "special test" field exists in the
     //    schema): the most recently published test from each Paper 1 / Sanskrit / Combined bucket.
     $todays_special = array_filter( array( $special_paper1, $special_sanskrit, $special_combined ) );
-    $gep_hscroll_section( "Today's Special Tests", $todays_special );
+    $gep_hscroll_section( "Featured Tests", $todays_special );
 
     // 2) Create Your Own Test — routes into the EXISTING random/custom-test builder (type=random).
     $browse_random_url = add_query_arg( array( 'view' => 'tests', 'type' => 'random' ), $dash_url );
+    $custom_templates = $dashboard->get_available_items('test', 1, 0, 'random');
     $cyo_paper1_url   = $paper1_random_test ? add_query_arg( 'id', $paper1_random_test->id, (string) gep_get_url('exam') ) : $browse_random_url;
     $cyo_sanskrit_url = $sanskrit_random_test ? add_query_arg( 'id', $sanskrit_random_test->id, (string) gep_get_url('exam') ) : $browse_random_url;
     ?>
@@ -154,6 +155,12 @@ $is_hindi = $_gep_lang === 'hi';
         <div class="section-header-sovereign">
             <div class="header-content"><h3>Create Your Own Test</h3><div class="header-line"></div></div>
         </div>
+        <?php if (empty($custom_templates)) : ?>
+        <div class="gep-cyo-card">
+            <p>Custom test templates are not available yet. You can practise published PYQs by topic or year.</p>
+            <a class="gep-study-secondary" href="<?php echo esc_url(add_query_arg('view', 'pyqs', $dash_url)); ?>">Browse PYQ practice</a>
+        </div>
+        <?php else : ?>
         <div class="gep-cyo-grid">
             <a class="gep-cyo-card" href="<?php echo esc_url( $cyo_paper1_url ); ?>">
                 <div class="icon">📘</div><h4>Paper 1</h4><p>Pick subjects &amp; topics and build your own Paper 1 practice test.</p>
@@ -165,6 +172,7 @@ $is_hindi = $_gep_lang === 'hi';
                 <div class="icon">🧩</div><h4>Paper 1 + Sanskrit</h4><p>Build a combined custom test across both subjects.</p>
             </a>
         </div>
+        <?php endif; ?>
     </section>
 
     <?php

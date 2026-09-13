@@ -107,7 +107,7 @@ $strings = isset($ui_strings[$_gep_lang]) ? $ui_strings[$_gep_lang] : $ui_string
         <button type="button" id="gep-clear-filters" class="gep-filter-reset">Clear filters</button>
     </div>
     <div id="gep-filter-empty" class="gep-empty-state" hidden>
-        <h3>No tests match your filters</h3><p>Try another search, subject, or test type. Use Clear filters to start again.</p>
+        <h3>No tests match your filters</h3><p>Try another search, subject, or test type. Use Clear filters to start again.</p><p>Looking for practice questions? <a href="<?php echo esc_url(add_query_arg('view', 'pyqs', (string)gep_get_url('dashboard'))); ?>">Browse PYQs by topic or year</a>.</p>
     </div>
     <!-- Asset Grid with Category Grouping -->
     <div class="gep-category-groups" id="gep-ajax-test-grid" style="width: 100%;">
