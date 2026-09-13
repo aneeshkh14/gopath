@@ -219,13 +219,18 @@ class GEP_Payment {
 		global $wpdb;
 
 		if ( $item_type === 'pass' ) {
+            // Serialize renewals for this account, including different paid orders.
+            if (!$wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->users} WHERE ID = %d FOR UPDATE", $user_id))) return false;
+            wp_cache_delete($user_id, 'user_meta');
+            $current_expiry = strtotime((string)get_user_meta($user_id, 'gep_pass_expiry', true));
+            $starts_at = max(current_time('timestamp'), $current_expiry ?: 0);
 			$duration = '+30 days';
 			if ( $item_id == 2 ) {
 				$duration = '+365 days';
 			} elseif ( $item_id == 3 ) {
 				$duration = '+100 years';
 			}
-			$expiry = date( 'Y-m-d H:i:s', strtotime( $duration, current_time( 'timestamp' ) ) );
+			$expiry = date( 'Y-m-d H:i:s', strtotime( $duration, $starts_at ) );
 			return update_user_meta( $user_id, 'gep_pass_expiry', $expiry ) !== false || get_user_meta($user_id, 'gep_pass_expiry', true) === $expiry;
 		}
 

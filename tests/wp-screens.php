@@ -36,6 +36,9 @@ if ($kind==='seed') {
     insert_fixture('doubts',['id'=>901,'user_id'=>$student,'course_id'=>901,'lesson_id'=>901,'question'=>'Fixture question','created_at'=>current_time('mysql')]);
     insert_fixture('user_course_access',['user_id'=>$student,'course_id'=>901,'assigned_at'=>current_time('mysql')]);
     insert_fixture('user_test_access',['user_id'=>$student,'test_id'=>901,'assigned_at'=>current_time('mysql')]);
+    insert_fixture('user_test_access',['user_id'=>$student,'test_id'=>904,'extra_attempts'=>3,'assigned_at'=>current_time('mysql')]);
+    insert_fixture('notifications',['user_id'=>0,'title'=>'Fixture announcement','message'=>'Global message','created_at'=>current_time('mysql')]);
+    insert_fixture('typing_attempts',['user_id'=>$student,'wpm'=>50,'accuracy'=>95,'errors'=>2,'duration'=>60,'created_at'=>current_time('mysql')]);
     insert_fixture('orders',['user_id'=>$student,'item_id'=>901,'item_type'=>'course','status'=>'success','amount'=>100,'created_at'=>current_time('mysql')]);
     insert_fixture('orders',['user_id'=>$student,'item_id'=>2,'item_type'=>'pass','status'=>'pending','amount'=>299,'created_at'=>current_time('mysql')]);
     insert_fixture('attempts',['id'=>901,'user_id'=>$student,'test_id'=>901,'start_time'=>current_time('mysql'),'end_time'=>current_time('mysql'),'status'=>'submitted','answers'=>wp_json_encode([901=>['answer'=>'A','flagged'=>false],902=>['answer'=>'0','flagged'=>false]]),'score'=>4,'percentage'=>100,'is_pass'=>1]);
@@ -47,7 +50,17 @@ wp_set_current_user(in_array($kind,['admin','admin-reply'],true)?1:($kind==='aut
 $shortcodes=new GEP_Shortcodes();
 try {
     $html=''; $_GET=[]; $_POST=[]; $_REQUEST=[];
-    if ($kind==='journey') {
+    if ($kind==='pass-renewal') {
+        $expires=date('Y-m-d H:i:s', current_time('timestamp') + 60 * DAY_IN_SECONDS);
+        update_user_meta($student, 'gep_pass_expiry', $expires);
+        insert_fixture('coupons',['code'=>'FIXTUREFREE','type'=>'percent','value'=>100]);
+        $payment=new GEP_Payment();$order=$payment->create_order(1,'pass','FIXTUREFREE');
+        if(is_wp_error($order) || $order['status']!=='free')throw new RuntimeException('Pass enrollment failed.');
+        $expected=date('Y-m-d H:i:s',strtotime('+30 days',strtotime($expires)));
+        if(get_user_meta($student,'gep_pass_expiry',true)!==$expected)throw new RuntimeException('Renewal removed existing time.');
+        $_GET=['id'=>1,'type'=>'pass'];$html=$shortcodes->render_checkout();
+        if(strpos($html,'gep-pay-button')===false)throw new RuntimeException('Previous pass purchase blocked renewal.');
+    } elseif ($kind==='journey') {
         $engine=new GEP_Exam_Engine();$id=$engine->start_attempt(901,$student);
         if(is_wp_error($id) || !$id)throw new RuntimeException('Could not start fixture exam.');
         if(!$engine->save_answer($id,901,'A') || !$engine->save_answer($id,902,'0') || !$engine->submit_exam($id))throw new RuntimeException('Exam journey failed.');

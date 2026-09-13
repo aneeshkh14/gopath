@@ -18,5 +18,6 @@ for view in login register forgot-password otp; do php tests/wp-screens.php auth
 for view in home payment-success payment-failed; do php tests/wp-screens.php page "$view" || failures=$((failures+1)); done
 php tests/wp-screens.php admin-reply doubts seeded || failures=$((failures+1))
 php tests/wp-screens.php journey exam seeded || failures=$((failures+1))
+php tests/wp-screens.php pass-renewal pass seeded || failures=$((failures+1))
 if ((failures)); then echo "$failures WordPress rendering cases failed"; exit 1; fi
-echo '107 WordPress rendering and journey cases passed (plus fixture setup).'
+echo '108 WordPress rendering and journey cases passed (plus fixture setup).'

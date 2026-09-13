@@ -17,7 +17,8 @@ if ( ! isset($item) || ! $item ) {
             <div class="gep-checkout-header">
                 <div class="header-badge">SECURE CHECKOUT</div>
                 <h1>Complete Your <span class="gep-text-gradient-primary">Enrollment</span></h1>
-                <p>Join thousands of students mastering their future with GoPath.</p>
+                <p>Review your selection and payment details before enrolling.</p>
+                <?php if ($item_type === 'pass') : ?><p>Renewing an active pass? Your remaining time is kept, and the new duration is added after it.</p><?php endif; ?>
             </div>
 
             <div class="gep-checkout-grid">

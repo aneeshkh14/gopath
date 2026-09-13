@@ -88,7 +88,7 @@ class GEP_Shortcodes {
 
 		$dashboard = new GEP_Dashboard();
 		$is_random = ( $item_type === 'test' && isset( $item->type ) && $item->type === 'random' );
-		if ( ! $is_random && $dashboard->has_access( get_current_user_id(), $item_id, $item_type ) ) {
+		if ( $item_type !== 'pass' && ! $is_random && $dashboard->has_access( get_current_user_id(), $item_id, $item_type ) ) {
 			$label      = ( $item_type === 'course' ) ? 'course' : 'test';
 			// BUG FIX: Use ?view=purchases query param — NOT #purchases hash (hash is not read server-side by router)
 			$purchases_url = esc_url( add_query_arg( 'view', 'purchases', (string) gep_get_url( 'dashboard' ) ) );

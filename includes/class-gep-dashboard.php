@@ -310,12 +310,13 @@ class GEP_Dashboard {
 		$safe_item_type = esc_sql( $item_type );
 
 		$attempts_table = $wpdb->prefix . 'gep_attempts';
+        $extra_attempts_sql = $item_type === 'course' ? '0' : 'COALESCE(a.extra_attempts, 0)';
 
 		return $wpdb->get_results( "
 			SELECT d.*, 
 			       (SELECT created_at FROM $orders_table WHERE user_id = $safe_user_id AND item_id = d.id AND item_type = '$safe_item_type' AND status = 'success' LIMIT 1) as enrollment_date,
-			       COALESCE(a.extra_attempts, 0) as extra_attempts,
-			       (SELECT COUNT(*) FROM $attempts_table WHERE user_id = $safe_user_id AND test_id = d.id) as used_attempts
+			       $extra_attempts_sql as extra_attempts,
+			       (SELECT COUNT(*) FROM $attempts_table WHERE user_id = $safe_user_id AND test_id = d.id AND status = 'submitted') as used_attempts
 			FROM $data_table d
 			LEFT JOIN $access_table a ON d.id = a.$column AND a.user_id = $safe_user_id
 			WHERE d.id IN ($safe_ids_str) AND d.status = 'publish' $where_type
