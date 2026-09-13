@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <h3 style="margin-top: 0; font-size: 18px; font-weight: 800; color: var(--admin-text);">🚀 Quick Grant: Extra Attempts</h3>
         <p style="color: var(--admin-muted); font-size: 13px; margin-bottom: 25px;">Need to give a student another chance? Use the tool below to instantly add attempt credits.</p>
         
-        <form method="post" action="" style="display: grid; grid-template-columns: 1fr 1fr 120px 200px; gap: 20px; align-items: flex-end;">
+        <form class="gep-responsive-grid" method="post" action="" style="display: grid; grid-template-columns: 1fr 1fr 120px 200px; gap: 20px; align-items: flex-end;">
             <?php wp_nonce_field('gep_grant_attempt', 'gep_nonce'); ?>
             <div>
                 <label style="display: block; font-weight: 700; font-size: 12px; color: var(--admin-muted); margin-bottom: 8px; text-transform: uppercase;">Student Account</label>

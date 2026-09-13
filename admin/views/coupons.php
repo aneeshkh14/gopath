@@ -25,7 +25,7 @@
                     <input type="text" name="code" placeholder="e.g. WELCOME10" required style="font-family: monospace; font-size: 18px; font-weight: 900; text-transform: uppercase;">
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 25px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 25px;">
                     <div>
                         <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Benefit Value</label>
                         <input type="number" name="value" placeholder="10" required>

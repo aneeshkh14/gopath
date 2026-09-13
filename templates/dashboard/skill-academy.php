@@ -96,7 +96,7 @@ if ( ! empty( $courses ) ) {
         <span style="font-size: 13px; color: #94a3b8; font-weight: 600;">See course prices below</span>
     </div>
 
-    <div id="gep-courses-container" class="gep-premium-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;">
+    <div id="gep-courses-container" class="gep-premium-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 30px;">
         <?php if (!empty($courses)): ?>
             <?php foreach($courses as $c): 
                 $dashboard = new GEP_Dashboard();

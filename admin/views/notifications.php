@@ -22,7 +22,7 @@ $sent_notifications = GEP_Admin_Notifications::get_all_sent();
         <div class="notice notice-error is-dismissible"><p>Security check failed. Please try again.</p></div>
     <?php endif; ?>
 
-    <div class="gep-notification-manager" style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 30px;">
+    <div class="gep-responsive-grid gep-notification-manager" style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 30px;">
         <!-- Sent History -->
         <div class="gep-notification-list" style="background: #fff; padding: 30px; border-radius: 20px; border: 1px solid var(--admin-border); box-shadow: var(--admin-shadow);">
             <h3 style="margin-top: 0; font-weight: 900; margin-bottom: 25px;">Broadcast History</h3>

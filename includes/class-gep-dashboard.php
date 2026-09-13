@@ -21,8 +21,8 @@ class GEP_Dashboard {
 		$orders_table = $wpdb->prefix . 'gep_orders';
 		$course_access = $wpdb->prefix . 'gep_user_course_access';
 
-		$total_attempts = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $attempts_table WHERE user_id = %d", $user_id ) );
-		$passed_exams   = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $attempts_table WHERE user_id = %d AND is_pass = 1", $user_id ) );
+		$total_attempts = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $attempts_table WHERE user_id = %d AND status = 'submitted'", $user_id ) );
+		$passed_exams   = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $attempts_table WHERE user_id = %d AND status = 'submitted' AND is_pass = 1", $user_id ) );
 		$total_spent    = $wpdb->get_var( $wpdb->prepare( "SELECT SUM(amount) FROM $orders_table WHERE user_id = %d AND status = 'success'", $user_id ) );
 		$active_courses = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $course_access WHERE user_id = %d", $user_id ) );
 
@@ -44,6 +44,24 @@ class GEP_Dashboard {
 			'completion'     => $this->get_profile_completion_percentage( $user_id )
 		);
 	}
+
+
+    /** Latest resumable test, including practice tests without a catalogue row. */
+    public function get_resume_attempt( $user_id ) {
+        global $wpdb;
+        $attempt = $wpdb->get_row( $wpdb->prepare(
+            "SELECT a.*, t.title FROM {$wpdb->prefix}gep_attempts a
+             LEFT JOIN {$wpdb->prefix}gep_tests t ON t.id = a.test_id
+             WHERE a.user_id = %d AND a.status = 'in_progress'
+             AND (t.status = 'publish' OR a.test_id = 999999)
+             ORDER BY a.id DESC LIMIT 1", $user_id
+        ) );
+        if ( $attempt && (int) $attempt->test_id === 999999 ) {
+            $data = json_decode( $attempt->analytics_data ?? '', true );
+            $attempt->title = $data['practice_title'] ?? 'PYQ Practice Test';
+        }
+        return $attempt;
+    }
 
 	public function get_profile_completion_percentage( $user_id ) {
 		$user = get_userdata( $user_id );

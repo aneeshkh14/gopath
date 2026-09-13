@@ -15,7 +15,7 @@
         </div>
     <?php endif; ?>
 
-    <div class="gep-admin-stats-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 35px;">
+    <div class="gep-responsive-grid gep-admin-stats-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 35px;">
         <div class="gep-stat-card" style="background: #fff; padding: 20px; border-radius: 20px; border: 1px solid var(--admin-border); border-top: 4px solid #6366f1;">
             <span style="display: block; font-size: 11px; font-weight: 800; color: var(--admin-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Students</span>
             <span style="font-size: 28px; font-weight: 900; color: #1e293b;">

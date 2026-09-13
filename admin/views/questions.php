@@ -33,7 +33,7 @@ if (isset($_GET['tab'])) {
                     <h3 style="margin: 0; font-size: 18px; color: var(--admin-text);">Intelligence Ingestion Report</h3>
                     <span style="font-size: 12px; font-weight: 800; color: var(--admin-muted); text-transform: uppercase;">Real-time Metrics</span>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
                     <div style="background: #f0fdf4; padding: 20px; border-radius: 16px; border: 1px solid #bbf7d0; text-align: center;">
                         <span style="display: block; font-size: 32px; font-weight: 900; color: #166534;"><?php echo (int) $import_result['inserted']; ?></span>
                         <span style="font-size: 13px; font-weight: 700; color: #166534; text-transform: uppercase;">Assets Inserted</span>
@@ -200,7 +200,7 @@ Ans: B" style="width: 100%; font-family: 'JetBrains Mono', 'Fira Code', monospac
                     <h2 style="margin: 0; font-size: 18px;">2. Intelligence Metadata</h2>
                     <p style="margin: 4px 0 0; color: var(--admin-muted); font-weight: 600; font-size: 13px;">Categorize these questions for the exam engine.</p>
                 </div>
-                <div class="gep-admin-console-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="gep-responsive-grid gep-admin-console-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
                         <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 8px; text-transform: uppercase;">Target Subject</label>
                         <select name="category_id" style="width: 100%;" required>
@@ -717,7 +717,7 @@ Ans: B" style="width: 100%; font-family: 'JetBrains Mono', 'Fira Code', monospac
                                 <textarea class="gep-terminal-title-hi" rows="2" style="width: 100%; border-radius: 8px; border: 1px solid #ddd6fe; font-weight: 700; padding: 10px 12px; background: #faf5ff; font-size: 14px; line-height: 1.5; color: #1e293b;">${q.question_hi}</textarea>
                             </div>
                             
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                                 <div>
                                     <label style="display: block; font-weight: 800; font-size: 10px; color: var(--admin-muted); margin-bottom: 4px;">OPTION A (EN)</label>
                                     <input type="text" class="gep-terminal-opt-a" value="${q.option_a}" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
@@ -755,7 +755,7 @@ Ans: B" style="width: 100%; font-family: 'JetBrains Mono', 'Fira Code', monospac
                                 </div>
                             </div>
                             
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
                                 <div>
                                     <label style="display: block; font-weight: 800; font-size: 10px; color: var(--admin-muted); margin-bottom: 4px;">CORRECT KEY</label>
                                     <select class="gep-terminal-correct" style="width: 100%; font-weight: 800; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; height: 38px;">
@@ -988,7 +988,7 @@ Ans: B" style="width: 100%; font-family: 'JetBrains Mono', 'Fira Code', monospac
                             <div id="smart-parse-feedback" style="margin-top: 10px; display: none;"></div>
                         </div>
                         
-                        <div id="gep-options-grid-en" style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                        <div class="gep-responsive-grid" id="gep-options-grid-en" style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
                             <div>
                                 <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Option A Asset</label>
                                 <div class="gep-option-input-wrapper">
@@ -1055,7 +1055,7 @@ Ans: B" style="width: 100%; font-family: 'JetBrains Mono', 'Fira Code', monospac
                                 ),
                             )); ?>
                             
-                            <div id="gep-options-grid-hi" style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 25px;">
+                            <div class="gep-responsive-grid" id="gep-options-grid-hi" style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 25px;">
                                 <div>
                                     <label style="display: block; font-weight: 800; font-size: 11px; color: #7c3aed; margin-bottom: 10px; text-transform: uppercase;">Option A (Translation)</label>
                                     <div class="gep-option-input-wrapper" style="border-color: #ddd6fe;">
@@ -1115,7 +1115,7 @@ Ans: B" style="width: 100%; font-family: 'JetBrains Mono', 'Fira Code', monospac
                     <h2 style="margin: 0; font-size: 18px;">Logic & Scoring Engine</h2>
                     <p style="margin: 4px 0 0; color: var(--admin-muted); font-weight: 600; font-size: 13px;">The "Evaluation Engine". Configure precise scoring, penalties, and subject classification.</p>
                 </div>
-                <div class="gep-admin-console-body" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                <div class="gep-responsive-grid gep-admin-console-body" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
                     <div>
                         <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 8px; text-transform: uppercase;">Question Type</label>
                         <select name="question_type" id="gep_question_type" style="width: 100%;">

@@ -190,7 +190,7 @@
 .text-gradient-gold { background: linear-gradient(135deg, #fde047 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
 .hero-desc-premium { font-size: 18px; color: #a1a1aa; line-height: 1.6; max-width: 600px; margin: 0 auto; }
 .gep-marketplace-premium { max-width: 1400px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 10; }
-.gep-premium-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 32px; }
+.gep-premium-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 32px; }
 .gep-card-elite { background: #18181b; border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 .gep-card-elite:hover { transform: translateY(-5px); border-color: rgba(99, 102, 241, 0.3); box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15); }
 .card-media { position: relative; overflow: hidden; }

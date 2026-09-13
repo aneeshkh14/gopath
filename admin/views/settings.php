@@ -34,12 +34,12 @@
                 </h2>
                 <p style="color: #64748b; font-weight: 600; margin-bottom: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; font-size: 14px;">Secure your transactions by connecting your Razorpay merchant credentials.</p>
                 
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center; margin-bottom: 25px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center; margin-bottom: 25px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Razorpay Key ID</label>
                     <input type="text" name="gep_razorpay_key_id" value="<?php echo esc_attr( get_option('gep_razorpay_key_id') ); ?>" style="max-width: 600px; height: 50px; border-radius: 16px; border: 2px solid #e2e8f0; padding: 0 20px; font-weight: 700; background: #f8fafc;" placeholder="rzp_live_...">
                 </div>
 
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Razorpay Secret</label>
                     <input type="password" name="gep_razorpay_key_secret" value="<?php echo esc_attr( get_option('gep_razorpay_key_secret') ); ?>" style="max-width: 600px; height: 50px; border-radius: 16px; border: 2px solid #e2e8f0; padding: 0 20px; font-weight: 700; background: #f8fafc;">
                 </div>
@@ -53,12 +53,12 @@
                 </h2>
                 <p style="color: #64748b; font-weight: 600; margin-bottom: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; font-size: 14px;">Establish the default instructional leadership and platform preferences.</p>
                 
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center; margin-bottom: 25px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center; margin-bottom: 25px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Lead Instructor Name</label>
                     <input type="text" name="gep_default_instructor" value="<?php echo esc_attr( get_option('gep_default_instructor', 'Academic Lead') ); ?>" style="max-width: 600px; height: 50px; border-radius: 16px; border: 2px solid #e2e8f0; padding: 0 20px; font-weight: 700; background: #f8fafc;">
                 </div>
 
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Default Stream Engine</label>
                     <select name="gep_live_meeting_platform" style="max-width: 600px; height: 50px; border-radius: 16px; border: 2px solid #e2e8f0; padding: 10px 20px; font-weight: 700; cursor: pointer; background: #f8fafc; box-sizing: border-box; line-height: 1.5;">
                         <option value="zoom" <?php selected( get_option('gep_live_meeting_platform'), 'zoom' ); ?>>Zoom Professional</option>
@@ -76,7 +76,7 @@
                 </h2>
                 <p style="color: #64748b; font-weight: 600; margin-bottom: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; font-size: 14px;">Define how the neural engine reacts to unauthorized student activity.</p>
                 
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Violation Protocol</label>
                     <select name="gep_violation_action" style="max-width: 600px; height: 50px; border-radius: 16px; border: 2px solid #e2e8f0; padding: 10px 20px; font-weight: 700; cursor: pointer; background: #f8fafc; box-sizing: border-box; line-height: 1.5;">
                         <option value="warn" <?php selected( get_option('gep_violation_action'), 'warn' ); ?>>Log Activity & Warn Student</option>
@@ -94,23 +94,23 @@
                 <p style="color: #64748b; font-weight: 600; margin-bottom: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; font-size: 14px;">Manage promotional slides at the top of the student dashboard.</p>
                 
                 <h3 style="font-size: 16px; font-weight: 800; color: #1e1b4b; margin: 25px 0 15px 0; border-left: 4px solid #7c3aed; padding-left: 10px;">Slide 1 Configuration</h3>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 1 Title</label>
                     <input type="text" name="gep_slide1_title" value="<?php echo esc_attr( get_option('gep_slide1_title', 'Mission Officer 2026') ); ?>" style="max-width: 600px; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 1 Description</label>
                     <textarea name="gep_slide1_desc" rows="2" style="max-width: 600px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 10px 15px; font-weight: 700; background: #f8fafc; font-family: inherit; font-size: 13px; resize: vertical;"><?php echo esc_textarea( get_option('gep_slide1_desc', 'Your Journey to Government Job Starts Here. Get access to premium tests and video courses.') ); ?></textarea>
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 1 Button Text</label>
                     <input type="text" name="gep_slide1_btn" value="<?php echo esc_attr( get_option('gep_slide1_btn', 'Explore Academy') ); ?>" style="max-width: 600px; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 1 Target URL</label>
                     <input type="text" name="gep_slide1_url" value="<?php echo esc_attr( get_option('gep_slide1_url', '') ); ?>" placeholder="Leave blank to use default Explore Academy link" style="max-width: 600px; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 35px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 35px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 1 Image Banner</label>
                     <div style="display: flex; gap: 10px; max-width: 600px; width: 100%;">
                         <input type="text" id="gep_slide1_image" name="gep_slide1_image" value="<?php echo esc_attr( get_option('gep_slide1_image', '') ); ?>" placeholder="Paste image URL or click Choose Banner" style="flex: 1; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
@@ -119,23 +119,23 @@
                 </div>
 
                 <h3 style="font-size: 16px; font-weight: 800; color: #064e3b; margin: 25px 0 15px 0; border-left: 4px solid #10b981; padding-left: 10px;">Slide 2 Configuration</h3>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 2 Title</label>
                     <input type="text" name="gep_slide2_title" value="<?php echo esc_attr( get_option('gep_slide2_title', 'UGC NET Mock Tests') ); ?>" style="max-width: 600px; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 2 Description</label>
                     <textarea name="gep_slide2_desc" rows="2" style="max-width: 600px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 10px 15px; font-weight: 700; background: #f8fafc; font-family: inherit; font-size: 13px; resize: vertical;"><?php echo esc_textarea( get_option('gep_slide2_desc', 'Challenge yourself with realistic full-length paper simulations. Track your progress with advanced cohort analytics.') ); ?></textarea>
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 2 Button Text</label>
                     <input type="text" name="gep_slide2_btn" value="<?php echo esc_attr( get_option('gep_slide2_btn', 'Practice Now') ); ?>" style="max-width: 600px; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 2 Target URL</label>
                     <input type="text" name="gep_slide2_url" value="<?php echo esc_attr( get_option('gep_slide2_url', '') ); ?>" placeholder="Leave blank to use default Practice Now link" style="max-width: 600px; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 35px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 35px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 2 Image Banner</label>
                     <div style="display: flex; gap: 10px; max-width: 600px; width: 100%;">
                         <input type="text" id="gep_slide2_image" name="gep_slide2_image" value="<?php echo esc_attr( get_option('gep_slide2_image', '') ); ?>" placeholder="Paste image URL or click Choose Banner" style="flex: 1; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
@@ -144,23 +144,23 @@
                 </div>
 
                 <h3 style="font-size: 16px; font-weight: 800; color: #581c87; margin: 25px 0 15px 0; border-left: 4px solid #a855f7; padding-left: 10px;">Slide 3 Configuration</h3>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 3 Title</label>
                     <input type="text" name="gep_slide3_title" value="<?php echo esc_attr( get_option('gep_slide3_title', 'Live Doubt Solving') ); ?>" style="max-width: 600px; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 3 Description</label>
                     <textarea name="gep_slide3_desc" rows="2" style="max-width: 600px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 10px 15px; font-weight: 700; background: #f8fafc; font-family: inherit; font-size: 13px; resize: vertical;"><?php echo esc_textarea( get_option('gep_slide3_desc', 'Connect with top educators in real-time interactively. Resolve conceptual doubts and learn exam techniques.') ); ?></textarea>
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 3 Button Text</label>
                     <input type="text" name="gep_slide3_btn" value="<?php echo esc_attr( get_option('gep_slide3_btn', 'Join Live Class') ); ?>" style="max-width: 600px; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 3 Target URL</label>
                     <input type="text" name="gep_slide3_url" value="<?php echo esc_attr( get_option('gep_slide3_url', '') ); ?>" placeholder="Leave blank to use default Join Live Class link" style="max-width: 600px; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
                 </div>
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: center; margin-bottom: 15px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Slide 3 Image Banner</label>
                     <div style="display: flex; gap: 10px; max-width: 600px; width: 100%;">
                         <input type="text" id="gep_slide3_image" name="gep_slide3_image" value="<?php echo esc_attr( get_option('gep_slide3_image', '') ); ?>" placeholder="Paste image URL or click Choose Banner" style="flex: 1; height: 45px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 0 15px; font-weight: 700; background: #f8fafc;">
@@ -177,7 +177,7 @@
                 </h2>
                 <p style="color: #64748b; font-weight: 600; margin-bottom: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; font-size: 14px;">Customize the URI architecture for your frontend student portals.</p>
                 
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center; margin-bottom: 25px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center; margin-bottom: 25px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Dashboard URI</label>
                     <div style="position: relative; max-width: 600px;">
                         <span style="position: absolute; left: 20px; top: 16px; color: #94a3b8; font-weight: 600; font-size: 14px;">/</span>
@@ -185,7 +185,7 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Exam Portal URI</label>
                     <div style="position: relative; max-width: 600px;">
                         <span style="position: absolute; left: 20px; top: 16px; color: #94a3b8; font-weight: 600; font-size: 14px;">/</span>
@@ -202,7 +202,7 @@
                 </h2>
                 <p style="color: #64748b; font-weight: 600; margin-bottom: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; font-size: 14px;">Verify ownership with Google Search Console and monitor dynamic XML sitemaps.</p>
                 
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center; margin-bottom: 25px;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center; margin-bottom: 25px;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Google Site Verification Tag</label>
                     <div style="max-width: 600px; width: 100%;">
                         <input type="text" name="gep_google_verification" value="<?php echo esc_attr( get_option('gep_google_verification', '') ); ?>" style="width: 100%; height: 50px; border-radius: 16px; border: 2px solid #e2e8f0; padding: 0 20px; font-weight: 700; background: #f8fafc;" placeholder='e.g., google5776b94ff420aca2 or the full HTML tag'>
@@ -212,7 +212,7 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center;">
+                <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center;">
                     <label style="font-weight: 800; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">XML Sitemap Registry</label>
                     <div style="max-width: 600px; width: 100%;">
                         <a href="<?php echo esc_url( home_url( '/gep-sitemap.xml' ) ); ?>" target="_blank" style="font-size: 14px; font-weight: 800; color: #6366f1; text-decoration: none; border-bottom: 2px dashed #6366f1; padding-bottom: 2px;">

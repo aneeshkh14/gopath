@@ -424,9 +424,9 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                     <span class="gep-mini-icon">🔥</span>
                     <span class="val"><?php echo $user_stats['streak']; ?> Days</span>
                 </div>
-                <div class="gep-stat-mini rank" title="Global Rank">
+                <div class="gep-stat-mini rank" title="Completed tests">
                     <span class="gep-mini-icon">🏆</span>
-                    <span class="val"><?php echo is_numeric($user_stats['rank']) ? '#' . $user_stats['rank'] : $user_stats['rank']; ?> Rank</span>
+                    <span class="val"><?php echo (int) $user_stats['total_attempts']; ?> Completed</span>
                 </div>
             </div>
             <?php endif; ?>

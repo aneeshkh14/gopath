@@ -122,7 +122,7 @@ $courses = $wpdb->get_results( "SELECT id, title FROM {$wpdb->prefix}gep_courses
                 <input type="text" id="gep_lesson_title" name="title" required placeholder="e.g. Chapter 1: Foundations of Algebra" style="width: 100%;">
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div>
                     <label style="display: block; font-weight: 800; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Select Course</label>
                     <select id="gep_lesson_course_id" name="course_id" required style="width: 100%;" <?php echo empty($courses) ? 'disabled' : ''; ?>>
@@ -165,7 +165,7 @@ $courses = $wpdb->get_results( "SELECT id, title FROM {$wpdb->prefix}gep_courses
                 <textarea id="gep_lesson_description" name="description" placeholder="Briefly describe what students will learn..." style="width: 100%; border-radius: 10px; border: 1px solid #e2e8f0; padding: 12px; font-size: 14px;" rows="3" <?php echo empty($courses) ? 'disabled' : ''; ?>></textarea>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+            <div class="gep-responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
                 <div>
                     <label style="display: block; font-weight: 800; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Est. Duration (MM:SS)</label>
                     <input type="text" id="gep_lesson_duration" name="duration" placeholder="45:00" style="width: 100%;" <?php echo empty($courses) ? 'disabled' : ''; ?>>
