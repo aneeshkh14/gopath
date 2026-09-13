@@ -93,19 +93,21 @@ $is_hindi = $_gep_lang === 'hi';
         ob_start();
         ?>
         <a href="<?php echo $link; ?>" class="gep-hcard">
-            <div class="gep-hcard-thumb" aria-hidden="true">
+            <div class="gep-hcard-thumb">
                 <?php if ( ! empty( $t->thumbnail ) ) : ?>
                     <img src="<?php echo esc_url( $t->thumbnail ); ?>" alt="" loading="lazy">
                 <?php else : ?>
-                    <span class="gep-hcard-thumb-icon"><?php echo $is_series ? '📁' : '📝'; ?></span>
+                    <span class="gep-hcard-thumb-icon" aria-hidden="true"><?php echo $is_series ? '📁' : '📝'; ?></span>
                 <?php endif; ?>
                 <?php if ( ! empty( $t->is_free ) ) : ?><span class="gep-hcard-badge">FREE</span><?php endif; ?>
             </div>
             <div class="gep-hcard-body">
                 <h4><?php echo esc_html( $t->title ); ?></h4>
                 <div class="gep-hcard-meta">
-                    <span><?php echo (int) $t->duration_minutes; ?> Mins</span>
-                    <?php if ( ! $is_series && isset( $t->total_marks ) ) : ?><span>•</span><span><?php echo (int) $t->total_marks; ?> Marks</span><?php endif; ?>
+                    <?php if ( $is_series ) : ?><span>Test series</span>
+                    <?php else : ?><span><?php echo (int) $t->duration_minutes; ?> Mins</span>
+                    <?php if ( isset( $t->total_marks ) ) : ?><span>•</span><span><?php echo (int) $t->total_marks; ?> Marks</span><?php endif; ?>
+                    <?php endif; ?>
                 </div>
                 <span class="gep-hcard-action">View <?php echo $is_series ? 'series' : 'test'; ?> <span aria-hidden="true">→</span></span>
             </div>
