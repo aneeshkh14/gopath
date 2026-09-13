@@ -28,6 +28,8 @@ if ($view === 'resume') {
     $shortcodes->register_shortcodes();
     $page=wp_insert_post(['post_type'=>'page','post_status'=>'publish','post_title'=>'Fixture assets','post_content'=>'[gep_dashboard]']);
     query_posts(['page_id'=>$page]);$GLOBALS['wp']->request='dashboard';
+    // Match WP::register_globals(): query_posts alone does not set global $post.
+    $GLOBALS['post'] = get_post($page);setup_postdata($GLOBALS['post']);
     do_action('wp_enqueue_scripts');
     ob_start();wp_styles()->do_items();$html=ob_get_clean();
     $positions=[];
