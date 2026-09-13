@@ -106,3 +106,16 @@
 #gep-page-wrapper .gep-promo-controls { position: absolute; right: 0; top: 0; display: flex; gap: 8px; }
 #gep-page-wrapper .gep-promo-controls button { min-width: 44px; min-height: 44px; border: 1px solid var(--gep-c-border-strong); border-radius: 8px; background: var(--gep-c-surface); color: var(--gep-c-text); cursor: pointer; }
 #gep-page-wrapper .gep-study-promotions :focus-visible { outline: 3px solid var(--gep-c-accent); outline-offset: 2px; }
+
+
+/* Contact actions stay legible and easy to tap in either theme. */
+#gep-page-wrapper .gep-support-contact-card { display: flex; flex-direction: column; gap: 10px; padding: 18px; margin-bottom: 16px; border: 1px solid var(--gep-c-border-strong); border-radius: 12px; background: var(--gep-c-surface-2); }
+#gep-page-wrapper .gep-support-contact-label,
+#gep-page-wrapper .gep-support-contact-hint { color: var(--gep-c-text-muted) !important; font-size: 13px; line-height: 1.5; }
+#gep-page-wrapper .gep-support-contact-label { font-weight: 700; }
+#gep-page-wrapper .gep-support-contact-number,
+#gep-page-wrapper .gep-support-email { color: var(--gep-c-text) !important; font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
+#gep-page-wrapper .gep-support-email { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-underline-offset: 3px; }
+#gep-page-wrapper .gep-whatsapp-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 14px; box-sizing: border-box; border-radius: 8px; background: #075e54; color: #fff !important; font-weight: 700; line-height: 1.5; text-decoration: none; }
+#gep-page-wrapper .gep-whatsapp-link:hover { background: #064e3b; }
+#gep-page-wrapper .gep-support-contact-card a:focus-visible { outline: 3px solid var(--gep-c-accent); outline-offset: 3px; }
