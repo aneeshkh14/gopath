@@ -324,6 +324,7 @@ class GEP_AJAX {
 				
 				$seen_topics = array();
 				foreach ( $selected_topics as $topic ) {
+                    if (!is_array($topic) || !isset($topic['topic_id'], $topic['count']) || !is_scalar($topic['topic_id']) || !is_scalar($topic['count']) || !ctype_digit((string)$topic['topic_id'])) { wp_send_json_error(array('message' => 'Choose a valid topic and question count.')); return; }
 					$topic_id = absint( isset($topic['topic_id']) ? $topic['topic_id'] : 0 );
 					$count    = absint( isset($topic['count']) ? $topic['count'] : 0 );
                     if (!is_array($topic) || !ctype_digit((string)($topic['count'] ?? '')) || $topic_id <= 0 || $count <= 0 || $count > 200 || isset($seen_topics[$topic_id]) || count($all_q_ids) + $count > 200) {

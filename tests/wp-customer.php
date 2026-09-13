@@ -31,6 +31,7 @@ function customer_ajax($method,$post) {
     $response=json_decode($json,true);customer_assert(is_array($response),'Invalid AJAX JSON: '.$json);return $response;
 }
 $engine=new GEP_Exam_Engine();$admin_tests=new GEP_Admin_Tests();
+if (strpos($view,'practice-')===0) $wpdb->delete($wpdb->prefix.'gep_attempts',['test_id'=>999999,'user_id'=>$student,'status'=>'in_progress']);
 if ($view==='practice-lifecycle') {
     $meta=['practice_title'=>'2025 PYQ fixture','type'=>'year','target'=>'2025','duration'=>24];
     $id=customer_attempt(999999,'901,902',$meta);
@@ -56,10 +57,12 @@ if ($view==='practice-lifecycle') {
     customer_assert($wpdb->get_var($wpdb->prepare("SELECT question_ids FROM {$wpdb->prefix}gep_attempts WHERE id=%d",$id))==='901,902','Resume randomized an existing attempt.');
 } elseif ($view==='random-validation') {
     $test=insert_fixture('tests',customer_paper(['type'=>'random']));
-    foreach([[],[['topic_id'=>901,'count'=>-1]],[['topic_id'=>901,'count'=>1.5]],[['topic_id'=>901,'count'=>201]],[['topic_id'=>901,'count'=>2]]] as $topics) {
+    insert_fixture('questions',['title'=>'Random fixture','question_type'=>'mcq','subcategory_id'=>901,'category_id'=>901,'marks'=>2]);
+    foreach([[],[['topic_id'=>901,'count'=>[]]],[['topic_id'=>-1,'count'=>1]],[['topic_id'=>901,'count'=>1],['topic_id'=>901,'count'=>1]],[['topic_id'=>901,'count'=>-1]],[['topic_id'=>901,'count'=>1.5]],[['topic_id'=>901,'count'=>201]],[['topic_id'=>901,'count'=>2]]] as $topics) {
         $r=customer_ajax('gep_start_exam',['test_id'=>$test,'selected_topics'=>$topics]);customer_assert(!$r['success'],'Invalid/unavailable selection created a test.');
     }
     customer_assert((int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}gep_attempts WHERE test_id=%d",$test))===0,'Invalid selection consumed an attempt.');
+    $r=customer_ajax('gep_start_exam',['test_id'=>$test,'selected_topics'=>[['topic_id'=>901,'count'=>1]]]);customer_assert($r['success'] && $r['data']['attempt_id']>0,'A valid free random test could not start.');
 } elseif ($view==='concurrent-starts') {
     $test=insert_fixture('tests',customer_paper());$fn=static function()use($test){customer_attempt($test);};customer_fork([$fn,$fn]);
     customer_assert((int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}gep_attempts WHERE test_id=%d AND user_id=%d",$test,$student))===1,'Two tabs created duplicate attempts.');

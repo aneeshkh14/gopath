@@ -39,7 +39,7 @@ $checkout_price = !empty($item->is_free) ? 0 : $item->price;
                     </div>
 
                     <div class="gep-order-summary">
-                        <?php if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' ) : 
+                        <?php if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && empty($item->is_free) ) :
                             $trans = !empty($item->translated_data) ? json_decode($item->translated_data, true) : array();
                             $attempt_pricing = isset($trans['attempt_pricing']) ? $trans['attempt_pricing'] : array();
                         ?>

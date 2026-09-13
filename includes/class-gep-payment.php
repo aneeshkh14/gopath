@@ -78,8 +78,8 @@ class GEP_Payment {
 		$amount = !empty($item->is_free) ? 0 : $item->price;
 		$discount = 0;
 
-        if ($item_type === 'test' && isset($item->type) && $item->type === 'random' && $attempts <= 0) return new WP_Error('invalid_tier', 'Select an attempts package before paying.');
-		if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && $attempts > 0 ) {
+        if ($item_type === 'test' && isset($item->type) && $item->type === 'random' && empty($item->is_free) && $attempts <= 0) return new WP_Error('invalid_tier', 'Select an attempts package before paying.');
+		if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && empty($item->is_free) && $attempts > 0 ) {
 			$trans = !empty($item->translated_data) ? gep_safe_json_decode($item->translated_data, true) : array();
 			$attempt_pricing = isset($trans['attempt_pricing']) ? $trans['attempt_pricing'] : array();
 			$found_price = false;
@@ -330,7 +330,7 @@ class GEP_Payment {
 		if ( ! $item ) return new WP_Error( 'error', 'Invalid item' );
 
 		$base_price = $item->price;
-		if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && $attempts > 0 ) {
+		if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && empty($item->is_free) && $attempts > 0 ) {
 			$trans = !empty($item->translated_data) ? gep_safe_json_decode($item->translated_data, true) : array();
 			$attempt_pricing = isset($trans['attempt_pricing']) ? $trans['attempt_pricing'] : array();
 			foreach ( $attempt_pricing as $tier ) {

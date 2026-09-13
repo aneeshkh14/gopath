@@ -174,7 +174,7 @@ class GEP_Test {
 		global $wpdb;
 
 		// If it's a random test, attempts are purchased in packages and are NOT unlimited
-		if ( isset($test->type) && $test->type === 'random' ) {
+		if ( isset($test->type) && $test->type === 'random' && empty($test->is_free) ) {
 			$access_table = $wpdb->prefix . 'gep_user_test_access';
 			$purchased_attempts = $wpdb->get_var( $wpdb->prepare( 
 				"SELECT SUM(extra_attempts) FROM $access_table WHERE user_id = %d AND test_id = %d", 

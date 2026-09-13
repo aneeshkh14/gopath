@@ -53,7 +53,7 @@ class GEP_Exam_Engine {
                     return new WP_Error('practice_in_progress', 'Finish or submit your current practice test before starting a different one. You can resume it from your dashboard.');
                 }
             }
-            return $in_progress->id;
+            return (int)$in_progress->id;
 		}
 
 		// 2. Centralized Eligibility Check
