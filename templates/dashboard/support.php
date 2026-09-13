@@ -20,10 +20,10 @@
                 </p>
                 
                 <div class="gep-support-contact-card">
-                    <span class="gep-support-contact-label">WhatsApp helpline</span>
+                    <span class="gep-support-contact-label">WhatsApp chat support</span>
                     <span class="gep-support-contact-number">+91 89863 88960</span>
-                    <a class="gep-whatsapp-link" href="https://wa.me/918986388960" target="_blank" rel="noopener noreferrer">Chat on WhatsApp <span aria-hidden="true">↗</span></a>
-                    <span class="gep-support-contact-hint">Opens WhatsApp to start a chat.</span>
+                    <a class="gep-whatsapp-link" aria-describedby="gep-whatsapp-chat-note" href="https://wa.me/918986388960" target="_blank" rel="noopener noreferrer">Chat on WhatsApp <span aria-hidden="true">↗</span></a>
+                    <span id="gep-whatsapp-chat-note" class="gep-support-contact-hint">WhatsApp chat only. Calls are not supported.</span>
                 </div>
                 <div class="gep-support-contact-card">
                     <span class="gep-support-contact-label">Email support</span>
