@@ -284,6 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
             timeout: 20000,
             data: {
                 action: 'gep_start_pyq_practice_test',
+                nonce: '<?php echo esc_js(wp_create_nonce('gep_exam_nonce')); ?>',
                 type: type,
                 target: target
             },

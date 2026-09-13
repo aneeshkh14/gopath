@@ -433,6 +433,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (qDisp) qDisp.scrollTop = 0;
         const pageScroller = document.scrollingElement || document.documentElement;
         if (pageScroller) pageScroller.scrollTop = 0;
+        const examScroller = document.querySelector('.gep-exam-fullscreen-container');
+        if (examScroller) examScroller.scrollTop = 0;
         currentQuestionIndex = index;
         
         // Update header question number dynamically
@@ -594,6 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function triggerSubmitModal() {
+        setPaletteOpen(false, false);
         if (submitting || submissionRequested || timerExpired) return;
         // Include the current unblurred value in the confirmation summary.
         const block = questions[currentQuestionIndex];
@@ -623,26 +626,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const examSidebar   = document.querySelector('.gep-exam-sidebar');
     const examLayout    = document.querySelector('.gep-exam-layout');
     
+    // The Grid button opens the same full-screen overview on every device.
+    // The desktop edge handle remains a separate compact-sidebar control.
+    const paletteClose = document.getElementById('gep-palette-close');
+    const paletteBackground = Array.from(document.querySelectorAll('.gep-exam-header, .gep-exam-main, .gep-exam-footer'));
+    let paletteBackgroundState = [];
+    function setPaletteOpen(open, restoreFocus = true) {
+        if (!examSidebar) return;
+        const wasOpen = examSidebar.classList.contains('active');
+        if (open === wasOpen) return;
+        examSidebar.classList.toggle('active', open);
+        examSidebar.setAttribute('role', open ? 'dialog' : 'complementary');
+        if (open) {
+            examSidebar.setAttribute('aria-modal', 'true');
+            paletteBackgroundState = paletteBackground.map(el => [el, el.inert]);
+            paletteBackground.forEach(el => { el.inert = true; });
+        } else {
+            examSidebar.removeAttribute('aria-modal');
+            paletteBackgroundState.forEach(([el, value]) => { el.inert = value; });
+            paletteBackgroundState = [];
+        }
+        if (paletteToggle) paletteToggle.setAttribute('aria-expanded', String(open));
+        syncPaletteVisibility();
+        if (open && paletteClose) paletteClose.focus();
+        else if (restoreFocus && paletteToggle) paletteToggle.focus();
+    }
+    function syncPaletteVisibility() {
+        if (!examSidebar) return;
+        const hidden = !examSidebar.classList.contains('active') && window.innerWidth <= 992;
+        examSidebar.inert = hidden;
+        examSidebar.setAttribute('aria-hidden', String(hidden));
+    }
     if (paletteToggle && examSidebar) {
-        paletteToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (window.innerWidth <= 992) {
-                // Mobile behavior
-                examSidebar.classList.toggle('active');
-            } else {
-                // Desktop behavior
-                examSidebar.classList.toggle('collapsed');
-                if (examLayout) {
-                    examLayout.classList.toggle('sidebar-collapsed');
+        paletteToggle.addEventListener('click', () => setPaletteOpen(!examSidebar.classList.contains('active')));
+        if (paletteClose) paletteClose.addEventListener('click', () => setPaletteOpen(false));
+        examSidebar.addEventListener('keydown', e => {
+            if (!examSidebar.classList.contains('active')) return;
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setPaletteOpen(false); }
+            if (e.key !== 'Tab') return;
+            const items = Array.from(examSidebar.querySelectorAll('button:not(:disabled), select, a[href], [tabindex="0"]')).filter(el => {
+                for (let node = el; node && node !== examSidebar; node = node.parentElement) {
+                    if (node.hidden || getComputedStyle(node).display === 'none') return false;
                 }
-            }
+                return true;
+            });
+            const first = items[0], last = items[items.length - 1];
+            if (!first) { e.preventDefault(); return; }
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         });
-        
-        document.addEventListener('click', function(e) {
-            if (examSidebar.classList.contains('active') && !examSidebar.contains(e.target) && e.target !== paletteToggle) {
-                examSidebar.classList.remove('active');
-            }
-        });
+        // Close before opening another dialog; restore the exam's interactivity.
+        examSidebar.addEventListener('click', e => {
+            if (e.target.closest('#gep-submit-btn, #gep-btn-instructions, #gep-btn-qpaper')) setPaletteOpen(false, false);
+        }, true);
+        window.addEventListener('resize', syncPaletteVisibility);
+        syncPaletteVisibility();
     }
 
     // ─── Passage: collapse once it has been read ───────────────────────────
@@ -656,27 +694,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ─── Closing the palette ───────────────────────────────────────────────
-    // On a phone the palette covers the whole screen. Tapping outside it is not a
-    // discoverable way out when there is no visible "outside", so give it an
-    // explicit close button, and let Escape close it too.
-    const paletteClose = document.getElementById('gep-palette-close');
-    if (paletteClose && examSidebar) {
-        paletteClose.addEventListener('click', function(e) {
-            e.stopPropagation();
-            examSidebar.classList.remove('active');
-            if (window.innerWidth > 992) {
-                examSidebar.classList.add('collapsed');
-                if (examLayout) examLayout.classList.add('sidebar-collapsed');
-            }
-        });
-    }
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && examSidebar && examSidebar.classList.contains('active')) {
-            examSidebar.classList.remove('active');
-        }
-    });
-
     // ─── Collapsible Sidebar Edge Toggle ───────────────────────────
     const sidebarCollapseToggle = document.getElementById('gep-sidebar-collapse-toggle');
 
@@ -687,6 +704,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (examLayout) {
                 examLayout.classList.toggle('sidebar-collapsed');
             }
+            syncPaletteVisibility();
+            this.setAttribute('aria-expanded', String(!examSidebar.classList.contains('collapsed')));
             const icon = this.querySelector('.toggle-icon');
             if (icon) {
                 if (examSidebar.classList.contains('collapsed')) {
@@ -706,9 +725,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isNaN(questionIndex)) {
                 loadQuestion(questionIndex);
             }
-            if (examSidebar) {
-                examSidebar.classList.remove('active');
-            }
+            setPaletteOpen(false);
         });
     });
 
@@ -1271,7 +1288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (scrollDisplayPane && scrollDisplayPane.scrollHeight > scrollDisplayPane.clientHeight + 1) {
             return scrollDisplayPane;
         }
-        return document.scrollingElement || document.documentElement;
+        return document.querySelector('.gep-exam-fullscreen-container') || document.scrollingElement || document.documentElement;
     }
 
     function scrollQuestionTo(top) {
@@ -1291,6 +1308,8 @@ document.addEventListener('DOMContentLoaded', function() {
             scrollDisplayPane.addEventListener('scroll', revealScrollButtons, { passive: true });
         }
         window.addEventListener('scroll', revealScrollButtons, { passive: true });
+        const examScroller = document.querySelector('.gep-exam-fullscreen-container');
+        if (examScroller) examScroller.addEventListener('scroll', revealScrollButtons, { passive: true });
 
         const floatScrollUpBtn = document.getElementById('gep-float-scroll-up');
         if (floatScrollUpBtn) {

@@ -42,6 +42,7 @@ class GEP_Payment {
 	 */
 	public function create_order( $item_id, $item_type = 'test', $coupon_code = '', $attempts = 0 ) {
 		global $wpdb;
+        if (!in_array($item_type, array('test','course','pass'), true) || $item_id < 1) return new WP_Error('invalid_item', 'Choose a valid item.');
 		
 		if ( $item_type === 'pass' ) {
 			$pass_plans = array(
@@ -72,9 +73,12 @@ class GEP_Payment {
 		
 		if ( ! $item ) return new WP_Error( 'invalid_item', 'Item not found' );
 
-		$amount = $item->price;
+        if (isset($item->status) && $item->status !== 'publish') return new WP_Error('unavailable', 'This item is not currently available.');
+        if (!is_numeric($item->price) || !is_finite((float)$item->price) || $item->price < 0) return new WP_Error('invalid_price', 'This item needs a valid price before checkout.');
+		$amount = !empty($item->is_free) ? 0 : $item->price;
 		$discount = 0;
 
+        if ($item_type === 'test' && isset($item->type) && $item->type === 'random' && $attempts <= 0) return new WP_Error('invalid_tier', 'Select an attempts package before paying.');
 		if ( $item_type === 'test' && isset($item->type) && $item->type === 'random' && $attempts > 0 ) {
 			$trans = !empty($item->translated_data) ? gep_safe_json_decode($item->translated_data, true) : array();
 			$attempt_pricing = isset($trans['attempt_pricing']) ? $trans['attempt_pricing'] : array();
@@ -102,8 +106,9 @@ class GEP_Payment {
 
 		if ( $amount < 0 ) $amount = 0;
 
+        if ($amount > 0 && (empty($this->key_id) || empty($this->key_secret))) return new WP_Error('gateway_unavailable', 'Payments are temporarily unavailable. Please contact support.');
 		// Create record in our orders table first as pending
-		$wpdb->insert(
+		$inserted = $wpdb->insert(
 			"{$wpdb->prefix}gep_orders",
 			array(
 				'user_id'     => get_current_user_id(),
@@ -118,7 +123,7 @@ class GEP_Payment {
 			)
 		);
 		$order_db_id = $wpdb->insert_id;
-		if ( ! $order_db_id ) return new WP_Error('order_failed', 'Could not create the order. Please retry.');
+		if ( $inserted === false || !$order_db_id ) return new WP_Error('order_failed', 'Could not create the order. Please retry.');
 
 		// If free, grant access immediately and redirect to My Purchases view
 		if ( $amount <= 0 ) {
@@ -163,11 +168,12 @@ class GEP_Payment {
 			return new WP_Error( 'razorpay_error', 'Payment gateway error: ' . $err_desc );
 		}
 
-		$wpdb->update(
+		$recorded = $wpdb->update(
 			"{$wpdb->prefix}gep_orders",
 			array( 'razorpay_order_id' => $res_body['id'] ),
 			array( 'id' => $order_db_id )
 		);
+        if ($recorded === false) return new WP_Error('order_failed', 'Could not prepare a recoverable payment. Please retry before paying.');
 		return $res_body;
 	}
 

@@ -25,13 +25,18 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
         } else {
             $question_ids_str = '';
         }
+        if (GEP_Admin_Tests::$submitted_test) {
+            $test = GEP_Admin_Tests::$submitted_test;
+            $question_ids_str = sanitize_text_field($_POST['question_ids'] ?? '');
+        }
     ?>
+        <?php if (GEP_Admin_Tests::$save_error) : ?><div class="notice notice-error" role="alert"><p><?php echo esc_html(GEP_Admin_Tests::$save_error); ?></p></div><?php endif; ?>
         <div class="gep-admin-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
             <div>
-                <h1 style="margin: 0;"><?php echo $action === 'add' ? 'Architect New Exam' : 'Refine Exam Blueprint'; ?></h1>
-                <p style="color: var(--admin-muted); font-weight: 600;">Configure sophisticated testing parameters and question logic.</p>
+                <h1 style="margin: 0;"><?php echo $action === 'add' ? 'Create Test' : 'Edit Test'; ?></h1>
+                <p style="color: var(--admin-muted); font-weight: 600;">Add questions, set timing and pricing, then save a draft or publish.</p>
             </div>
-            <a href="<?php echo admin_url('admin.php?page=gep-tests'); ?>" class="button" style="border-radius: 12px; font-weight: 700; height: 45px; line-height: 45px; padding: 0 25px;">← Back to Command Center</a>
+            <a href="<?php echo admin_url('admin.php?page=gep-tests'); ?>" class="button" style="border-radius: 12px; font-weight: 700; height: 45px; line-height: 45px; padding: 0 25px;">← Back to Tests</a>
         </div>
 
         <form method="post" action="">
@@ -75,7 +80,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                 <div class="gep-main-settings">
                     <div class="gep-admin-console">
                         <div class="gep-admin-console-header">
-                            <h2 style="margin: 0; font-size: 20px;">Primary Intelligence</h2>
+                            <h2 style="margin: 0; font-size: 20px;">Test Details</h2>
                         </div>
                         <div class="gep-admin-console-body">
                             <div style="margin-bottom: 25px;">
@@ -329,7 +334,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                             </div>
 
                             <div style="margin-bottom: 20px;">
-                                <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 8px; text-transform: uppercase;">Architecture Type</label>
+                                <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 8px; text-transform: uppercase;">Test Type</label>
                                 <select name="type" style="width: 100%;">
                                     <option value="single" <?php if($test && $test->type == 'single') echo 'selected'; ?>>Single Subject Test</option>
                                     <option value="multiple" <?php if($test && $test->type == 'multiple') echo 'selected'; ?>>Multiple Subject Test</option>
@@ -371,7 +376,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 
 
                             <div>
-                                <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 8px; text-transform: uppercase;">Deployment Status</label>
+                                <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 8px; text-transform: uppercase;">Status</label>
                                 <select name="status" style="width: 100%;">
                                     <option value="publish" <?php if($test && $test->status == 'publish') echo 'selected'; ?>>Live / Published</option>
                                     <option value="draft" <?php if($test && $test->status == 'draft') echo 'selected'; ?>>Development / Draft</option>
@@ -459,69 +464,11 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                         </div>
                     </div>
 
-                    <!-- ⚡ Proctoring & Security Panel -->
-                    <div class="gep-admin-console" style="border-top: 5px solid #6366f1;">
-                        <div class="gep-admin-console-header">
-                            <h2 style="margin: 0; font-size: 16px; color: #4f46e5;">🛡️ Proctoring & Security</h2>
-                            <p style="margin: 4px 0 0; color: var(--admin-muted); font-weight: 600; font-size: 13px;">Configure anti-cheat and monitoring settings for this exam.</p>
-                        </div>
-                        <div class="gep-admin-console-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <div style="background: #f5f3ff; padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
-                                <div>
-                                    <strong style="font-size: 13px; color: #4f46e5; display: block;">Fullscreen Enforcement</strong>
-                                    <small style="color: #6b7280;">Force fullscreen & log exits as violations</small>
-                                </div>
-                                <label class="gep-switch">
-                                    <input type="checkbox" name="proctoring_fullscreen" value="1" <?php echo ($test && !empty($td_arr['proctoring_fullscreen'])) ? 'checked' : ''; ?>>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div style="background: #fff1f2; padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
-                                <div>
-                                    <strong style="font-size: 13px; color: #be123c; display: block;">Block Copy/Paste</strong>
-                                    <small style="color: #6b7280;">Disable clipboard & right-click menu</small>
-                                </div>
-                                <label class="gep-switch">
-                                    <input type="checkbox" name="proctoring_copy_block" value="1" <?php echo ($test && !empty($td_arr['proctoring_copy_block'])) ? 'checked' : ''; ?>>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div style="background: #f0fdf4; padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
-                                <div>
-                                    <strong style="font-size: 13px; color: #15803d; display: block;">Tab Switch Detection</strong>
-                                    <small style="color: #6b7280;">Log every tab switch as a violation</small>
-                                </div>
-                                <label class="gep-switch">
-                                    <input type="checkbox" name="proctoring_tab_detect" value="1" <?php echo ($test && !empty($td_arr['proctoring_tab_detect'])) ? 'checked' : ''; ?>>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div style="background: #fef3c7; padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
-                                <div>
-                                    <strong style="font-size: 13px; color: #b45309; display: block;">DevTools Detection</strong>
-                                    <small style="color: #6b7280;">Detect and log DevTools opening</small>
-                                </div>
-                                <label class="gep-switch">
-                                    <input type="checkbox" name="proctoring_devtools" value="1" <?php echo ($test && !empty($td_arr['proctoring_devtools'])) ? 'checked' : ''; ?>>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div>
-                                <?php $td_arr = ($test && isset($test->translated_data)) ? gep_safe_json_decode($test->translated_data, true) : array(); ?>
-                                <label style="display: block; font-weight: 800; font-size: 11px; color: #6366f1; margin-bottom: 8px; text-transform: uppercase;">Auto-Submit After Violations</label>
-                                <input type="number" name="proctoring_violation_limit" min="0" max="20"
-                                    value="<?php echo isset($td_arr['proctoring_violation_limit']) ? intval($td_arr['proctoring_violation_limit']) : 5; ?>"
-                                    style="width: 100%; font-weight: 900; border-color: #6366f1;">
-                                <small style="color: #94a3b8; font-weight: 600;">Set to 0 to disable auto-submit</small>
-                            </div>
-                            <div>
-                                <label style="display: block; font-weight: 800; font-size: 11px; color: var(--admin-muted); margin-bottom: 8px; text-transform: uppercase;">Exam Security Mode</label>
-                                <select name="exam_mode" style="width: 100%;">
-                                    <option value="standard" <?php selected($test ? (isset($test->exam_mode) ? $test->exam_mode : 'standard') : 'standard', 'standard'); ?>>Standard</option>
-                                    <option value="proctored" <?php selected($test ? (isset($test->exam_mode) ? $test->exam_mode : 'standard') : 'standard', 'proctored'); ?>>Proctored (strict)</option>
-                                    <option value="practice" <?php selected($test ? (isset($test->exam_mode) ? $test->exam_mode : 'standard') : 'standard', 'practice'); ?>>Practice (no timer)</option>
-                                </select>
-                            </div>
+                    <div class="gep-admin-console">
+                        <div class="gep-admin-console-body">
+                            <h2>Exam security</h2>
+                            <p>Security and violation handling use the portal settings. All tests on this form use the duration entered above.</p>
+                            <a href="<?php echo esc_url(admin_url('admin.php?page=gep-settings')); ?>">Review portal security settings</a>
                         </div>
                     </div>
 
@@ -562,7 +509,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                 if(this.checked) $('#gep_price').val(0);
             });
 
-            // ── Architecture Type Toggle: Single vs Series ─────────────────
+            // ── Test Type Toggle: Single vs Series ─────────────────
             $('select[name="type"]').on('change', function() {
                 const type = $(this).val();
                 if (type === 'series') {

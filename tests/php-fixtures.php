@@ -37,11 +37,12 @@ function get_gmt_from_date($date,$format){return (new DateTimeImmutable($date,ne
 function wp_send_json_success($data=[]){throw new JsonResponse(true,$data);}
 function wp_send_json_error($data=[]){throw new JsonResponse(false,$data);}
 class TestDb {
+ public $insert_id=5, $insert_result=1;
  public $prefix='wp_', $users='wp_users', $vars=[], $results=[], $rows=[], $updates=[], $inserts=[], $queries=[], $update_result=1;
  function prepare($query,...$args){return $query;}
  function get_row($query){return array_shift($this->rows);}
  function update($table,$data,$where,...$args){$this->updates[]=[$table,$data,$where];return $this->update_result;}
- function insert($table,$data){$this->inserts[]=[$table,$data];return 1;}
+ function insert($table,$data){$this->inserts[]=[$table,$data];return $this->insert_result;}
  function query($query){$this->queries[]=$query;return 1;}
  function get_var($query){return array_shift($this->vars);}
  function get_results($query){return $this->results;}
@@ -53,3 +54,7 @@ require __DIR__.'/../includes/class-gep-ajax.php';
 require __DIR__.'/../includes/class-gep-result.php';
 function expect($value,$message='Assertion failed'){if(!$value)throw new Exception($message);}
 function response($fn){try{$fn();}catch(JsonResponse $r){return $r;}throw new Exception('No JSON response');}
+
+function wp_remote_post($url,$args){return ['response'=>['code'=>200],'body'=>json_encode(['id'=>'order_fixture','amount'=>10000,'currency'=>'INR'])];}
+function wp_remote_retrieve_response_code($response){return $response['response']['code'];}
+function wp_remote_retrieve_body($response){return $response['body'];}

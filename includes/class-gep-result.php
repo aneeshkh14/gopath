@@ -51,7 +51,7 @@ class GEP_Result {
 		if ( ! $attempt ) return false;
 
 		$test_logic = new GEP_Test();
-		$test = $test_logic->get_test( $attempt->test_id );
+		$test = $test_logic->get_test( $attempt->test_id, $attempt );
 
 		$question_ids = $test_logic->get_test_questions( $test->id, $attempt->id );
 		$question_logic = new GEP_Question();

@@ -32,11 +32,11 @@ scenario('heartbeat refuses another student attempt',function(){
  global $wpdb;$_POST=['attempt_id'=>1];$wpdb->rows[]=(object)['user_id'=>99,'status'=>'in_progress'];expect(!response(function(){(new GEP_AJAX())->gep_exam_heartbeat();})->success);
 });
 scenario('database error during answer save remains an error',function(){
- global $wpdb;$row=(object)['user_id'=>7,'status'=>'in_progress','answers'=>'{}','start_time'=>date('Y-m-d H:i:s'),'duration_minutes'=>10];$wpdb->rows=[$row,$row,$row];$wpdb->update_result=false;
+ global $wpdb;$row=(object)['user_id'=>7,'status'=>'in_progress','answers'=>'{}','test_id'=>3,'question_ids'=>'2','start_time'=>date('Y-m-d H:i:s'),'duration_minutes'=>10];$wpdb->rows=[$row,$row,$row];$wpdb->update_result=false;
  $_POST=['attempt_id'=>1,'question_id'=>2,'answer'=>'A'];expect(!response(function(){(new GEP_AJAX())->gep_save_answer();})->success);
 });
 scenario('zero changed rows is an acknowledged answer save',function(){
- global $wpdb;$row=(object)['user_id'=>7,'status'=>'in_progress','answers'=>'{}','start_time'=>date('Y-m-d H:i:s'),'duration_minutes'=>10];$wpdb->rows=[$row,$row,$row];$wpdb->update_result=0;
+ global $wpdb;$row=(object)['user_id'=>7,'status'=>'in_progress','answers'=>'{}','test_id'=>3,'question_ids'=>'2','start_time'=>date('Y-m-d H:i:s'),'duration_minutes'=>10];$wpdb->rows=[$row,$row,$row];$wpdb->update_result=0;
  $_POST=['attempt_id'=>1,'question_id'=>2,'answer'=>'A'];expect(response(function(){(new GEP_AJAX())->gep_save_answer();})->success);
 });
 scenario('submitted attempts reject further answer changes inside the engine',function(){
@@ -90,5 +90,25 @@ scenario('renewing a pass preserves remaining access time',function(){
 scenario('an expired pass renewal starts from now',function(){
  global $wpdb;update_user_meta(7,'gep_pass_expiry',date('Y-m-d H:i:s',time()-86400));$wpdb->rows[]=(object)['id'=>4,'user_id'=>7,'item_id'=>2,'item_type'=>'pass','status'=>'pending'];$wpdb->vars=[7];$before=time();
  $signature=hash_hmac('sha256','order_test|pay_test','test-secret');expect((new GEP_Payment())->verify_payment('order_test','pay_test',$signature));expect(abs(strtotime(get_user_meta(7,'gep_pass_expiry',true))-strtotime('+365 days',$before))<=1);
+});
+scenario('unknown payment item types are rejected before creating an order',function(){
+ global $wpdb;expect(is_wp_error((new GEP_Payment())->create_order(4,'invalid')));expect(!$wpdb->inserts);
+});
+scenario('invalid price is blocked before checkout',function(){
+ global $wpdb;$wpdb->rows[]=(object)['price'=>-10];expect(is_wp_error((new GEP_Payment())->create_order(4)));expect(!$wpdb->inserts);
+});
+scenario('missing gateway configuration does not create a payable order',function(){
+ global $wpdb;$wpdb->rows[]=(object)['price'=>100];expect(is_wp_error((new GEP_Payment())->create_order(4)));expect(!$wpdb->inserts);
+});
+scenario('failed local order insert cannot use a stale insert ID',function(){
+ global $wpdb;$GLOBALS['options']['gep_razorpay_key_id']='fixture-key';$wpdb->rows[]=(object)['price'=>100];$wpdb->insert_result=false;$wpdb->insert_id=77;
+ expect(is_wp_error((new GEP_Payment())->create_order(4)));expect(!$wpdb->updates);
+});
+scenario('failed gateway order mapping stops checkout before payment',function(){
+ global $wpdb;$GLOBALS['options']['gep_razorpay_key_id']='fixture-key';$wpdb->rows[]=(object)['price'=>100];$wpdb->update_result=false;
+ expect(is_wp_error((new GEP_Payment())->create_order(4)));expect(count($wpdb->updates)===1);
+});
+scenario('random test purchase requires an attempts package',function(){
+ global $wpdb;$wpdb->rows[]=(object)['price'=>100,'type'=>'random'];expect(is_wp_error((new GEP_Payment())->create_order(4)));expect(!$wpdb->inserts);
 });
 echo "$passed PHP scenarios passed; $failed failed.\n";exit($failed?1:0);

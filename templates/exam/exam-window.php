@@ -83,7 +83,7 @@ foreach ( $section_counters as $cat_key => $val ) {
             </div>
         </div>
         <div class="gep-header-right">
-            <button class="gep-palette-toggle" id="gep-palette-toggle" title="Toggle Question Palette">📋 <span>Grid</span></button>
+            <button class="gep-palette-toggle" id="gep-palette-toggle" type="button" aria-label="Open question palette" aria-controls="gep-exam-sidebar" aria-expanded="false" title="Open full-screen question palette">📋 <span>Grid</span></button>
             <div class="gep-exam-timer-wrapper" title="Remaining Time">
                 <div class="gep-timer-dot pulse"></div>
                 <div class="gep-exam-timer" id="gep-timer">00:00:00</div>
@@ -238,7 +238,7 @@ foreach ( $section_counters as $cat_key => $val ) {
                         <?php endif; ?>
                     </div>
                 </div>
-                <div id="gep-question-display" style="position: relative; flex: 1; min-height: 0; min-width: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px 100px 20px;">
+                <div id="gep-question-display" tabindex="0" role="region" aria-label="Question and answers" style="position: relative; flex: 1; min-height: 0; min-width: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px 100px 20px;">
 
                 <?php foreach ( $questions as $index => $q ) : 
                     $pid = isset($q->passage_id) ? absint($q->passage_id) : 0;
@@ -475,9 +475,9 @@ foreach ( $section_counters as $cat_key => $val ) {
         </div>
     </div>
 
-    <aside class="gep-exam-sidebar" id="gep-exam-sidebar">
+    <aside class="gep-exam-sidebar" id="gep-exam-sidebar" aria-label="Question palette">
         <!-- Desktop Collapse Toggle Button -->
-        <button id="gep-sidebar-collapse-toggle" class="gep-sidebar-collapse-toggle" title="Toggle Sidebar">
+        <button id="gep-sidebar-collapse-toggle" class="gep-sidebar-collapse-toggle" type="button" aria-label="Toggle compact question sidebar" aria-expanded="true" title="Toggle Sidebar">
             <span class="toggle-icon">❯</span>
         </button>
         <!-- User Information Header (Disabled to keep simple & real exam like) -->

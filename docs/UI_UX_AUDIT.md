@@ -129,3 +129,21 @@ The WordPress suite covers all 19 dashboard routes, 17 admin views, three checko
 Run `php tests/php-regression.php` for isolated PHP tests. The workflow provisions the two disposable databases; `bash tests/wp-screens.sh` requires `GEP_TEST_WORDPRESS_ROOT` and refuses any database name except `gep_wordpress`. WP-CLI installation follows the [official download](https://developer.wordpress.org/cli/commands/core/download/) and [installation](https://developer.wordpress.org/cli/commands/core/install/) commands, with email notification disabled.
 
 CI run [34748491520](https://github.com/aneeshkh14/gopath/actions/runs/34748491520) passed all 108 WordPress cases present at that revision, including full layouts, exam submission, admin replies and renewal. The additional concurrent-renewal case and the 24-case PHP suite are included in the final PR checks. The PR links the final run for its latest revision. These checks do not execute a browser or establish device layout correctness.
+
+
+## Customer feedback follow-up — 13 September 2026 (v2.0.4)
+
+Written reports: question scrolling fails; the full-size palette change only applies on phones; payment and test creation require further verification. The attached voice note was not transcribed because no audio transcription capability was available.
+
+Implemented:
+
+- A single scrolling owner per layout: the exam viewport on small screens, the question pane inside a bounded desktop grid on laptops. Clear inherited question max-height constraints, preserve full question/options height, and route scroll controls/navigation resets to that owner. This also avoids depending on the outer WordPress document scrolling during fullscreen.
+- Full-size question palette on desktop as well as mobile/tablet, with pinned actions, a scrolling grid, accessible dialog focus, explicit close, Escape, background inertness, resize handling, and safe transitions to submission.
+- Atomic attempt initialization with an immutable question list. Retries resume the existing random/PYQ paper; a different PYQ selection cannot overwrite a running paper. Validate custom question counts before consuming an attempt.
+- Generated PYQ practice saves, heartbeat, grading and review now work without a physical test record. Preserve practice metadata in result snapshots. Serialize concurrent starts, answer writes and grading; reject answers outside the attempt's question list.
+- Validate test creation before changing links; save test metadata and links in one transaction. Reject missing IDs, duplicate section questions, impossible sectional timing and unsupported/self-referencing series. Preserve the submitted form on failure. Keep empty drafts visible to admins and unavailable to students. Total marks use section overrides. Removed nonfunctional per-test security controls and the duplicate exam_mode field that overwrote exam presets; link to actual portal security settings.
+- Stop checkout before charging when configuration/order persistence fails, a product is unavailable, or a random-test package has no purchased attempts. Honor the free flag even when a previous price remains stored.
+
+Validation suite at this revision: 93 frontend DOM/CSS cases, 30 isolated PHP cases, 5 MySQL payment cases, and 125 WordPress cases (105 rendered states plus 20 workflows). The 16 new WordPress workflows include practice lifecycle/retries, random selection validation, concurrent starts/saves/submission, admin create/edit/draft/rollback/series validation, and payment availability/free enrollment. Final CI outcome is linked from the PR.
+
+The viewport cases inspect DOM behavior and stylesheet cascade, not browser-rendered geometry. Actual touch/wheel scrolling, fullscreen, long bilingual passages, tablet rotation, mobile keyboards, 200% browser zoom, screen readers, Razorpay sandbox, external email and authenticated staging remain release checks. The browser's earlier local/data preview security block was not bypassed. Nothing in this follow-up certifies all possible device or payment-provider cases.

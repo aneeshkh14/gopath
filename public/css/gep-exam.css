@@ -4653,3 +4653,62 @@ span.sa-text.active { display: inline; }
 #gep-security-toast { max-width: calc(100vw - 32px); white-space: normal !important; overflow-wrap: anywhere; box-sizing: border-box; }
 #gep-calculator-modal [hidden] { display: none !important; }
 #gep-calculator-modal :focus-visible, .gep-popup-modal :focus-visible, #gep-security-modal :focus-visible { outline: 3px solid #60a5fa; outline-offset: 3px; }
+
+/* Exam scrolling contract: one scroll owner on each layout. Keep this after the
+   historical responsive rules so max-height:100% cannot clip a natural-flow
+   question and competing flex heights cannot hide its last options. */
+.gep-exam-layout { min-width: 0; }
+@media (min-width: 993px) {
+    .gep-exam-fullscreen-container { height: 100dvh !important; min-height: 0 !important; }
+    .gep-exam-layout {
+        height: 100% !important; min-height: 0 !important;
+        grid-template-rows: auto minmax(0, 1fr) auto !important;
+        grid-template-columns: minmax(0, 1fr) var(--gep-sidebar-w);
+    }
+    .gep-exam-header { min-height: 48px; }
+    .gep-exam-main { min-width: 0; min-height: 0 !important; overflow: hidden !important; }
+    #gep-exam-split-wrapper { flex: 1 1 0 !important; min-height: 0 !important; overflow: hidden; }
+    #gep-question-display-wrapper { min-height: 0 !important; overflow: hidden !important; }
+    #gep-question-display { flex: 1 1 0 !important; height: auto !important; min-height: 0 !important; max-height: none !important; overflow: auto !important; }
+    .gep-q-pane-header, .gep-sections-bar-wrapper { flex-shrink: 0; }
+    .gep-exam-sidebar { min-height: 0 !important; }
+}
+@media (max-width: 992px) {
+    /* Scroll the exam viewport itself. This also works when the document is
+       fullscreen and when a WordPress theme locks the outer page. */
+    .gep-exam-fullscreen-container {
+        position: fixed !important; inset: 0 !important; display: block !important;
+        height: 100dvh !important; min-height: 0 !important; max-height: none !important;
+        overflow: auto !important; z-index: 99999 !important;
+        -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
+    }
+    .gep-exam-layout, .gep-exam-main, #gep-exam-split-wrapper,
+    #gep-question-display-wrapper, #gep-question-display {
+        height: auto !important; max-height: none !important; overflow: visible !important;
+    }
+    .gep-exam-main { padding-bottom: calc(160px + env(safe-area-inset-bottom)) !important; }
+}
+/* Full-size palette on phone, tablet AND laptop. Header and actions stay
+   reachable; only the question grid scrolls. */
+.gep-exam-layout .gep-exam-sidebar.active {
+    position: fixed !important; inset: 0 !important; width: 100% !important;
+    max-width: none !important; height: 100dvh !important; max-height: none !important;
+    transform: none !important; margin: 0 !important; padding: 0 !important;
+    display: flex !important; flex-direction: column !important; overflow: hidden !important;
+    visibility: visible !important; opacity: 1 !important; z-index: 100000 !important;
+    border: 0 !important; box-sizing: border-box !important;
+}
+.gep-exam-sidebar.active .gep-palette-header { display: flex !important; flex: 0 0 auto; }
+.gep-exam-sidebar.active #gep-sidebar-collapse-toggle { display: none !important; }
+.gep-exam-sidebar.active .gep-palette-sections { display: flex !important; flex: 0 0 auto; }
+.gep-exam-sidebar .gep-palette-grid-container { flex: 1 1 0; min-height: 0; overflow-y: auto; }
+.gep-exam-sidebar.active .gep-palette-grid-container { flex: 1 1 0 !important; min-height: 0 !important; overflow: auto !important; padding: 16px !important; }
+.gep-exam-sidebar.active .gep-palette-grid { grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)) !important; gap: 10px !important; }
+.gep-exam-sidebar.active .gep-palette-btn { width: 100% !important; min-width: 0 !important; height: 44px !important; aspect-ratio: auto !important; }
+.gep-exam-sidebar.active .gep-sidebar-bottom-actions { flex: 0 0 auto !important; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)) !important; }
+.gep-exam-sidebar.active .gep-palette-legend { flex: 0 1 auto; max-height: 25dvh; overflow: auto; margin: 0 !important; padding: 10px 16px !important; }
+
+.gep-exam-sidebar.active .gep-palette-grid-container,
+.gep-exam-sidebar.active .gep-sidebar-bottom-actions,
+.gep-exam-sidebar.active .gep-palette-legend { display: block !important; }
+.gep-exam-sidebar.active .gep-palette-legend { display: grid !important; }
