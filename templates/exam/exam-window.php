@@ -477,9 +477,9 @@ foreach ( $section_counters as $cat_key => $val ) {
     </div>
 
     <aside class="gep-exam-sidebar" id="gep-exam-sidebar" aria-label="Question palette">
-        <!-- Desktop Collapse Toggle Button -->
-        <button id="gep-sidebar-collapse-toggle" class="gep-sidebar-collapse-toggle" type="button" aria-label="Toggle compact question sidebar" aria-expanded="true" title="Toggle Sidebar">
-            <span class="toggle-icon">❯</span>
+        <!-- Desktop full-palette opener -->
+        <button id="gep-sidebar-collapse-toggle" class="gep-sidebar-collapse-toggle" type="button" aria-label="Open full question palette" aria-expanded="false" title="Open full question palette">
+            <span class="toggle-icon" aria-hidden="true">⛶</span>
         </button>
         <!-- User Information Header (Disabled to keep simple & real exam like) -->
         <!--

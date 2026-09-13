@@ -1,4 +1,14 @@
 jQuery(document).ready(function($) {
+    document.querySelectorAll('.gep-study-promotions').forEach(section => {
+        const track = section.querySelector('.gep-study-links');
+        if (!track) return;
+        section.querySelectorAll('[data-promo-direction]').forEach(button => {
+            button.addEventListener('click', () => {
+                const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                track.scrollBy({left: Number(button.dataset.promoDirection) * track.clientWidth, behavior: reduce ? 'auto' : 'smooth'});
+            });
+        });
+    });
 
     // ─── Light / dark theme ──────────────────────────────────────────────────
     // The stored choice is already applied by an inline script in <head> so the

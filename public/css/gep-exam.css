@@ -4723,3 +4723,12 @@ span.sa-text.active { display: inline; }
 #gep-secure-init-overlay .gep-secure-init-card li,
 #gep-secure-init-overlay .gep-secure-init-card li strong { color: #475569 !important; }
 #gep-fullscreen-feedback { color: #991b1b; font-size: 14px; line-height: 1.5; margin: 12px 0; }
+
+/* Compact laptop rail: spend its width on question buttons, not side gutters. */
+@media (min-width: 993px) {
+    .gep-exam-sidebar:not(.active) .gep-palette-grid-container { padding: 10px !important; }
+    .gep-exam-sidebar:not(.active) .gep-palette-grid { grid-template-columns: repeat(auto-fit, minmax(38px, 1fr)); gap: 6px !important; }
+    .gep-exam-sidebar:not(.active) .gep-sidebar-bottom-actions { padding: 10px !important; gap: 8px; }
+    .gep-exam-sidebar:not(.active) .gep-sidebar-bottom-actions .gep-btn { min-height: 44px; padding: 10px 6px; font-size: 12px; }
+}
+.gep-palette-btn[aria-current="step"] { outline: 3px solid var(--gep-c-accent, #4f46e5); outline-offset: 2px; }

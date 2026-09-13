@@ -59,6 +59,22 @@ $resume_attempt = $dashboard->get_resume_attempt( $user_id );
 $study_user = get_userdata( $user_id );
 $is_hindi = $_gep_lang === 'hi';
 ?>
+    <section class="gep-study-discover gep-study-promotions" aria-label="More ways to learn">
+        <h2><?php echo $is_hindi ? 'और सीखें' : 'More ways to learn'; ?></h2>
+        <div class="gep-promo-controls"><button type="button" data-promo-direction="-1" aria-label="Previous poster">←</button><button type="button" data-promo-direction="1" aria-label="Next poster">→</button></div>
+        <div class="gep-study-links" tabindex="0" aria-label="Swipe through study posters">
+        <?php foreach (array(1 => array('Explore courses', 'Learn at your own pace with available courses.', 'View courses', 'supercoaching'), 2 => array('Mock tests', 'Practise with timed papers and review your results.', 'View tests', 'tests'), 3 => array('Live classes', 'See upcoming classes and available sessions.', 'View classes', 'live-classes')) as $slide => $defaults) :
+            $promo_url = get_option('gep_slide'.$slide.'_url') ?: add_query_arg('view', $defaults[3], $dash_url);
+            $promo_image = get_option('gep_slide'.$slide.'_image'); ?>
+            <a href="<?php echo esc_url($promo_url); ?>" class="gep-study-link">
+                <?php if ($promo_image) : ?><img src="<?php echo esc_url($promo_image); ?>" alt="" loading="lazy"><?php endif; ?>
+                <h3><?php echo esc_html(get_option('gep_slide'.$slide.'_title', $defaults[0])); ?></h3>
+                <p><?php echo esc_html(get_option('gep_slide'.$slide.'_desc', $defaults[1])); ?></p>
+                <span><?php echo esc_html(get_option('gep_slide'.$slide.'_btn', $defaults[2])); ?> <span aria-hidden="true">→</span></span>
+            </a>
+        <?php endforeach; ?>
+        </div>
+    </section>
 <section class="gep-study-start" aria-labelledby="gep-study-heading">
     <div class="gep-study-intro">
         <p class="gep-study-eyebrow"><?php echo $is_hindi ? 'आपकी पढ़ाई, आपका लक्ष्य' : 'YOUR STUDY SPACE'; ?></p>
@@ -269,21 +285,7 @@ $is_hindi = $_gep_lang === 'hi';
     </section>
     <?php endif; ?>
 
-    <section class="gep-study-discover" aria-label="More ways to learn">
-        <h2><?php echo $is_hindi ? 'और सीखें' : 'More ways to learn'; ?></h2>
-        <div class="gep-study-links">
-        <?php foreach (array(1 => array('Explore courses', 'Learn at your own pace with available courses.', 'View courses', 'supercoaching'), 2 => array('Mock tests', 'Practise with timed papers and review your results.', 'View tests', 'tests'), 3 => array('Live classes', 'See upcoming classes and available sessions.', 'View classes', 'live-classes')) as $slide => $defaults) :
-            $promo_url = get_option('gep_slide'.$slide.'_url') ?: add_query_arg('view', $defaults[3], $dash_url);
-            $promo_image = get_option('gep_slide'.$slide.'_image'); ?>
-            <a href="<?php echo esc_url($promo_url); ?>" class="gep-study-link">
-                <?php if ($promo_image) : ?><img src="<?php echo esc_url($promo_image); ?>" alt="" loading="lazy"><?php endif; ?>
-                <h3><?php echo esc_html(get_option('gep_slide'.$slide.'_title', $defaults[0])); ?></h3>
-                <p><?php echo esc_html(get_option('gep_slide'.$slide.'_desc', $defaults[1])); ?></p>
-                <span><?php echo esc_html(get_option('gep_slide'.$slide.'_btn', $defaults[2])); ?> <span aria-hidden="true">→</span></span>
-            </a>
-        <?php endforeach; ?>
-        </div>
-    </section>
+
 
     <!-- Popular Exams Section (Testbook-style) -->
     <?php

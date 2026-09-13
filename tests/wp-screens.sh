@@ -16,7 +16,7 @@ for state in empty seeded; do
 done
 for view in login register forgot-password otp; do php tests/wp-screens.php auth "$view" || failures=$((failures+1)); done
 for view in home payment-success payment-failed; do php tests/wp-screens.php page "$view" || failures=$((failures+1)); done
-for view in resume counts practice review assets empty; do
+for view in resume counts practice review promotions assets empty; do
     php tests/wp-screens.php visual "$view" seeded || failures=$((failures+1))
 done
 for view in result-total practice-comparison exhausted-purchase running-purchase custom-unavailable pass-access single-percentile; do
@@ -33,4 +33,4 @@ for view in practice-lifecycle practice-retry practice-different random-resume r
     php tests/wp-screens.php customer "$view" seeded || failures=$((failures+1))
 done
 if ((failures)); then echo "$failures WordPress rendering cases failed"; exit 1; fi
-echo '146 WordPress rendering and journey cases passed (plus fixture setup).'
+echo '147 WordPress rendering and journey cases passed (plus fixture setup).'

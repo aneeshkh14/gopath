@@ -1044,3 +1044,28 @@ html.gep-dialog-open, html.gep-dialog-open body { overflow: hidden !important; }
 #gep-page-wrapper .gep-home-wrapper .gep-hero-stats { flex-wrap: wrap; }
 #gep-page-wrapper .gep-home-wrapper .gep-btn-hero-primary { background: #2563eb; color: #fff !important; }
 #gep-page-wrapper .gep-home-wrapper .gep-trust-banner .logo { color: var(--gep-c-text-muted); }
+
+/* Exam content can include pasted editor colours. Text follows the selected
+   paper surface in both themes; images and diagram fills remain untouched. */
+:root .gep-exam-fullscreen-container :is(.gep-q-content, .gep-q-text-wrapper, .gep-opt-content, #gep-passage-body, .gep-popup-modal-body),
+:root .gep-exam-fullscreen-container :is(.gep-q-content, .gep-q-text-wrapper, .gep-opt-content, #gep-passage-body, .gep-popup-modal-body) :is(p, span, div, strong, em, b, i, u, li, td, th, font, h1, h2, h3, h4, h5, h6) {
+    color: var(--gep-c-text) !important; background-color: transparent !important;
+}
+:root .gep-exam-fullscreen-container .gep-popup-modal-content { background: var(--gep-c-surface) !important; color: var(--gep-c-text) !important; }
+:root .gep-exam-fullscreen-container .gep-popup-modal-content h2,
+:root .gep-exam-fullscreen-container .gep-popup-modal-close { color: var(--gep-c-text) !important; }
+:root .gep-exam-fullscreen-container .gep-sidebar-bottom-actions { background: var(--gep-c-surface-2) !important; border-color: var(--gep-c-border-strong) !important; }
+:root .gep-exam-fullscreen-container .gep-sidebar-bottom-actions .gep-btn-info,
+:root .gep-exam-fullscreen-container #gep-prev-btn {
+    background: var(--gep-c-surface-3) !important; color: var(--gep-c-text) !important;
+    border: 1px solid var(--gep-c-border-strong) !important;
+}
+:root .gep-exam-fullscreen-container .gep-sidebar-bottom-actions .gep-btn-primary,
+:root .gep-exam-fullscreen-container #gep-next-btn { background: #1d4ed8 !important; color: #fff !important; }
+:root .gep-exam-fullscreen-container .gep-palette-counters .label,
+:root .gep-exam-fullscreen-container .gep-palette-section-title { color: var(--gep-c-text-muted) !important; }
+/* Status numbers need contrast too, not just the unvisited state. */
+:root .gep-exam-fullscreen-container :is(.gep-palette-btn, .badge).answered { background: #047857 !important; color: #fff !important; }
+:root .gep-exam-fullscreen-container :is(.gep-palette-btn, .badge).not-answered { background: #b91c1c !important; color: #fff !important; }
+:root .gep-exam-fullscreen-container :is(.gep-palette-btn, .badge):is(.flagged, .answered-flagged) { background: #6d28d9 !important; color: #fff !important; }
+:root .gep-exam-fullscreen-container :is(.gep-palette-btn, .badge).not-visited { background: var(--gep-c-surface-3) !important; color: var(--gep-c-text) !important; }
