@@ -16,12 +16,18 @@
                 </div>
                 <h2 style="font-size: 24px; font-weight: 800; color: #1e293b; margin-bottom: 15px;">How can we help you?</h2>
                 <p style="font-size: 15px; color: #64748b; line-height: 1.6; margin-bottom: 30px;">
-                    If you have any questions, encounter any issues, or need assistance with your account, tests, or courses, please fill out the form.
+                    If you have any questions, encounter any issues, or need assistance with your account, tests, or courses, chat with us on WhatsApp, email us, or use the form.
                 </p>
                 
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                    <div style="font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px;">Direct Email</div>
-                    <div style="font-size: 16px; font-weight: 800; color: #1e293b;">help@gopath.in</div>
+                <div class="gep-support-contact-card">
+                    <span class="gep-support-contact-label">WhatsApp helpline</span>
+                    <span class="gep-support-contact-number">+91 89863 88960</span>
+                    <a class="gep-whatsapp-link" href="https://wa.me/918986388960" target="_blank" rel="noopener noreferrer">Chat on WhatsApp <span aria-hidden="true">↗</span></a>
+                    <span class="gep-support-contact-hint">Opens WhatsApp to start a chat.</span>
+                </div>
+                <div class="gep-support-contact-card">
+                    <span class="gep-support-contact-label">Email support</span>
+                    <a class="gep-support-email" href="mailto:help@gopath.in">help@gopath.in</a>
                 </div>
                 <p style="font-size: 13px; color: #94a3b8; margin: 0;">
                     We typically respond within 24-48 hours during business days.
