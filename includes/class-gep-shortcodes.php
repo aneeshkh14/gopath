@@ -191,7 +191,7 @@ class GEP_Shortcodes {
 		$purchases = array_merge( (array)$purchased_tests, (array)$purchased_series, (array)$purchased_courses );
 
 		// Populate purchase status for marketplace items
-		$purchased_ids = array_map(function($item) { return $item->id; }, $purchases);
+		$purchased_ids = array_map(function($item) { return (int) $item->id; }, array_merge((array)$purchased_tests, (array)$purchased_series));
 		
 		foreach ( $available_tests as &$t ) {
 			$t->is_purchased = in_array($t->id, $purchased_ids);
@@ -276,6 +276,7 @@ class GEP_Shortcodes {
 			'main'           => 'main.php',
 			'tests'          => 'browse-tests.php',
 			'purchases'      => 'my-purchases.php',
+			'orders'         => 'orders.php',
 			'live-classes'   => 'live-classes.php',
 			'lectures'       => 'lectures.php',
 			'supercoaching'  => 'supercoaching.php',

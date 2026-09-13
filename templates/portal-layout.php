@@ -492,6 +492,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                 <a href="<?php echo $get_nav_link('purchases'); ?>" class="<?php echo $current_view === 'purchases' ? 'active' : ''; ?>">
                     <span class="gep-nav-icon">💰</span> My Purchases
                 </a>
+                <a href="<?php echo esc_url($get_nav_link('orders')); ?>" class="<?php echo $current_view === 'orders' ? 'active' : ''; ?>"><span class="gep-nav-icon">🧾</span> Transaction History</a>
                 <a href="<?php echo esc_url($get_nav_link('results')); ?>" class="<?php echo $current_view === 'results' ? 'active' : ''; ?>"><span class="gep-nav-icon">📊</span> Results &amp; Progress</a>
                 <a href="<?php echo $get_nav_link('profile'); ?>" class="<?php echo $current_view === 'profile' ? 'active' : ''; ?>">
                     <span class="gep-nav-icon">👤</span> My Profile

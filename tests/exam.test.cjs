@@ -57,3 +57,30 @@ test('lost submission response retries submission without writing to a potential
  await resolve(p.fetches[2],{success:true,data:{redirect_url:'https://portal.example/dashboard/'}});
  assert.equal(p.w.onbeforeunload,null);assert.deepEqual(p.errors,[]);
 });
+
+test('keyboard radio changes save the selected answer and repeated clicks keep it selected',async t=>{
+ const p=await page();t.after(p.close);const input=p.w.document.querySelector('input[value="B"]');input.checked=true;input.dispatchEvent(new p.w.Event('change',{bubbles:true}));
+ assert.equal(p.fetches[0].data.answer,'B');await resolve(p.fetches[0]);input.click();assert.equal(input.checked,true);assert.equal(p.fetches.length,1);assert.deepEqual(p.errors,[]);
+});
+test('typed drafts persist before blur and prevent accidental navigation before sync',async t=>{
+ const p=await page();t.after(p.close);p.$('.gep-palette-btn[data-id="2"]').trigger('click');await resolve(p.fetches[0]);
+ const input=p.w.document.querySelector('.gep-numerical-ans');input.value='3.14';input.dispatchEvent(new p.w.Event('input',{bubbles:true}));
+ assert.equal(JSON.parse(p.w.localStorage.getItem('gep_pending_55_2')).answer,'3.14');const event=new p.w.Event('beforeunload',{cancelable:true});p.w.onbeforeunload(event);assert.equal(event.defaultPrevented,true);
+ assert.match(p.$('#gep-save-status').text(),/Waiting to sync/);assert.equal(p.fetches.length,1);assert.deepEqual(p.errors,[]);
+});
+test('palette navigation captures text even before a blur event',async t=>{
+ const p=await page();t.after(p.close);p.$('.gep-palette-btn[data-id="2"]').trigger('click');await resolve(p.fetches[0]);p.$('.gep-numerical-ans').val('42');p.$('.gep-palette-btn[data-id="1"]').trigger('click');
+ assert.equal(p.fetches[1].data.question_id,'2');assert.equal(p.fetches[1].data.answer,'42');await resolve(p.fetches[1]);
+});
+test('Save and Finish sends a cleared text answer, rather than retaining its previous value',async t=>{
+ const p=await page(w=>{w.GEP_Exam.saved_answers={2:{answer:'42',flagged:false}};});t.after(p.close);p.$('.gep-palette-btn[data-id="2"]').trigger('click');await resolve(p.fetches[0]);p.$('.gep-numerical-ans').val('');p.$('#gep-next-btn').trigger('click');
+ assert.equal(p.fetches[1].data.answer,'');assert.equal(p.fetches[1].data.question_id,'2');assert.match(p.$('[role="dialog"]').text(),/answered 0/);await resolve(p.fetches[1]);
+});
+test('submission summary counts the current unblurred answer',async t=>{
+ const p=await page();t.after(p.close);p.$('.gep-palette-btn[data-id="2"]').trigger('click');await resolve(p.fetches[0]);p.$('.gep-numerical-ans').val('7');p.$('#gep-submit-btn').trigger('click');assert.match(p.$('[role="dialog"]').text(),/answered 1/);
+});
+test('an ambiguous submission prevents more edits and navigation while verification is retried',async t=>{
+ const p=await page();t.after(p.close);p.$('#gep-submit-btn').trigger('click');p.$('[data-action="submit"]').trigger('click');await resolve(p.fetches[0]);p.fetches[1].reject(new Error('Lost'));await tick();
+ p.$('#gep-next-btn').trigger('click');p.$('.gep-palette-btn[data-id="2"]').trigger('click');p.w.document.querySelector('input[value="B"]').click();p.$('#gep-clear-btn').trigger('click');
+ assert.equal(p.fetches.length,2);assert.equal(p.$('.gep-question-block[data-id="1"]')[0].style.display,'block');assert.equal(p.$('.gep-question-block')[0].inert,true);assert.equal(p.$('[data-action="retry"]').length,1);
+});

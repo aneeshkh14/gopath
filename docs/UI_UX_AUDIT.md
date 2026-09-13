@@ -1,4 +1,4 @@
-# UI/UX audit and improvements — 2.0.2
+# UI/UX audit and improvements — 2.0.3
 
 Base: `claude/blissful-wozniak-6tqprs` at `55b8bbd`. Implementation branch: `codex/ui-ux-audit`.
 
@@ -106,3 +106,11 @@ The second pass revisited all external scripts, inline interaction scripts and t
 Additional verification commands: `php tests/php-regression.php` runs 19 isolated handler scenarios with WordPress I/O stubbed (no real mail or payments). The CI payment-database job runs `tests/php-mysql.php` against a disposable MySQL 8 InnoDB schema, testing replay, rollback/retry, free/full-discount enrollment and simultaneous callbacks. All four MySQL scenarios passed in GitHub Actions run 34746936327; the UI/PHP job also passed. This verifies actual transaction rollback and parallel-callback behavior against MySQL, while WordPress service functions and payment-provider calls remain isolated.
 
 Browser limitation: the cloud browser explicitly rejected isolated local/data previews under its URL security policy. No alternative browser or network workaround was used. This pass therefore adds executable DOM/PHP/database evidence, not claims of visual certification on every screen size. A staging URL and authenticated test accounts remain necessary for that part of the user's requested coverage.
+
+## Third pass — interrupted sessions and real WordPress rendering
+
+Additional fixes cover timed-section navigation through Next/Previous/palette, delayed heartbeats that rewind the clock, keyboard radio answers, immediate local text-draft recovery, submission editing locks, retained custom-topic selections across subjects, profile/avatar recovery, and malformed checkout responses.
+
+Transaction history now has a real dashboard route, lists tests/courses/passes through the current schema and keeps deleted-item orders visible. Purchasing a course no longer marks an unrelated test with the same numeric ID as owned. Result summaries use the latest answered response per question and the exam engine's grading rules. New submissions snapshot their maximum marks; history uses the recorded percentage. Narrow-screen result/lecture grids and unavailable lecture links were corrected.
+
+Local verification at this checkpoint: 69 DOM cases, 22 PHP handler/data cases and syntax checks pass. The database suite now adds order-history isolation and overlapping item-ID coverage. A new CI job installs disposable WordPress and renders guest, student and admin screens against MySQL, using empty and populated fixtures. Its results will be recorded after execution. These server-rendering checks do not execute a browser or establish device layout correctness.

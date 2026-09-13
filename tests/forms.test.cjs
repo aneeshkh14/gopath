@@ -23,3 +23,19 @@ test('custom test requires topics and consent, handles string IDs and excludes e
 test('custom test config network error replaces permanent loading with retry',async t=>{
  const p=await setup(instructions,'public/js/gep-instructions.js',{GEP_Instructions:{ajaxurl:'/ajax'}});t.after(p.close);p.requests[0].reject();assert.equal(p.$('#gep-subject-tabs button').text(),'Retry loading subjects');assert.equal(p.$('#start-exam-btn').prop('disabled'),true);
 });
+
+test('custom test selections survive subject changes and all chosen topics are submitted',async t=>{
+ const p=await setup(instructions,'public/js/gep-instructions.js',{GEP_Instructions:{ajaxurl:'/ajax',test_id:5,nonce:'test'}});t.after(p.close);
+ p.requests[0].resolve({success:true,data:[{id:1,name:'Math',topics:[{id:10,name:'Algebra',question_count:12}]},{id:2,name:'English',topics:[{id:20,name:'Grammar',question_count:8}]}]});
+ p.$('.gep-topic-cb').prop('checked',true).trigger('change');p.$('.gep-topic-count').val('10').trigger('input');p.$('.gep-sub-tab[data-id="2"]').trigger('click');p.$('.gep-topic-cb').prop('checked',true).trigger('change');assert.equal(p.$('#gep-total-selected-q').text(),'15');
+ p.$('.gep-sub-tab[data-id="1"]').trigger('click');assert.equal(p.$('.gep-topic-cb').prop('checked'),true);assert.equal(p.$('.gep-topic-count').val(),'10');assert.equal(p.$('.gep-sub-tab[data-id="1"]').attr('aria-pressed'),'true');
+ p.$('#agree-terms').prop('checked',true).trigger('change');p.$('#start-exam-btn').trigger('click');assert.deepEqual(JSON.parse(p.requests[1].options.data.selected_topics),[{topic_id:'10',count:10},{topic_id:'20',count:5}]);
+});
+test('editing a custom count allows clearing it and disables start until it is valid',async t=>{
+ const p=await setup(instructions,'public/js/gep-instructions.js',{GEP_Instructions:{ajaxurl:'/ajax',test_id:5,nonce:'test'}});t.after(p.close);p.requests[0].resolve({success:true,data:[{id:1,name:'Math',topics:[{id:10,name:'Algebra',question_count:12}]}]});p.$('.gep-topic-cb').prop('checked',true).trigger('change');p.$('#agree-terms').prop('checked',true).trigger('change');
+ p.$('.gep-topic-count').val('').trigger('input');assert.equal(p.$('.gep-topic-count').val(),'');assert.equal(p.$('#start-exam-btn').prop('disabled'),true);p.$('.gep-topic-count').val('10').trigger('input');assert.equal(p.$('#start-exam-btn').prop('disabled'),false);p.$('.gep-topic-count').val('2.5').trigger('input');assert.equal(p.$('#start-exam-btn').prop('disabled'),true);
+});
+test('incomplete subject configuration and start responses leave useful retry states',async t=>{
+ const p=await setup(instructions,'public/js/gep-instructions.js',{GEP_Instructions:{ajaxurl:'/ajax'}});t.after(p.close);p.requests[0].resolve(null);assert.match(p.$('#gep-subject-tabs').text(),/No subjects/);assert.equal(p.$('#start-exam-btn').prop('disabled'),true);
+ const q=await setup('<input type="checkbox" id="agree-terms" checked><button id="start-exam-btn">Start</button>','public/js/gep-instructions.js',{GEP_Instructions:{ajaxurl:'/ajax'}});t.after(q.close);q.$('#start-exam-btn').trigger('click');q.requests[0].resolve(null);assert.equal(q.$('#start-exam-btn').prop('disabled'),false);assert.match(q.$('#gep-start-error').text(),/Failed/);assert.deepEqual(q.errors,[]);
+});

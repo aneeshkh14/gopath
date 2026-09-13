@@ -184,6 +184,7 @@ class GEP_Exam_Engine {
 		$answers_for_analytics = json_decode( $attempt->answers, true ) ?: array();
 		$times = array_filter(array_column(array_values($answers_for_analytics), 'time_ms'));
 		$analytics_data = array(
+			'total_marks'    => $results['total_marks'],
 			'avg_time_ms'    => count($times) ? (int)(array_sum($times)/count($times)) : 0,
 			'total_answered' => count(array_filter($answers_for_analytics, fn($a)=>isset($a['answer'])&&$a['answer']!=='')),
 			'total_flagged'  => count(array_filter($answers_for_analytics, fn($a)=>!empty($a['flagged']))),
@@ -249,6 +250,7 @@ class GEP_Exam_Engine {
 		$is_pass = ( $percentage >= $test->pass_marks ) ? 1 : 0;
 
 		return array(
+			'total_marks' => $total_max_marks,
 			'score'      => $score,
 			'percentage' => $percentage,
 			'is_pass'    => $is_pass

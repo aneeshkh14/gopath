@@ -55,7 +55,7 @@
                         <div class="gep-lecture-subcategory-group" style="margin-bottom: 30px; padding-left: 20px; border-left: 3px solid #e2e8f0;">
                             <h3 style="font-size: 20px; font-weight: 800; color: #cbd5e1; margin-bottom: 20px;"><?php echo esc_html($subcat_name); ?></h3>
                             
-                            <div class="gep-premium-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+                            <div class="gep-premium-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 24px;">
                                 <?php foreach ($lecs as $lec): ?>
                                     <div class="gep-card-elite" style="background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s;">
                                         <div class="card-media" style="height: 160px; background: #0f172a url('<?php echo esc_url($lec->thumbnail); ?>') center/cover; position: relative;">
@@ -81,9 +81,13 @@
                                                 <?php 
                                                     $play_url = esc_url($lec->video_url);
                                                 ?>
-                                                <a href="<?php echo $play_url; ?>" target="_blank" class="btn-action-elite btn-primary" style="display: block; text-align: center; width: 100%; padding: 12px; background: #6366f1; color: #fff; border-radius: 12px; font-weight: 800; text-decoration: none; transition: background 0.3s;">
-                                                    ▶ Play Lecture
+                                                <?php if ($play_url) : ?>
+                                                <a href="<?php echo $play_url; ?>" target="_blank" rel="noopener" class="btn-action-elite btn-primary" style="display: block; text-align: center; width: 100%; padding: 12px; background: #6366f1; color: #fff; border-radius: 12px; font-weight: 800; text-decoration: none; transition: background 0.3s;">
+                                                    ▶ Play Lecture <span class="screen-reader-text">(opens in a new tab)</span>
                                                 </a>
+                                                <?php else : ?>
+                                                <p role="status">Video link not available yet.</p>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </div>

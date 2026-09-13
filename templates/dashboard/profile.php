@@ -321,14 +321,14 @@ jQuery(document).ready(function($) {
             timeout: 20000,
             data: form.serialize() + '&action=gep_update_profile',
             success: function(response) {
-                if (response.success) {
+                if (response && response.success) {
                     msgBox.html('<div class="gep-alert gep-alert-success"><span style="font-size:20px;">✅</span> Profile updated successfully! Refreshing...</div>').fadeIn();
                     $('html, body').animate({ scrollTop: 0 }, 500);
                     setTimeout(function() {
                         location.reload();
                     }, 1500);
                 } else {
-                    msgBox.empty().append($('<div class="gep-alert gep-alert-danger">').text(typeof response.data === 'string' ? response.data : response.data && response.data.message || 'Failed to update profile.')).fadeIn();
+                    msgBox.empty().append($('<div class="gep-alert gep-alert-danger">').text(response && typeof response.data === 'string' ? response.data : response && response.data && response.data.message || 'Failed to update profile.')).fadeIn();
                     btn.prop('disabled', false);
                     btnText.text('Save All Changes');
                 }
@@ -344,11 +344,22 @@ jQuery(document).ready(function($) {
         });
     });
 
+    // Avatar feedback stays next to its control and supports same-file retries.
+    var avatarBusy = false;
+    function avatarStatus(message, failed) {
+        var $status = $('#gep-avatar-status');
+        if (!$status.length) $status = $('<p id="gep-avatar-status" role="status"></p>').insertAfter('#gep-avatar-upload');
+        $status.text(message).attr('role', failed ? 'alert' : 'status');
+    }
     // Avatar Upload Engine
     $('#gep-avatar-upload').on('change', function() {
+        if (avatarBusy) return;
         var file_data = $(this).prop('files')[0];
         if (!file_data) return;
 
+        avatarBusy = true;
+        $(this).prop('disabled', true);
+        avatarStatus('Uploading photo…', false);
         var form_data = new FormData();
         form_data.append('avatar', file_data);
         form_data.append('action', 'gep_update_avatar');
@@ -368,14 +379,17 @@ jQuery(document).ready(function($) {
             contentType: false,
             processData: false,
             success: function(response) {
-                if (response.success) {
+                if (response && response.success && response.data && response.data.image_url) {
                     $('.gep-profile-avatar img').attr('src', response.data.image_url);
+                    avatarStatus('Photo updated.', false);
                 } else {
-                    alert(typeof response.data === 'string' ? response.data : response.data && response.data.message || 'Failed to upload photo.');
+                    avatarStatus(response && typeof response.data === 'string' ? response.data : response && response.data && response.data.message || 'Failed to upload photo. Choose the file again to retry.', true);
                 }
             },
-            error: function() { alert('Could not upload your photo. Please check your connection and try again.'); },
+            error: function() { avatarStatus('Could not upload your photo. Check your connection and choose the file again to retry.', true); },
             complete: function() {
+                avatarBusy = false;
+                $('#gep-avatar-upload').prop('disabled', false).val('');
                 $('.gep-profile-avatar').css('opacity', '1');
             }
         });

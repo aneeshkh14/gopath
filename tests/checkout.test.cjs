@@ -45,3 +45,13 @@ test('free total and missing gateway have actionable states',async t=>{
  assert.equal(p.$('#gep-pay-button').text(),'Complete Enrollment');
  p.w.Razorpay=undefined;p.$('#gep-pay-button').trigger('click');p.requests[1].resolve({success:true,data:{id:'order',amount:1}});assert.match(p.$('#gep-payment-error').text(),/could not load/);assert.equal(p.$('#gep-pay-button').prop('disabled'),false);
 });
+
+test('duplicate gateway completion callbacks trigger only one verification request',async t=>{
+ const p=await page();t.after(p.close);p.$('#gep-pay-button').trigger('click');p.requests[0].resolve({success:true,data:{id:'order_test',amount:120000}});const payment={razorpay_payment_id:'pay_test',razorpay_order_id:'order_test',razorpay_signature:'signature'};p.gateways[0].options.handler(payment);p.gateways[0].options.handler(payment);assert.equal(p.requests.length,2);p.requests[1].reject();p.$('#gep-pay-button').trigger('click');assert.equal(p.requests.length,3);assert.equal(p.requests[2].options.data.action,'gep_verify_payment');
+});
+test('missing order fields never open a broken gateway and allow retry',async t=>{
+ const p=await page();t.after(p.close);for(const data of [{},{id:'order'},{id:'order',amount:-1}]){p.$('#gep-pay-button').trigger('click');p.requests.at(-1).resolve({success:true,data});assert.equal(p.gateways.length,0);assert.equal(p.$('#gep-pay-button').prop('disabled'),false);}assert.deepEqual(p.errors,[]);
+});
+test('incomplete free enrollment confirmation keeps an actionable recovery message',async t=>{
+ const p=await page();t.after(p.close);p.$('#gep-pay-button').trigger('click');p.requests[0].resolve({success:true,data:{status:'free'}});assert.match(p.$('#gep-payment-error').text(),/My Purchases/);assert.equal(p.$('#gep-pay-button').prop('disabled'),false);assert.equal(p.w.location.pathname,'/dashboard/');
+});

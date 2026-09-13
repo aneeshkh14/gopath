@@ -39,3 +39,35 @@ jobs:
         env:
           GEP_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=gep_test
         run: php tests/php-mysql.php
+  wordpress-screens:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: fixture
+          MYSQL_DATABASE: gep_wordpress
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost --password=fixture"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install isolated WordPress and activate the plugin
+        env:
+          GEP_TEST_WORDPRESS_ROOT: ${{ runner.temp }}/gep-wordpress
+        run: |
+          curl --fail --silent --show-error --location https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output "$RUNNER_TEMP/wp-cli.phar"
+          php "$RUNNER_TEMP/wp-cli.phar" core download --path="$GEP_TEST_WORDPRESS_ROOT"
+          php "$RUNNER_TEMP/wp-cli.phar" config create --path="$GEP_TEST_WORDPRESS_ROOT" --dbname=gep_wordpress --dbuser=root --dbpass=fixture --dbhost=127.0.0.1:3306
+          php "$RUNNER_TEMP/wp-cli.phar" core install --path="$GEP_TEST_WORDPRESS_ROOT" --url=http://portal.example --title='GoPath fixtures' --admin_user=fixture_admin --admin_password=local-fixture-only --admin_email=admin@example.test --skip-email
+          ln -s "$GITHUB_WORKSPACE" "$GEP_TEST_WORDPRESS_ROOT/wp-content/plugins/gopath-exam-portal"
+          php "$RUNNER_TEMP/wp-cli.phar" plugin activate gopath-exam-portal --path="$GEP_TEST_WORDPRESS_ROOT"
+          php "$RUNNER_TEMP/wp-cli.phar" option update gep_run_activation_tasks 0 --path="$GEP_TEST_WORDPRESS_ROOT"
+      - name: Render student, guest and admin screens with empty and populated data
+        env:
+          GEP_TEST_WORDPRESS_ROOT: ${{ runner.temp }}/gep-wordpress
+        run: bash tests/wp-screens.sh

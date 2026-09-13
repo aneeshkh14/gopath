@@ -28,7 +28,7 @@ jQuery(document).ready(function($) {
                 lang: lang
             },
             success: function(response) {
-                if (response.success) {
+                if (response && response.success) {
                     location.reload();
                 } else {
                     $select.prop('disabled', false);
@@ -43,11 +43,12 @@ jQuery(document).ready(function($) {
     // ─── DYNAMIC RANDOM TEST SELECTOR ──────────────────────────────
     var subjectsConfig = [];
     var activeSubjectId = null;
+    var topicSelections = {};
 
     if ($('#gep-random-selector-wrap').length) {
         $.ajax({url: GEP_Instructions.ajaxurl, type: 'POST', timeout: 20000, data: {action: 'gep_get_random_test_config'}}).done(function(res) {
-            if (res.success && res.data.length) {
-                subjectsConfig = res.data;
+            if (res && res.success && Array.isArray(res.data) && res.data.length) {
+                subjectsConfig = res.data.filter(sub => sub && Array.isArray(sub.topics));
                 renderSubjectTabs();
             } else {
                 $('#gep-subject-tabs').html('<div style="color: #ef4444; font-weight: 700; font-size: 13px;">No subjects/topics configured in the question bank.</div>');
@@ -73,8 +74,8 @@ jQuery(document).ready(function($) {
 
     $(document).on('click', '.gep-sub-tab', function() {
         var subId = $(this).data('id');
-        $('.gep-sub-tab').css({'background': '#f1f5f9', 'color': '#475569'});
-        $(this).css({'background': '#2563eb', 'color': '#fff'});
+        $('.gep-sub-tab').attr('aria-pressed', 'false').css({'background': '#f1f5f9', 'color': '#475569'});
+        $(this).attr('aria-pressed', 'true').css({'background': '#2563eb', 'color': '#fff'});
         selectSubject(subId);
     });
 
@@ -95,6 +96,12 @@ jQuery(document).ready(function($) {
             '</div>';
         });
         $('#gep-topics-container').html(html);
+        $('.gep-sub-tab').attr('aria-pressed', function() { return String(String($(this).data('id')) === String(subId)); });
+        $('.gep-topic-cb').each(function() {
+            var selected = topicSelections[this.value];
+            if (!selected) return;
+            $(this).prop('checked', true).closest('.gep-topic-row').find('.gep-topic-count').val(selected.count).show();
+        });
         updateTotalSelectedCount();
     }
 
@@ -113,7 +120,8 @@ jQuery(document).ready(function($) {
         updateTotalSelectedCount();
     });
 
-    $(document).on('input change', '.gep-topic-count', function() {
+    $(document).on('input', '.gep-topic-count', updateTotalSelectedCount);
+    $(document).on('change', '.gep-topic-count', function() {
         var maxVal = parseInt($(this).data('max')) || 0;
         var val = parseInt($(this).val()) || 0;
         if (val < 1) $(this).val(1);
@@ -122,11 +130,15 @@ jQuery(document).ready(function($) {
     });
 
     function updateTotalSelectedCount() {
-        var total = 0;
-        $('.gep-topic-cb:checked').each(function() {
-            var count = parseInt($(this).closest('.gep-topic-row').find('.gep-topic-count').val()) || 0;
-            total += count;
+        $('.gep-topic-cb').each(function() {
+            if (!this.checked) { delete topicSelections[this.value]; return; }
+            var $input = $(this).closest('.gep-topic-row').find('.gep-topic-count');
+            var count = Number($input.val());
+            var valid = Number.isInteger(count) && count > 0 && count <= Number($input.data('max'));
+            $input.attr('aria-invalid', String(!valid));
+            topicSelections[this.value] = {topic_id: this.value, count: valid ? count : 0};
         });
+        var total = Object.values(topicSelections).reduce((sum, topic) => sum + topic.count, 0);
         $('#gep-total-selected-q').text(total);
         validateStartButton();
     }
@@ -138,7 +150,7 @@ jQuery(document).ready(function($) {
         
         if (starting) { startBtn.prop('disabled', true); return; }
         if (isRandom) {
-            $('#start-exam-btn').prop('disabled', !(isAgreed && total > 0));
+            $('#start-exam-btn').prop('disabled', !(isAgreed && total > 0 && Object.values(topicSelections).every(topic => topic.count > 0)));
         } else {
             $('#start-exam-btn').prop('disabled', !isAgreed);
         }
@@ -164,19 +176,7 @@ jQuery(document).ready(function($) {
         try { sessionStorage.removeItem('gep_inst_step'); sessionStorage.removeItem('gep_current_lang'); } catch (e) {}
 
         // Collect custom selections for random tests
-        var selected_topics = [];
-        if ($('#gep-random-selector-wrap').length) {
-            $('.gep-topic-cb:checked').each(function() {
-                var id = $(this).val();
-                var count = parseInt($(this).closest('.gep-topic-row').find('.gep-topic-count').val()) || 0;
-                if (count > 0) {
-                    selected_topics.push({
-                        topic_id: id,
-                        count: count
-                    });
-                }
-            });
-        }
+        var selected_topics = $('#gep-random-selector-wrap').length ? Object.values(topicSelections) : [];
 
         $.ajax({
             url: GEP_Instructions.ajaxurl,
@@ -189,10 +189,10 @@ jQuery(document).ready(function($) {
                 selected_topics: selected_topics.length ? JSON.stringify(selected_topics) : ''
             },
             success: function(response) {
-                if (response.success) {
+                if (response && response.success) {
                     location.reload(); 
                 } else {
-                    showError(response.data && response.data.message || 'Failed to start exam.');
+                    showError(response && response.data && response.data.message || 'Failed to start exam.');
                     starting = false; startBtn.text(originalBtnText); validateStartButton();
                 }
             },

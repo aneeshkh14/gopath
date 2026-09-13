@@ -35,17 +35,19 @@ function get_gmt_from_date($date,$format){return (new DateTimeImmutable($date,ne
 function wp_send_json_success($data=[]){throw new JsonResponse(true,$data);}
 function wp_send_json_error($data=[]){throw new JsonResponse(false,$data);}
 class TestDb {
- public $prefix='wp_', $rows=[], $updates=[], $inserts=[], $queries=[], $update_result=1;
+ public $prefix='wp_', $results=[], $rows=[], $updates=[], $inserts=[], $queries=[], $update_result=1;
  function prepare($query,...$args){return $query;}
  function get_row($query){return array_shift($this->rows);}
  function update($table,$data,$where,...$args){$this->updates[]=[$table,$data,$where];return $this->update_result;}
  function insert($table,$data){$this->inserts[]=[$table,$data];return 1;}
  function query($query){$this->queries[]=$query;return 1;}
  function get_var($query){return null;}
+ function get_results($query){return $this->results;}
 }
 require __DIR__.'/../includes/class-gep-auth.php';
 require __DIR__.'/../includes/class-gep-exam-engine.php';
 require __DIR__.'/../includes/class-gep-payment.php';
 require __DIR__.'/../includes/class-gep-ajax.php';
+require __DIR__.'/../includes/class-gep-result.php';
 function expect($value,$message='Assertion failed'){if(!$value)throw new Exception($message);}
 function response($fn){try{$fn();}catch(JsonResponse $r){return $r;}throw new Exception('No JSON response');}

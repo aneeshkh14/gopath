@@ -17,6 +17,26 @@ class GEP_Payment {
 		$this->key_secret = $this->decrypt( get_option( 'gep_razorpay_key_secret' ) );
 	}
 
+	/** Keep history even when a purchased item has since been removed. */
+	public function get_user_orders( $user_id ) {
+		global $wpdb;
+		$orders = $wpdb->get_results( $wpdb->prepare(
+			"SELECT o.*, CASE WHEN o.item_type = 'course' THEN c.title ELSE t.title END AS item_title
+			 FROM {$wpdb->prefix}gep_orders o
+			 LEFT JOIN {$wpdb->prefix}gep_tests t ON o.item_type = 'test' AND o.item_id = t.id
+			 LEFT JOIN {$wpdb->prefix}gep_courses c ON o.item_type = 'course' AND o.item_id = c.id
+			 WHERE o.user_id = %d ORDER BY o.created_at DESC, o.id DESC", $user_id
+		) );
+		$pass_names = array(1 => '1-Month Mock Test Pass', 2 => 'Yearly Mock Test Pass Pro', 3 => 'Lifetime Mock Test Pass Ultimate');
+		foreach ( (array) $orders as $order ) {
+			if ( $order->item_type === 'pass' ) {
+				$order->item_title = isset($pass_names[$order->item_id]) ? $pass_names[$order->item_id] : 'Mock Test Pass';
+			}
+			if ( empty($order->item_title) ) $order->item_title = 'Unavailable item #' . (int) $order->item_id;
+		}
+		return (array) $orders;
+	}
+
 	/**
 	 * Create a real Razorpay order.
 	 */

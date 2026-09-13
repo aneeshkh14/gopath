@@ -89,7 +89,7 @@ function gep_purchase_launch_url( $p ) {
                     $used          = (int) $p->used_attempts;
                     $is_unlimited  = ( $total_allowed == 0 );
                     $remaining     = $is_unlimited ? '∞' : max( 0, $total_allowed - $used );
-                    $bar_pct       = ( !$is_unlimited && $total_allowed > 0 ) ? ( $used / $total_allowed * 100 ) : 0;
+                    $bar_pct       = ( !$is_unlimited && $total_allowed > 0 ) ? min(100, max(0, $used / $total_allowed * 100)) : 0;
                 }
 
                 $launch_url       = gep_purchase_launch_url( $p );

@@ -42,70 +42,8 @@ $user_id = get_current_user_id();
 // Fetch attempts for calculations
 $attempts = (new GEP_Result())->get_user_results( $user_id );
 
-// 1. COMPUTE SUBJECT-WISE WEAKNESS TRACKER DATA
-$attempted_question_ids = array();
-$attempt_answers = array();
-
-if ( ! empty( $attempts ) ) {
-    foreach ( $attempts as $a ) {
-        $ans = json_decode( $a->answers, true ) ?: array();
-        foreach ( $ans as $qid => $data ) {
-            $qid = absint( $qid );
-            if ( $qid > 0 && isset( $data['answer'] ) && $data['answer'] !== '' ) {
-                $attempted_question_ids[] = $qid;
-                $attempt_answers[$qid] = $data['answer'];
-            }
-        }
-    }
-}
-
-$subject_stats = array();
-if ( ! empty( $attempted_question_ids ) ) {
-    $attempted_question_ids = array_unique( $attempted_question_ids );
-    $placeholders = implode( ',', array_fill( 0, count( $attempted_question_ids ), '%d' ) );
-    $questions_data = $wpdb->get_results( $wpdb->prepare(
-        "SELECT q.id, q.correct_answer, c.name as category_name 
-         FROM {$wpdb->prefix}gep_questions q
-         LEFT JOIN {$wpdb->prefix}gep_categories c ON q.category_id = c.id
-         WHERE q.id IN ($placeholders)",
-        $attempted_question_ids
-    ) );
-
-    if ( ! empty( $questions_data ) ) {
-        foreach ( $questions_data as $q ) {
-            $cat_name = $q->category_name ?: 'General Science / GK';
-            if ( ! isset( $subject_stats[$cat_name] ) ) {
-                $subject_stats[$cat_name] = array(
-                    'total'   => 0,
-                    'correct' => 0,
-                );
-            }
-            
-            $user_val = isset( $attempt_answers[$q->id] ) ? $attempt_answers[$q->id] : '';
-            
-            // Validate correctness
-            $is_correct = false;
-            if ( $user_val !== '' ) {
-                $u_clean = str_replace( ' ', '', strtolower( $user_val ) );
-                $c_clean = str_replace( ' ', '', strtolower( $q->correct_answer ) );
-                
-                $u_arr = explode( ',', $u_clean );
-                $c_arr = explode( ',', $c_clean );
-                sort( $u_arr );
-                sort( $c_arr );
-                
-                if ( $u_arr === $c_arr ) {
-                    $is_correct = true;
-                }
-            }
-            
-            $subject_stats[$cat_name]['total']++;
-            if ( $is_correct ) {
-                $subject_stats[$cat_name]['correct']++;
-            }
-        }
-    }
-}
+// get_user_results returns newest completed attempts first.
+$subject_stats = (new GEP_Result())->get_subject_stats($attempts);
 ?>
 
 <div class="gep-results-container" style="animation: fadeIn 0.5s ease-out; font-family: 'Inter', system-ui, sans-serif; padding-bottom: 50px;">
@@ -125,10 +63,10 @@ if ( ! empty( $attempted_question_ids ) ) {
                 <h3 style="margin: 0; font-size: 18px; font-weight: 900; color: #0f172a; display: flex; align-items: center; gap: 8px;">
                     🎯 <?php _e( 'Subject-Wise Weakness &amp; Strength Tracker', 'gopath-exam-portal' ); ?>
                 </h3>
-                <p style="margin: 4px 0 0; color: #64748b; font-size: 13px; font-weight: 600;"><?php _e( 'Identify topics where you need to focus more to increase your test scores.', 'gopath-exam-portal' ); ?></p>
+                <p style="margin: 4px 0 0; color: #64748b; font-size: 13px; font-weight: 600;"><?php _e( 'Based on your latest answered response to each question. Use this breakdown to choose what to practise next.', 'gopath-exam-portal' ); ?></p>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 20px;">
                 <?php foreach ( $subject_stats as $name => $stat ) : 
                     $accuracy = round( ($stat['correct'] / $stat['total']) * 100 );
                     
@@ -182,7 +120,7 @@ if ( ! empty( $attempted_question_ids ) ) {
 
     <!-- Historical Performance Registry -->
     <div class="gep-card" style="padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; background: #fff;">
-        <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <div role="region" aria-label="Exam history" tabindex="0" style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
             <table class="gep-premium-table" style="width: 100%; border-collapse: collapse; min-width: 650px;">
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
@@ -200,7 +138,7 @@ if ( ! empty( $attempted_question_ids ) ) {
                         $exam_engine = new GEP_Exam_Engine();
 
                         foreach ( $attempts as $a ) : 
-                            $percentage = ($a->total_marks > 0) ? ($a->score / $a->total_marks) * 100 : 0;
+                            $percentage = (float) $a->percentage;
                             $is_pass = (bool) $a->is_pass; 
                             $rank = $exam_engine->get_user_test_rank( $a->test_id, $a->user_id );
                     ?>
@@ -215,7 +153,7 @@ if ( ! empty( $attempted_question_ids ) ) {
                             <td style="padding: 20px;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <div style="flex-grow: 1; height: 6px; background: #f1f5f9; border-radius: 10px; overflow: hidden; width: 80px;">
-                                        <div style="height: 100%; width: <?php echo $percentage; ?>%; background: <?php echo $is_pass ? '#10b981' : '#ef4444'; ?>;"></div>
+                                        <div style="height: 100%; width: <?php echo max(0, min(100, $percentage)); ?>%; background: <?php echo $is_pass ? '#10b981' : '#ef4444'; ?>;"></div>
                                     </div>
                                     <span style="font-weight: 800; color: #1e293b; font-size: 14px;"><?php echo round($percentage); ?>%</span>
                                 </div>

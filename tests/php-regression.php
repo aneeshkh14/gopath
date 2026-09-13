@@ -69,4 +69,18 @@ scenario('unmapped payment cannot be attached to a different pending order',func
 scenario('wrong item cannot be verified against a different purchased item',function(){
  global $wpdb;$wpdb->rows[]=(object)['id'=>4,'user_id'=>7,'item_id'=>9,'item_type'=>'test','status'=>'success'];$signature=hash_hmac('sha256','order_test|pay_test','test-secret');expect(!(new GEP_Payment())->verify_payment('order_test','pay_test',$signature,2,'test'));expect(!$wpdb->updates);
 });
+scenario('subject tracker keeps the latest answer and uses numerical tolerance and MCQ aliases',function(){
+ global $wpdb;$wpdb->results=[(object)['id'=>1,'category_name'=>'Math','question_type'=>'numerical','correct_answer'=>'3.14','numerical_tolerance'=>0.01],(object)['id'=>2,'category_name'=>'Math','question_type'=>'mcq','correct_answer'=>'A']];
+ $attempts=[(object)['answers'=>json_encode([1=>['answer'=>'3.145'],2=>['answer'=>'१']])],(object)['answers'=>json_encode([1=>['answer'=>'7'],2=>['answer'=>'B']])]];
+ expect((new GEP_Result())->get_subject_stats($attempts)===['Math'=>['total'=>2,'correct'=>2]]);
+});
+scenario('subject tracker ignores corrupt and empty answers while preserving zero',function(){
+ global $wpdb;$wpdb->results=[(object)['id'=>1,'category_name'=>'Math','question_type'=>'numerical','correct_answer'=>'0','numerical_tolerance'=>0.01]];
+ $attempts=[(object)['answers'=>'not JSON'],(object)['answers'=>json_encode([1=>['answer'=>''],2=>['answer'=>[]],3=>['answer'=>'  ']])],(object)['answers'=>json_encode([1=>['answer'=>'0']])]];
+ expect((new GEP_Result())->get_subject_stats($attempts)===['Math'=>['total'=>1,'correct'=>1]]);expect((new GEP_Result())->get_subject_stats([])===[]);
+});
+scenario('order history labels passes and keeps deleted items visible',function(){
+ global $wpdb;$wpdb->results=[(object)['item_type'=>'pass','item_id'=>2,'item_title'=>null],(object)['item_type'=>'course','item_id'=>9,'item_title'=>null],(object)['item_type'=>'test','item_id'=>2,'item_title'=>'Mock test']];$orders=(new GEP_Payment())->get_user_orders(7);
+ expect($orders[0]->item_title==='Yearly Mock Test Pass Pro');expect($orders[1]->item_title==='Unavailable item #9');expect($orders[2]->item_title==='Mock test');
+});
 echo "$passed PHP scenarios passed; $failed failed.\n";exit($failed?1:0);

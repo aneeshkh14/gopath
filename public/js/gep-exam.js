@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let timerInterval;
     let submitting = false;
     let submissionRequested = false;
+    let navigationReady = false;
+    let draftSaveTimer;
     const pendingAnswers = new Map();
     let savePromise = null;
     const storagePrefix = `gep_pending_${examData.attempt_id}_`;
@@ -102,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.setAttribute('aria-labelledby', 'gep-dialog-title'); modal.tabIndex = -1;
         modal.style.cssText = `
             background:#ffffff;border:1px solid ${c.border};border-radius:24px;
-            padding:40px 48px;max-width:460px;width:90%;text-align:center;
+            padding:clamp(20px,5vw,40px);max-width:460px;width:90%;text-align:center;box-sizing:border-box;max-height:90dvh;overflow:auto;
             box-shadow:0 32px 80px rgba(0,0,0,0.15);
             animation:gepSlideUp 0.25s ease;
         `;
@@ -178,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
             background:#ffffff;border:1px solid ${colors[type]||colors.info};
             color:#1e293b;padding:12px 24px;border-radius:12px;
             font-size:14px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,0.1);
-            animation:gepFadeIn 0.2s ease;white-space:nowrap;
+            animation:gepFadeIn 0.2s ease;max-width:calc(100vw - 32px);box-sizing:border-box;text-align:center;overflow-wrap:anywhere;
         `;
         toast.textContent = message;
         document.body.appendChild(toast);
@@ -295,7 +297,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         if (hasSectionalTiming && state.index > currentSectionIdx) {
-            captureCurrentAnswer();
             currentSectionIdx = state.index;
             switchSection(sectionalTimings[currentSectionIdx].id);
             showToast('Section time ended. Continuing to ' + sectionalTimings[currentSectionIdx].name + '.', 'info', 5000);
@@ -317,7 +318,11 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const data = await postExam(formData);
                 if (data && data.success && data.data && Number.isFinite(Number(data.data.remaining_seconds))) {
-                    elapsedAtSync = totalDuration - Math.max(0, Math.min(totalDuration, Number(data.data.remaining_seconds)));
+                    // A delayed response must never rewind elapsed time or reopen a section.
+                    elapsedAtSync = Math.max(
+                        elapsedAtSync + Math.max(0, (Date.now() - clockSyncedAt) / 1000),
+                        totalDuration - Math.max(0, Math.min(totalDuration, Number(data.data.remaining_seconds)))
+                    );
                     clockSyncedAt = Date.now();
                     updateClock();
                 }
@@ -343,11 +348,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // ─── Answer Saving ───────────────────────────────────────────────────────
     // Serialize saves across questions: the server updates one attempt answer map.
     function saveAnswer(questionId, answer, flagged = false) {
+        if (submissionRequested) return Promise.resolve(false);
+        queueAnswer(questionId, answer, flagged);
+        return flushAnswers();
+    }
+    function queueAnswer(questionId, answer, flagged) {
         const data = {answer, flagged, timestamp: Date.now(), time_ms: Date.now() - questionStartTime};
         pendingAnswers.set(String(questionId), data);
         storePending(questionId, data);
         updatePaletteStatus(questionId, answer, flagged);
-        return flushAnswers();
     }
     function flushAnswers() {
         if (savePromise) return savePromise;
@@ -393,8 +402,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return parseFloat(n.toFixed(2)).toString();
     }
 
-    function loadQuestion(index) {
+    function loadQuestion(index, capturePrevious = true) {
         const questions = document.querySelectorAll('.gep-question-block');
+        if (!questions[index] || submitting || submissionRequested || timerExpired) return;
+        if (hasSectionalTiming && questions[index].dataset.catId !== sectionalTimings[currentSectionIdx].id) return;
+        if (navigationReady && capturePrevious && currentQuestionIndex !== index) captureCurrentAnswer();
 
         // Reset per-question timer
         questionStartTime = Date.now();
@@ -468,8 +480,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         paletteButtons.forEach((btn, i) => btn.classList.toggle('active', i === index));
-        if (prevBtn) prevBtn.disabled = (index === 0);
-        if (nextBtn) nextBtn.textContent = (index === questions.length - 1) ? 'Save & Finish' : 'Save & Next →';
+        if (prevBtn) prevBtn.disabled = (index === 0 || (hasSectionalTiming && questions[index - 1].dataset.catId !== sectionalTimings[currentSectionIdx].id));
+        if (nextBtn) nextBtn.textContent = (index === questions.length - 1) ? 'Save & Finish' : (hasSectionalTiming && questions[index + 1].dataset.catId !== sectionalTimings[currentSectionIdx].id) ? 'Save Answer' : 'Save & Next →';
         
         // Immediately mark the newly loaded question as not-answered if it is currently not-visited
         const activeBlock = questions[index];
@@ -546,15 +558,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
+            if (submitting || submissionRequested || timerExpired) return;
             const currentQuestion = document.querySelectorAll('.gep-question-block')[currentQuestionIndex];
             const questionId = currentQuestion.dataset.id;
             const answer = getAnswerFromBlock(currentQuestion);
 
-            if (answer !== '') saveAnswer(questionId, answer, false);
-            else updatePaletteStatus(questionId, '', false);
+            saveAnswer(questionId, answer, false);
 
             if (currentQuestionIndex < document.querySelectorAll('.gep-question-block').length - 1) {
-                loadQuestion(currentQuestionIndex + 1);
+                loadQuestion(currentQuestionIndex + 1, false);
             } else {
                 triggerSubmitModal();
             }
@@ -563,12 +575,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (reviewBtn) {
         reviewBtn.addEventListener('click', () => {
+            if (submitting || submissionRequested || timerExpired) return;
             const currentQuestion = document.querySelectorAll('.gep-question-block')[currentQuestionIndex];
             const questionId = currentQuestion.dataset.id;
             const answer = getAnswerFromBlock(currentQuestion);
             saveAnswer(questionId, answer, true);
             if (currentQuestionIndex < document.querySelectorAll('.gep-question-block').length - 1) {
-                loadQuestion(currentQuestionIndex + 1);
+                loadQuestion(currentQuestionIndex + 1, false);
             }
         });
     }
@@ -581,6 +594,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function triggerSubmitModal() {
+        if (submitting || submissionRequested || timerExpired) return;
+        // Include the current unblurred value in the confirmation summary.
+        const block = questions[currentQuestionIndex];
+        if (block) {
+            const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+            updatePaletteStatus(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
+        }
         // Build summary stats for the modal
         const total = document.querySelectorAll('.gep-question-block').length;
         const answered = document.querySelectorAll('.gep-palette-btn.answered, .gep-palette-btn.answered-flagged').length;
@@ -830,6 +850,8 @@ document.addEventListener('DOMContentLoaded', function() {
     async function submitExam() {
         if (submitting) return;
         submitting = true;
+        clearTimeout(draftSaveTimer);
+        questions.forEach(block => { block.inert = true; });
         showModal({title: 'Submitting…', message: 'Saving your answers and confirming submission. Keep this page open.', buttons: []});
         try {
             // Once submission is sent, retry that idempotent endpoint only: a lost
@@ -859,7 +881,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     {label: 'Retry submission', action: 'retry', primary: true, onClick: () => submitExam()}
                 ]
             });
-        } finally { submitting = false; }
+        } finally {
+            submitting = false;
+            questions.forEach(block => { block.inert = submissionRequested || timerExpired; });
+        }
     }
 
     // ─── Init ────────────────────────────────────────────────────────────────
@@ -913,6 +938,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const firstAvailable = hasSectionalTiming ? Array.from(questions).findIndex(q => q.dataset.catId === sectionalTimings[currentSectionIdx].id) : 0;
     loadQuestion(Math.max(0, firstAvailable));
+    navigationReady = true;
     updateSidebarCounters();
     if (pendingAnswers.size) flushAnswers();
     // Start after hydration/navigation are ready: an expired reload may submit now.
@@ -945,69 +971,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ─── Option Selection ────────────────────────────────────────────────────
     document.querySelectorAll('.gep-option-card input').forEach(input => {
-        input.addEventListener('click', function(e) {
-            const card = this.closest('.gep-option-card');
+        // Native change handles keyboard radio navigation as well as clicks.
+        input.addEventListener('change', function() {
+            if (submitting || submissionRequested || timerExpired) return;
             const block = this.closest('.gep-question-block');
-            const container = block.querySelector('.gep-options-container');
-            const qtype = container ? container.dataset.qtype : 'mcq';
-            const questionId = block.dataset.id;
-
-            if (qtype === 'msq' || qtype === 'multi_select') {
-                // MSQ checkbox: matching card visual class to checked state
-                card.classList.toggle('selected', this.checked);
-            } else {
-                // MCQ radio: checking previous selection state for deselect
-                const wasSelected = card.classList.contains('selected');
-                
-                block.querySelectorAll('.gep-option-card').forEach(c => {
-                    c.classList.remove('selected');
-                    const cInput = c.querySelector('input');
-                    if (cInput && cInput !== this) cInput.checked = false;
-                });
-
-                if (wasSelected) {
-                    card.classList.remove('selected');
-                    this.checked = false;
-                } else {
-                    card.classList.add('selected');
-                    this.checked = true;
-                }
-            }
-
-            const answer = getAnswerFromBlock(block);
-            const palBtn = document.querySelector(`.gep-palette-btn[data-id="${questionId}"]`);
-            const isFlagged = palBtn && (palBtn.classList.contains('flagged') || palBtn.classList.contains('answered-flagged'));
-            saveAnswer(questionId, answer, isFlagged);
+            block.querySelectorAll('.gep-option-card').forEach(card => {
+                card.classList.toggle('selected', !!card.querySelector('input:checked'));
+            });
+            const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+            saveAnswer(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
         });
     });
 
-    document.querySelectorAll('.gep-text-ans').forEach(input => {
-        input.addEventListener('change', function() {
+    document.querySelectorAll('.gep-text-ans, .gep-numerical-ans').forEach(input => {
+        input.addEventListener('input', function() {
+            if (submitting || submissionRequested || timerExpired) return;
             const block = this.closest('.gep-question-block');
-            const questionId = block.dataset.id;
-            const palBtn = document.querySelector(`.gep-palette-btn[data-id="${questionId}"]`);
-            const isFlagged = palBtn && (palBtn.classList.contains('flagged') || palBtn.classList.contains('answered-flagged'));
-            saveAnswer(questionId, this.value, isFlagged);
+            const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+            queueAnswer(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
+            showSaveStatus('Answer edited. Waiting to sync…', true);
+            clearTimeout(draftSaveTimer);
+            draftSaveTimer = setTimeout(flushAnswers, 500);
         });
-    });
-
-    // ─── Numerical Input Auto-Save ───────────────────────────────────────────
-    document.querySelectorAll('.gep-numerical-ans').forEach(input => {
         input.addEventListener('change', function() {
+            if (submitting || submissionRequested || timerExpired) return;
+            clearTimeout(draftSaveTimer);
             const block = this.closest('.gep-question-block');
-            const questionId = block.dataset.id;
-            const palBtn = document.querySelector(`.gep-palette-btn[data-id="${questionId}"]`);
-            const isFlagged = palBtn && (palBtn.classList.contains('flagged') || palBtn.classList.contains('answered-flagged'));
-            saveAnswer(questionId, this.value.trim(), isFlagged);
-
+            const pal = document.querySelector(`.gep-palette-btn[data-id="${block.dataset.id}"]`);
+            saveAnswer(block.dataset.id, getAnswerFromBlock(block), !!pal && (pal.classList.contains('flagged') || pal.classList.contains('answered-flagged')));
         });
-
     });
 
     // ─── Clear Response ──────────────────────────────────────────────────────
     const clearBtn = document.getElementById('gep-clear-btn');
     if (clearBtn) {
         clearBtn.addEventListener('click', function() {
+            if (submitting || submissionRequested || timerExpired) return;
             const block = document.querySelectorAll('.gep-question-block')[currentQuestionIndex];
             if (!block) return;
 

@@ -4,6 +4,7 @@ jQuery(function($) {
     var $pay = $('#gep-pay-button'), $input = $('#gep-coupon-code'), $apply = $('#gep-apply-coupon');
     if (!$pay.length) return;
     var basePrice = Number($('#gep-final-amount').text().replace(/,/g, '')) || 0;
+    var verifyingPayment = false;
     var total = basePrice, coupon = '', revision = 0, checking = false, busy = false, verified = false, pendingPayment = null;
     var recoveryKey = 'gep_payment_' + (GEP_Checkout.user_id || 0) + '_' + GEP_Checkout.item_type + '_' + GEP_Checkout.item_id;
     function rememberPayment(value) {
@@ -52,7 +53,7 @@ jQuery(function($) {
                 if (token !== revision) return;
                 if (res && res.success && res.data && Number.isFinite(Number(res.data.new_total)) && Number(res.data.new_total) >= 0 && Number(res.data.new_total) <= basePrice) {
                     coupon = code; total = Number(res.data.new_total);
-                    $('#gep-coupon-status').text('Coupon applied. You save ₹' + Number(res.data.discount).toFixed(2) + '.');
+                    $('#gep-coupon-status').text('Coupon applied. You save ₹' + (basePrice - total).toFixed(2) + '.');
                 } else $('#gep-coupon-status').text(message(res, 'This coupon could not be applied.'));
             }).fail(function() {
                 if (token === revision) $('#gep-coupon-status').text('Could not check the coupon. Please try again.');
@@ -68,6 +69,8 @@ jQuery(function($) {
     }
     function release() { if (verified) return; busy = false; render(); }
     function verify() {
+        if (verifyingPayment || verified) return;
+        verifyingPayment = true;
         busy = true; render(); $pay.text('Verifying payment…');
         request($.extend({action: 'gep_verify_payment', item_id: GEP_Checkout.item_id, item_type: GEP_Checkout.item_type}, pendingPayment))
             .done(function(res) {
@@ -75,7 +78,7 @@ jQuery(function($) {
                 else showError(message(res, 'Payment verification is not confirmed.') + ' Retry verification or contact support with payment ID: ' + pendingPayment.razorpay_payment_id + '. Do not pay again.');
             }).fail(function() {
                 showError('We could not confirm payment verification. Retry verification or contact support with payment ID: ' + pendingPayment.razorpay_payment_id + '. Do not pay again.');
-            }).always(release);
+            }).always(function() { verifyingPayment = false; release(); });
     }
     if (pendingPayment) { render(); showError('A previous payment still needs verification. Retry verification before making another payment. Payment ID: ' + pendingPayment.razorpay_payment_id); }
     $pay.on('click', function() {
@@ -87,7 +90,14 @@ jQuery(function($) {
             .done(function(res) {
                 if (!res || !res.success) { showError(message(res, 'Could not prepare checkout. Please try again.')); release(); return; }
                 if (!res.data) { showError('Checkout returned an incomplete response. Please retry.'); release(); return; }
-                if (res.data.status === 'free') { window.location.href = res.data.redirect; return; }
+                if (res.data.status === 'free') {
+                    if (typeof res.data.redirect === 'string' && res.data.redirect) { verified = true; $pay.text('Opening your purchases…'); window.location.href = res.data.redirect; }
+                    else { showError('Enrollment confirmation is incomplete. Check My Purchases before retrying.'); release(); }
+                    return;
+                }
+                if (typeof res.data.id !== 'string' || !res.data.id || !Number.isInteger(Number(res.data.amount)) || Number(res.data.amount) <= 0) {
+                    showError('Checkout returned an incomplete order. Please retry.'); release(); return;
+                }
                 try {
                     var gateway = new Razorpay({
                         key: GEP_Checkout.key_id, amount: res.data.amount, currency: 'INR', name: 'GoPath Exam Portal',
@@ -96,13 +106,18 @@ jQuery(function($) {
                         theme: {color: '#4f46e5'},
                         modal: {ondismiss: function() { if (!pendingPayment) release(); }},
                         handler: function(payment) {
+                            if (pendingPayment || verified) return;
+                            if (!payment || !['razorpay_payment_id','razorpay_order_id','razorpay_signature'].every(key => typeof payment[key] === 'string' && payment[key])) {
+                                showError('Payment confirmation is incomplete. Contact support before paying again. Order ID: ' + res.data.id);
+                                return;
+                            }
                             pendingPayment = {razorpay_payment_id: payment.razorpay_payment_id, razorpay_order_id: payment.razorpay_order_id, razorpay_signature: payment.razorpay_signature};
                             rememberPayment(pendingPayment);
                             verify();
                         }
                     });
                     gateway.on('payment.failed', function(response) {
-                        showError(response.error && response.error.description || 'Payment was not completed. You can retry in the payment window or close it.');
+                        showError(response && response.error && response.error.description || 'Payment was not completed. You can retry in the payment window or close it.');
                         // The gateway can still be open. Its dismiss callback releases the order lock.
                     });
                     gateway.open(); $pay.text('Complete payment in the payment window');
