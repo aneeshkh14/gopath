@@ -23,7 +23,7 @@ $broken_links    = $wpdb->get_results(
 $orphan_attempts = $wpdb->get_results(
     "SELECT a.id, a.user_id, a.test_id, a.status FROM {$prefix}gep_attempts a
      LEFT JOIN {$prefix}gep_tests t ON a.test_id = t.id
-     WHERE t.id IS NULL LIMIT 10"
+     WHERE t.id IS NULL AND a.test_id != 999999 LIMIT 10"
 );
 $db_version      = get_option('gep_db_version', 'Unknown');
 $plugin_version  = defined('GEP_VERSION') ? GEP_VERSION : 'Unknown';
@@ -103,57 +103,30 @@ $plugin_version  = defined('GEP_VERSION') ? GEP_VERSION : 'Unknown';
             </table>
         </div>
 
-        <!-- Cohort Distribution Chart (Mock UI for Admin) -->
-        <div style="background: #fff; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
-            <div style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 20px;">
-                <h2 style="margin: 0; font-size: 18px; color: #1e293b;">📊 Cohort Percentile Distribution</h2>
-                <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Performance breakdown across all enrolled students.</p>
+        <?php
+        // Each student contributes once, based on their completed-attempt mean.
+        $score_bands = array( '90–100%' => 0, '70–89%' => 0, '50–69%' => 0, 'Below 50%' => 0 );
+        $student_means = $wpdb->get_col( "SELECT AVG(percentage) FROM {$prefix}gep_attempts WHERE status = 'submitted' GROUP BY user_id" );
+        foreach ( $student_means as $mean ) {
+            $band = $mean >= 90 ? '90–100%' : ( $mean >= 70 ? '70–89%' : ( $mean >= 50 ? '50–69%' : 'Below 50%' ) );
+            $score_bands[$band]++;
+        }
+        $student_count = count( $student_means );
+        ?>
+        <div class="gep-score-distribution" style="background:#fff;border-radius:20px;border:1px solid #e2e8f0;padding:24px;">
+            <h2 style="margin:0;font-size:18px;">Student Score Distribution</h2>
+            <p>Each student's average percentage across completed attempts. <?php echo (int) $student_count; ?> students included.</p>
+            <?php if ( ! $student_count ) : ?><p>No completed attempts yet.</p><?php endif; ?>
+            <?php foreach ( $score_bands as $label => $count ) :
+                $share = $student_count ? round( 100 * $count / $student_count, 1 ) : 0;
+            ?>
+            <div style="margin:20px 0;">
+                <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;">
+                    <strong><?php echo esc_html( $label ); ?></strong><span><?php echo (int) $count; ?> students (<?php echo $share; ?>%)</span>
+                </div>
+                <div style="height:12px;background:#e0e7ff;border-radius:6px;overflow:hidden;" aria-hidden="true"><div style="height:100%;background:#4f46e5;width:<?php echo $share; ?>%;"></div></div>
             </div>
-            <div style="padding: 30px 20px;">
-                <!-- 99th Percentile -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; font-weight: 700;">
-                        <span>Top 1% (Elite)</span>
-                        <span style="color: #6366f1;">~<?php echo max(1, floor((int)$total_attempts * 0.01)); ?> Students</span>
-                    </div>
-                    <div style="height: 12px; background: #e0e7ff; border-radius: 6px; overflow: hidden;">
-                        <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #6366f1, #4f46e5);"></div>
-                    </div>
-                </div>
-                
-                <!-- 90th Percentile -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; font-weight: 700;">
-                        <span>Top 10% (Advanced)</span>
-                        <span style="color: #10b981;">~<?php echo max(1, floor((int)$total_attempts * 0.09)); ?> Students</span>
-                    </div>
-                    <div style="height: 12px; background: #d1fae5; border-radius: 6px; overflow: hidden;">
-                        <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #10b981, #059669);"></div>
-                    </div>
-                </div>
-                
-                <!-- 50th Percentile -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; font-weight: 700;">
-                        <span>Top 50% (Average)</span>
-                        <span style="color: #f59e0b;">~<?php echo max(1, floor((int)$total_attempts * 0.40)); ?> Students</span>
-                    </div>
-                    <div style="height: 12px; background: #fef3c7; border-radius: 6px; overflow: hidden;">
-                        <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #f59e0b, #d97706);"></div>
-                    </div>
-                </div>
-                
-                <!-- Bottom 50% -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; font-weight: 700;">
-                        <span>Bottom 50% (Needs Improvement)</span>
-                        <span style="color: #ef4444;">~<?php echo max(1, floor((int)$total_attempts * 0.50)); ?> Students</span>
-                    </div>
-                    <div style="height: 12px; background: #fee2e2; border-radius: 6px; overflow: hidden;">
-                        <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #ef4444, #dc2626);"></div>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
     <div class="gep-admin-console" style="margin-bottom:25px;">

@@ -3,7 +3,7 @@
 $kind = $argv[1] ?? ''; $view = $argv[2] ?? ''; $state = $argv[3] ?? 'empty';
 $root = getenv('GEP_TEST_WORDPRESS_ROOT');
 if (!$root || !is_file($root.'/wp-load.php')) throw new RuntimeException('Disposable WordPress root required.');
-define('WP_ADMIN', $kind === 'admin' || $kind === 'admin-reply' || $kind === 'admin-audit');
+define('WP_ADMIN', $kind === 'admin' || $kind === 'admin-reply' || $kind === 'admin-audit' || $kind === 'qa');
 define('DISABLE_WP_CRON', true);
 $_SERVER['HTTP_HOST']='portal.example'; $_SERVER['SERVER_NAME']='portal.example'; $_SERVER['SERVER_PORT']=80; $_SERVER['REQUEST_METHOD']='GET'; $_SERVER['REQUEST_URI']='/dashboard/';
 ob_start();
@@ -51,7 +51,9 @@ wp_set_current_user(in_array($kind,['admin','admin-reply','admin-audit'],true)?1
 $shortcodes=new GEP_Shortcodes();
 try {
     $html=''; $_GET=[]; $_POST=[]; $_REQUEST=[];
-    if ($kind==='admin-audit') {
+    if ($kind==='qa') {
+        require __DIR__.'/wp-qa.php';
+    } elseif ($kind==='admin-audit') {
         require __DIR__.'/wp-admin-audit.php';
     } elseif ($kind==='live-audit') {
         require __DIR__.'/wp-live-audit.php';

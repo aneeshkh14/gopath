@@ -5,20 +5,26 @@ class WP_Error { public $code; public $message; public function __construct($cod
 class JsonResponse extends Exception {public $success;public $data;public function __construct($success,$data){$this->success=$success;$this->data=$data;}}
 class RedirectResponse extends Exception {}
 function is_wp_error($x){return $x instanceof WP_Error;}
-function media_handle_upload(){}
+function media_handle_upload(){return $GLOBALS['media_result'];}
+function wp_check_filetype_and_ext(){return ['type'=>'image/png'];}
+function wp_get_attachment_url($id){return 'https://portal.example/avatar-'.$id.'.png';}
+function wp_delete_attachment($id,$force=false){$GLOBALS['deleted_attachments'][]=$id;}
 function wp_cache_delete(...$args){}
 function get_user_meta($id,$key,$single=true){return $GLOBALS['user_meta'][$id][$key] ?? ''; }
 function update_user_meta($id,$key,$value){$GLOBALS['user_meta'][$id][$key]=$value;return true;}
 function get_current_user_id(){return $GLOBALS['uid'];}
+function current_user_can($cap){return false;}
 function is_user_logged_in(){return $GLOBALS['uid'] > 0;}
 function wp_set_current_user($id){$GLOBALS['uid']=$id;}
 function wp_set_auth_cookie($id,$remember=false){$GLOBALS['cookie']=[$id,$remember];}
 function do_action(...$args){}
 function get_user_by($field,$value){return (object)['ID'=>7,'user_login'=>'student','user_email'=>'student@example.test'];}
-function wp_authenticate($user,$password){return get_user_by('id',7);}
+function wp_authenticate($user,$password){$GLOBALS['auth_password']=$password;return get_user_by('id',7);}
 function wp_verify_nonce(...$args){return true;}
 function check_ajax_referer(...$args){}
 function wp_safe_redirect($url){throw new RedirectResponse($url);}
+function wp_parse_url($url,$component=-1){return parse_url($url,$component);}
+function wp_validate_redirect($url,$fallback){return !parse_url($url,PHP_URL_HOST) || parse_url($url,PHP_URL_HOST)==='portal.example' ? $url : $fallback;}
 function wp_get_referer(){return 'https://portal.example/login';}
 function gep_get_url($page){return 'https://portal.example/' . $page;}
 function add_query_arg($key,$value,$url){return $url . (strpos($url,'?')===false?'?':'&') . urlencode($key).'='.urlencode($value);}
@@ -31,7 +37,7 @@ function wp_mail($to,$subject,$message){$GLOBALS['mail']=[$to,$subject,$message]
 function absint($value){return abs((int)$value);}
 function sanitize_text_field($value){return trim($value);}
 function sanitize_textarea_field($value){return trim($value);}
-function wp_unslash($value){return $value;}
+function wp_unslash($value){return is_array($value) ? array_map('wp_unslash',$value) : stripslashes($value);}
 function wp_timezone(){return new DateTimeZone('UTC');}
 function current_time($type){return $type === 'timestamp' ? time() : date('Y-m-d H:i:s');}
 function get_gmt_from_date($date,$format){return (new DateTimeImmutable($date,new DateTimeZone('Asia/Kolkata')))->setTimezone(new DateTimeZone('UTC'))->format($format);}

@@ -11,10 +11,16 @@
 # "gopath-exam-portal/" folder, so WordPress recognises it as the same plugin and
 # offers "Replace current with uploaded" on the Plugins → Add New → Upload screen.
 #
-# Usage: ./build-plugin-zip.sh
+# Usage: ./build-plugin-zip.sh [git-ref] [installed-folder-name]
+# Use the existing folder name when updating a site originally installed from
+# a GitHub ZIP, for example: ./build-plugin-zip.sh HEAD gopath-main
 set -euo pipefail
 
-SLUG="gopath-exam-portal"
+SLUG="${2:-gopath-exam-portal}"
+if [[ ! "$SLUG" =~ ^[a-z0-9][a-z0-9_-]*$ ]]; then
+    echo "Invalid plugin folder name" >&2
+    exit 1
+fi
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD="$ROOT/build"
 OUT="$ROOT/$SLUG.zip"

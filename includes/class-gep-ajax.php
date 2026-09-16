@@ -280,7 +280,7 @@ class GEP_AJAX {
 			wp_set_auth_cookie( $user_id, $remember );
 			delete_transient( 'gep_pending_login_' . $user_id );
 			do_action( 'wp_login', $user->user_login, $user );
-			wp_send_json_success( array( 'redirect' => gep_get_url( 'dashboard' ) ) );
+			wp_send_json_success( array( 'redirect' => GEP_Auth::login_destination( is_array( $pending_login ) ? ( $pending_login['redirect'] ?? '' ) : '' ) ) );
 		} else {
 			wp_send_json_error( array( 'message' => 'Invalid or expired OTP' ) );
 		}
@@ -523,6 +523,14 @@ class GEP_AJAX {
 		}
 
 		$file = $_FILES['avatar'];
+		if ( ! is_array( $file ) || (int) ( $file['error'] ?? UPLOAD_ERR_NO_FILE ) !== UPLOAD_ERR_OK || empty( $file['tmp_name'] ) || ! is_readable( $file['tmp_name'] ) ) {
+			wp_send_json_error( array( 'message' => 'The photo did not upload completely. Choose an image up to 2MB and try again.' ) );
+			return;
+		}
+		if ( (int) $file['size'] > 2 * 1024 * 1024 ) {
+			wp_send_json_error( array( 'message' => 'File too large. Max 2MB allowed.' ) );
+			return;
+		}
 
 		// BUG-7 FIX: Use server-side MIME detection — $_FILES['type'] is client-supplied and can be forged
 		$allowed_types = array( 'image/jpeg', 'image/png', 'image/gif', 'image/webp' );
@@ -541,22 +549,14 @@ class GEP_AJAX {
 			return;
 		}
 
-		if ( $file['size'] > 1024 * 1024 * 2 ) { // 2MB limit
-			wp_send_json_error( array( 'message' => 'File too large. Max 2MB allowed.' ) );
-			return;
-		}
-
 		$user_id = get_current_user_id();
 		if ( current_user_can('manage_options') && isset($_POST['uid']) ) {
 			if ( ! current_user_can( 'edit_users' ) ) wp_send_json_error( array( 'message' => 'Insufficient permissions' ) );
 			$user_id = absint($_POST['uid']);
 		}
 		
-		// Perfect Cleanup: Delete old avatar attachment
+		// Preserve the old photo until the replacement has been stored successfully.
 		$old_avatar_id = get_user_meta( $user_id, 'gep_avatar_id', true );
-		if ( $old_avatar_id ) {
-			wp_delete_attachment( $old_avatar_id, true );
-		}
 
 		$attachment_id = media_handle_upload( 'avatar', 0 );
 
@@ -565,8 +565,15 @@ class GEP_AJAX {
 		}
 
 		$image_url = wp_get_attachment_url( $attachment_id );
+		if ( ! $image_url ) {
+			wp_send_json_error( array( 'message' => 'The new photo could not be loaded. Your previous photo is unchanged.' ) );
+			return;
+		}
 		update_user_meta( $user_id, 'gep_avatar', $image_url );
 		update_user_meta( $user_id, 'gep_avatar_id', $attachment_id );
+		if ( $old_avatar_id && (int) $old_avatar_id !== (int) $attachment_id ) {
+			wp_delete_attachment( $old_avatar_id, true );
+		}
 
 		wp_send_json_success( array( 
 			'message'   => 'Avatar updated successfully',
@@ -1541,5 +1548,4 @@ class GEP_AJAX {
 		}
 	}
 }
-
 

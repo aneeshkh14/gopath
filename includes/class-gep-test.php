@@ -247,7 +247,7 @@ class GEP_Test {
 	public function get_question_count( $test_id ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'gep_test_questions';
-		return absint( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $table WHERE test_id = %d", $test_id ) ) );
+		return absint( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT tq.question_id) FROM $table tq INNER JOIN {$wpdb->prefix}gep_questions q ON q.id = tq.question_id AND q.status = 'publish' WHERE tq.test_id = %d", $test_id ) ) );
 	}
 
 	/**
@@ -267,7 +267,7 @@ class GEP_Test {
 		}
 		$ids_str = implode( ',', array_unique( $ids ) );
 		$rows = $wpdb->get_results(
-			"SELECT test_id, COUNT(*) AS c FROM {$wpdb->prefix}gep_test_questions WHERE test_id IN ($ids_str) GROUP BY test_id"
+			"SELECT tq.test_id, COUNT(DISTINCT tq.question_id) AS c FROM {$wpdb->prefix}gep_test_questions tq INNER JOIN {$wpdb->prefix}gep_questions q ON q.id = tq.question_id AND q.status = 'publish' WHERE tq.test_id IN ($ids_str) GROUP BY tq.test_id"
 		);
 		$map = array();
 		foreach ( $rows as $r ) {

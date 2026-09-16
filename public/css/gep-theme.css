@@ -834,7 +834,8 @@ html body {
 :root[data-gep-theme="dark"] .gep-result-wrap h4,
 :root[data-gep-theme="dark"] .gep-result-wrap h5,
 :root[data-gep-theme="dark"] .gep-section-title { color: var(--gep-c-text) !important; }
-:root[data-gep-theme="dark"] .gep-result-status-pill { color: var(--gep-c-success) !important; }
+:root[data-gep-theme="dark"] .gep-result-status-pill.is-pass { color: var(--gep-c-success) !important; }
+:root[data-gep-theme="dark"] .gep-result-status-pill.is-fail { color: var(--gep-c-danger) !important; }
 :root[data-gep-theme="dark"] .gep-ring-center { color: var(--gep-c-info) !important; }
 
 /* ── Solution page state signals ─────────────────────────────────────────────
