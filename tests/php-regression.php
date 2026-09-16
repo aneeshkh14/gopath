@@ -3,7 +3,7 @@ require __DIR__.'/php-fixtures.php';
 $passed=0;$failed=0;
 function scenario($name,$fn){
  global $passed,$failed,$wpdb,$uid,$options,$transients,$mail_ok,$cookie;
- $wpdb=new TestDb();$uid=7;$options=['gep_enable_otp'=>'yes','gep_razorpay_key_secret'=>base64_encode('test-secret')];$transients=[];$mail_ok=true;$cookie=null;$GLOBALS['user_meta']=[];$_POST=[];$_GET=[];
+ $wpdb=new TestDb();$uid=7;$options=['gep_enable_otp'=>'yes','gep_razorpay_key_secret'=>base64_encode('test-secret')];$transients=[];$mail_ok=true;$cookie=null;$GLOBALS['user_meta']=[];$_POST=[];$_GET=[];$_FILES=[];$_REQUEST=[];$GLOBALS['deleted_attachments']=[];
  try{$fn();$passed++;echo "PASS $name\n";}catch(Throwable $e){$failed++;echo "FAIL $name: {$e->getMessage()}\n";}
 }
 scenario('OTP is emailed, single use and has the same advertised expiry',function(){
@@ -19,7 +19,7 @@ scenario('five wrong OTPs invalidate the code and require password login again',
 scenario('OTP login works with Remember me unchecked',function(){
  $_POST=['gep_nonce'=>'test','log'=>'student','pwd'=>'test-fixture'];
  try{(new GEP_Auth())->handle_login();}catch(RedirectResponse $r){expect(strpos($r->getMessage(),'view=otp')!==false);}
- expect(get_transient('gep_pending_login_7')===['remember'=>false]);$_POST=['otp'=>'123456','user_id'=>7];$r=response(function(){(new GEP_AJAX())->gep_verify_otp();});expect($r->success);expect($GLOBALS['cookie']===[7,false]);
+ expect(get_transient('gep_pending_login_7')===['remember'=>false,'redirect'=>'https://portal.example/dashboard']);$_POST=['otp'=>'123456','user_id'=>7];$r=response(function(){(new GEP_AJAX())->gep_verify_otp();});expect($r->success);expect($GLOBALS['cookie']===[7,false]);
 });
 scenario('expired OTP session cannot create an auth cookie',function(){
  $_POST=['otp'=>'123456','user_id'=>7];$r=response(function(){(new GEP_AJAX())->gep_verify_otp();});expect(!$r->success);expect($GLOBALS['cookie']===null);
@@ -139,5 +139,36 @@ scenario('invalid admin coupon stays in its form and never writes a discount',fu
  global $wpdb;$_POST=['code'=>'INVALID','type'=>'percent','value'=>'101','usage_limit'=>'3','expiry_date'=>''];
  $method=new ReflectionMethod(GEP_Admin_Coupons::class,'handle_save_coupon');$method->invoke(new GEP_Admin_Coupons());
  expect(strpos(GEP_Admin_Coupons::$form_error,'100')!==false);expect(GEP_Admin_Coupons::$form_values['value']===101.0);expect(!$wpdb->inserts);
+});
+scenario('password login and OTP preserve a checkout destination',function(){
+ $_POST=['gep_nonce'=>'test','log'=>'student','pwd'=>'fixture','redirect_to'=>'https://portal.example/checkout/?id=12&type=course'];
+ try{(new GEP_Auth())->handle_login();}catch(RedirectResponse $r){}
+ $_POST=['otp'=>'123456','user_id'=>7];$r=response(function(){(new GEP_AJAX())->gep_verify_otp();});
+ expect($r->success);expect($r->data['redirect']==='https://portal.example/checkout/?id=12&type=course');
+});
+scenario('login refuses external destinations and authentication loops',function(){
+ foreach(['https://outside.example/checkout','https://portal.example/login?view=otp','https://portal.example/register/','https://portal.example/forgot-password','https://portal.example/wp-admin/','https://portal.example/wp-login.php'] as $url)expect(GEP_Auth::login_destination($url)==='https://portal.example/dashboard',$url);
+ expect(GEP_Auth::login_destination('/checkout/?id=2&type=pass')==='/checkout/?id=2&type=pass');
+});
+scenario('login removes WordPress request slashes from passwords',function(){
+ $GLOBALS['options']['gep_enable_otp']='no';$password="quoted'and\\backslash";$_POST=['gep_nonce'=>'test','log'=>'student','pwd'=>addslashes($password)];
+ try{(new GEP_Auth())->handle_login();}catch(RedirectResponse $r){}
+ expect($GLOBALS['auth_password']===$password);
+});
+scenario('incomplete avatar upload preserves the existing photo',function(){
+ $GLOBALS['user_meta'][7]=['gep_avatar_id'=>41,'gep_avatar'=>'old'];$_FILES['avatar']=['error'=>UPLOAD_ERR_PARTIAL];
+ $r=response(function(){(new GEP_AJAX())->gep_update_avatar();});expect(!$r->success);expect($GLOBALS['user_meta'][7]['gep_avatar_id']===41);expect(!$GLOBALS['deleted_attachments']);
+});
+function avatar_fixture(){
+ $path=tempnam(sys_get_temp_dir(),'gep-photo');file_put_contents($path,base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jT9kAAAAASUVORK5CYII='));
+ $_FILES['avatar']=['error'=>UPLOAD_ERR_OK,'tmp_name'=>$path,'size'=>filesize($path),'name'=>'avatar.png'];return $path;
+}
+scenario('failed media storage preserves the previous avatar',function(){
+ $path=avatar_fixture();try{$GLOBALS['user_meta'][7]=['gep_avatar_id'=>41,'gep_avatar'=>'old'];$GLOBALS['media_result']=new WP_Error('write_failed','Try again');
+ $r=response(function(){(new GEP_AJAX())->gep_update_avatar();});expect(!$r->success);expect($GLOBALS['user_meta'][7]['gep_avatar_id']===41);expect(!$GLOBALS['deleted_attachments']);}finally{unlink($path);}
+});
+scenario('successful avatar replacement removes only the previous photo',function(){
+ $path=avatar_fixture();try{$GLOBALS['user_meta'][7]=['gep_avatar_id'=>41,'gep_avatar'=>'old'];$GLOBALS['media_result']=42;
+ $r=response(function(){(new GEP_AJAX())->gep_update_avatar();});expect($r->success);expect($GLOBALS['user_meta'][7]['gep_avatar_id']===42);expect($GLOBALS['deleted_attachments']===[41]);}finally{unlink($path);}
 });
 echo "$passed PHP scenarios passed; $failed failed.\n";exit($failed?1:0);

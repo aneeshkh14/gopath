@@ -9,17 +9,35 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class GEP_Auth {
 
+	/** Keep sign-in on this site and away from authentication loops. */
+	public static function login_destination( $url = '' ) {
+		$fallback = gep_get_url( 'dashboard' );
+		if ( ! is_string( $url ) || $url === '' ) return $fallback;
+		$url = wp_validate_redirect( $url, $fallback );
+		$path = rtrim( (string) wp_parse_url( $url, PHP_URL_PATH ), '/' );
+		if ( preg_match( '~/wp-(?:admin|login\.php)(?:/|$)~', $path ) ) return $fallback;
+		foreach ( array( 'login', 'register', 'forgot-password' ) as $page ) {
+			if ( $path === rtrim( (string) wp_parse_url( gep_get_url( $page ), PHP_URL_PATH ), '/' ) ) return $fallback;
+		}
+		return $url;
+	}
+
 	public function handle_register() {
 		if ( ! isset( $_POST['gep_nonce'] ) || ! wp_verify_nonce( $_POST['gep_nonce'], 'gep_register' ) ) {
 			wp_safe_redirect( add_query_arg( 'error', 'nonce', (string) wp_get_referer() ) );
 			exit;
 		}
 
-		$username = sanitize_user( $_POST['user_login'] );
-		$email    = sanitize_email( $_POST['user_email'] );
-		$password = $_POST['user_pass'];
-		$first_name = sanitize_text_field( $_POST['first_name'] );
-		$last_name  = sanitize_text_field( $_POST['last_name'] );
+		$username = sanitize_user( wp_unslash( $_POST['user_login'] ?? '' ) );
+		$email    = sanitize_email( wp_unslash( $_POST['user_email'] ?? '' ) );
+		$password = wp_unslash( $_POST['user_pass'] ?? '' );
+		$first_name = sanitize_text_field( wp_unslash( $_POST['first_name'] ?? '' ) );
+		$last_name  = sanitize_text_field( wp_unslash( $_POST['last_name'] ?? '' ) );
+
+		if ( empty( $_POST['gep_consent'] ) ) {
+			wp_safe_redirect( add_query_arg( 'error', 'consent_required', gep_get_url( 'register' ) ) );
+			exit;
+		}
 
 		// Validation
 		if ( empty( $username ) || empty( $email ) || empty( $password ) ) {
@@ -80,12 +98,13 @@ class GEP_Auth {
 		}
 
 		$creds = array(
-			'user_login'    => sanitize_text_field( $_POST['log'] ),
-			'user_password' => $_POST['pwd'],
+			'user_login'    => sanitize_text_field( wp_unslash( $_POST['log'] ?? '' ) ),
+			'user_password' => wp_unslash( $_POST['pwd'] ?? '' ),
 			'remember'      => isset( $_POST['rememberme'] )
 		);
 
 		$user = wp_authenticate( $creds['user_login'], $creds['user_password'] );
+		$redirect_to = self::login_destination( wp_unslash( $_POST['redirect_to'] ?? wp_get_referer() ) );
 
 		if ( is_wp_error( $user ) ) {
 			$redirect = add_query_arg( 'login_error', $user->get_error_code(), (string) wp_get_referer() );
@@ -101,7 +120,7 @@ class GEP_Auth {
 				exit;
 			}
 			// A false remember-me value must not look like an expired transient.
-			set_transient( 'gep_pending_login_' . $user->ID, array( 'remember' => ! empty($creds['remember']) ), 5 * MINUTE_IN_SECONDS );
+			set_transient( 'gep_pending_login_' . $user->ID, array( 'remember' => ! empty($creds['remember']), 'redirect' => $redirect_to ), 5 * MINUTE_IN_SECONDS );
 
 			$otp_url = add_query_arg( 'view', 'otp', (string) gep_get_url('login') );
 			$final_url = add_query_arg( 'uid', $user->ID, $otp_url );
@@ -113,15 +132,6 @@ class GEP_Auth {
 		wp_set_auth_cookie( $user->ID, $creds['remember'] );
 		do_action( 'wp_login', $user->user_login, $user );
 		
-		$redirect_to = isset( $_REQUEST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ) : '';
-		if ( empty( $redirect_to ) && isset( $_REQUEST['_wp_http_referer'] ) ) {
-			$redirect_to = esc_url_raw( wp_unslash( $_REQUEST['_wp_http_referer'] ) );
-		}
-		
-		if ( empty( $redirect_to ) || strpos( $redirect_to, 'wp-admin' ) !== false || strpos( $redirect_to, 'wp-login.php' ) !== false ) {
-			$redirect_to = gep_get_url('dashboard');
-		}
-
 		wp_safe_redirect( $redirect_to );
 		exit;
 	}

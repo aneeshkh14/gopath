@@ -14,7 +14,7 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
 
 <div class="gep-main-inner" style="font-family: 'Inter', system-ui, sans-serif; padding-bottom: 80px;">
     <!-- Typing Hero Header -->
-    <div style="background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 24px; padding: 40px; color: #fff; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);">
+    <div class="gep-typing-hero" style="background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 24px; padding: 40px; color: #fff; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);">
         <div>
             <span style="font-size: 11px; font-weight: 800; background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.3); color: #818cf8; padding: 4px 10px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px;"><?php _e( 'Skill Academy Simulator', 'gopath-exam-portal' ); ?></span>
             <h2 style="font-size: 32px; font-weight: 900; margin: 8px 0 10px; letter-spacing: -1px; color: #fff;"><?php _e( 'Interactive Typing Console', 'gopath-exam-portal' ); ?></h2>
@@ -30,6 +30,21 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
     gap: 30px;
     margin-bottom: 40px;
 }
+.gep-typing-grid > * { min-width: 0; }
+.gep-typing-durations { display: flex; flex-wrap: wrap; gap: 10px; }
+.gep-typing-durations .gep-dur-label { flex: 1 1 80px !important; }
+.gep-typing-durations .gep-dur-label.is-selected {
+    background: var(--gep-c-accent) !important; color: var(--gep-c-accent-text) !important;
+    border-color: var(--gep-c-accent) !important;
+}
+.gep-dur-label:focus-within { outline: 3px solid var(--gep-c-text); outline-offset: 3px; }
+.gep-typing-stats { flex-wrap: wrap; gap: 16px; }
+.gep-typing-stats > div { flex: 1 1 85px; }
+@media (max-width: 600px) {
+    .gep-typing-hero, .gep-typing-panel { padding: 20px !important; }
+    .gep-typing-hero > div:last-child { display: none; }
+    .gep-typing-summary { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
 @media (max-width: 1024px) {
     .gep-typing-grid {
         grid-template-columns: 1fr;
@@ -41,7 +56,7 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
     <div class="gep-typing-grid">
         
         <!-- Practice Area -->
-        <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 35px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01);">
+        <div class="gep-typing-panel" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 35px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01);">
             <!-- Settings Config Block -->
             <div id="gep-typing-setup" style="display: block;">
                 <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 900; color: #0f172a;"><?php _e( 'Configure Typing Session', 'gopath-exam-portal' ); ?></h3>
@@ -57,8 +72,8 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
 
                 <div style="margin-bottom: 30px;">
                     <label style="display: block; font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;"><?php _e( 'Select Test Duration', 'gopath-exam-portal' ); ?></label>
-                    <div style="display: flex; gap: 15px;">
-                        <label class="gep-dur-label" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
+                    <div class="gep-typing-durations" role="group" aria-label="Test duration">
+                        <label class="gep-dur-label is-selected" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
                             <input type="radio" name="gep_typing_dur" value="60" checked class="gep-visually-hidden" aria-label="<?php esc_attr_e( '1 Minute', 'gopath-exam-portal' ); ?>"> <?php _e( '1 Minute', 'gopath-exam-portal' ); ?>
                         </label>
                         <label class="gep-dur-label" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
@@ -78,7 +93,7 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
             <!-- Active Typing Console -->
             <div id="gep-typing-active" style="display: none;">
                 <!-- Real-time Stats Overlay -->
-                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px;">
+                <div class="gep-typing-stats" style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px;">
                     <div>
                         <span style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;"><?php _e( 'Time Remaining', 'gopath-exam-portal' ); ?></span>
                         <span id="gep-timer-label" style="font-size: 20px; font-weight: 900; color: #0f172a;" aria-live="polite">01:00</span>
@@ -116,12 +131,12 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
             </div>
 
             <!-- Complete Results Badge -->
-            <div id="gep-typing-completed" role="status" style="display: none; text-align: center; padding: 20px 0;" role="status">
+            <div id="gep-typing-completed" role="status" style="display: none; text-align: center; padding: 20px 0;">
                 <div style="font-size: 55px; margin-bottom: 15px;">🏆</div>
                 <h3 style="margin: 0 0 5px; font-size: 22px; font-weight: 900; color: #0f172a;"><?php _e( 'Session Completed!', 'gopath-exam-portal' ); ?></h3>
                 <p style="margin: 0 0 25px; color: #64748b; font-size: 14px; font-weight: 600;"><?php _e( 'Your stats have been computed and saved to your skill academy profile.', 'gopath-exam-portal' ); ?></p>
 
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px;">
+                <div class="gep-typing-summary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px;">
                     <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 16px;">
                         <span style="font-size: 24px; font-weight: 950; color: #6366f1;" id="final-wpm">0</span>
                         <span style="display: block; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-top: 2px;"><?php _e( 'Net WPM', 'gopath-exam-portal' ); ?></span>
@@ -148,7 +163,7 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
         </div>
 
         <!-- History & Leaderboard -->
-        <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 35px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01); display: flex; flex-direction: column;">
+        <div class="gep-typing-panel" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 35px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01); display: flex; flex-direction: column;">
             <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 900; color: #0f172a;"><?php _e( 'Recent Typing Log', 'gopath-exam-portal' ); ?></h3>
             
             <div style="flex: 1; overflow-y: auto; max-height: 380px;">
@@ -200,17 +215,10 @@ jQuery(document).ready(function($) {
     let totalKeystrokes = 0;
     let errorCount = 0;
 
-    // Toggle settings duration highlight
+    // Keep the checked state visible in both themes and with keyboard navigation.
     $('input[name="gep_typing_dur"]').on('change', function() {
-        $('input[name="gep_typing_dur"]').parent().css({
-            borderColor: '#e2e8f0',
-            background: '#fff',
-            color: '#475569'
-        });
-        $(this).parent().css({
-            borderColor: '#6366f1',
-            background: '#f0f3ff',
-            color: '#6366f1'
+        $('input[name="gep_typing_dur"]').each(function() {
+            $(this).closest('.gep-dur-label').toggleClass('is-selected', this.checked);
         });
     });
 

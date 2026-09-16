@@ -28,6 +28,8 @@ if ( is_user_logged_in() ) {
                     echo 'Password must be at least 8 characters long.';
                 } elseif ($error === 'nonce') {
                     echo 'Security check failed. Please try again.';
+                } elseif ($error === 'consent_required') {
+                    echo 'Please agree to the terms and policies to create your account.';
                 } else {
                     echo 'Registration failed. Please try again.';
                 }

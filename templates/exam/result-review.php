@@ -779,7 +779,8 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 }
 .gep-result-wrap .gep-ring-center { color: #4338ca !important; }
 .gep-result-wrap .gep-grade-badge { color: #b45309 !important; }
-.gep-result-wrap .gep-result-status-pill { color: #047857 !important; }
+.gep-result-wrap .gep-result-status-pill.is-pass { color: var(--gep-c-success) !important; }
+.gep-result-wrap .gep-result-status-pill.is-fail { color: var(--gep-c-danger) !important; }
 .gep-result-wrap .gep-badge-free { background: #047857 !important; color: #fff !important; }
 /* difficulty + weak-area accents */
 .gep-result-wrap [style*="color: #10b981"] { color: #047857 !important; }
@@ -797,6 +798,17 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 .gep-result-wrap .gep-subject-nums .c { color: #047857; }
 .gep-result-wrap .gep-subject-nums .w { color: #b91c1c; }
 
+.gep-difficulty-section { margin-bottom: 24px; padding: 16px; border-radius: 16px; background: var(--gep-c-surface-2); border: 1px solid var(--gep-c-border); }
+.gep-difficulty-title { font-size: 12px; font-weight: 800; color: var(--gep-c-text-muted); text-transform: uppercase; margin: 0 0 12px; letter-spacing: .8px; }
+.gep-difficulty-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.gep-difficulty-card { background: var(--gep-c-surface); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--gep-c-border); font-size: 13px; }
+.gep-difficulty-label { font-weight: 800; }
+.gep-difficulty-card.easy .gep-difficulty-label { color: var(--gep-c-success); }
+.gep-difficulty-card.medium .gep-difficulty-label { color: var(--gep-c-warning); }
+.gep-difficulty-card.hard .gep-difficulty-label { color: var(--gep-c-danger); }
+.gep-result-wrap .gep-score-cell .gep-score-own { color: var(--gep-c-info); }
+.gep-result-wrap .gep-score-cell .gep-score-highest { color: var(--gep-c-warning); }
+.gep-result-wrap .gep-score-cell .gep-score-time { font-size: 20px; color: var(--gep-c-text-muted); }
 /* Grade Badge */
 .gep-grade-badge {
     display: inline-flex; align-items: center; justify-content: center;
@@ -889,7 +901,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
     }
     /* Difficulty cards: wrap properly */
     .gep-difficulty-row {
-        flex-wrap: wrap !important;
+        grid-template-columns: 1fr;
         gap: 8px !important;
     }
     .gep-difficulty-card {
@@ -987,7 +999,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
 
             <div class="gep-grade-badge"><?php echo esc_html( $grade_info['label'] ); ?></div>
 
-            <div class="gep-result-status-pill">
+            <div class="gep-result-status-pill <?php echo $is_pass ? 'is-pass' : 'is-fail'; ?>">
                 <?php echo $is_pass ? '🏆 ' . esc_html( $strings['pass_msg'] ) : '🎯 ' . esc_html( $strings['fail_msg'] ); ?>
             </div>
 
@@ -1061,9 +1073,9 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
             </div>
 
             <!-- Difficulty Breakdown -->
-            <div style="margin-bottom: 24px; padding: 16px; background: rgba(248, 250, 252, 0.5); border-radius: 16px; border: 1px solid #e2e8f0;">
-                <h3 style="font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; margin: 0 0 12px 0; letter-spacing: 0.8px;">Difficulty Breakdown</h3>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+            <div class="gep-difficulty-section">
+                <h3 class="gep-difficulty-title">Difficulty Breakdown</h3>
+                <div class="gep-difficulty-row">
                     <?php 
                     $diff_labels = ['easy' => 'Easy', 'medium' => 'Medium', 'hard' => 'Hard'];
                     $diff_colors = ['easy' => '#047857', 'medium' => '#b45309', 'hard' => '#b91c1c'];
@@ -1071,9 +1083,9 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                         $d_stat = $diff_stats[$d_key];
                         $d_pct = $d_stat['total'] > 0 ? round(($d_stat['correct'] / $d_stat['total']) * 100) : 0;
                     ?>
-                    <div style="background: #fff; padding: 10px 14px; border-radius: 10px; border: 1px solid <?php echo $diff_colors[$d_key]; ?>40; font-size: 13px;">
+                    <div class="gep-difficulty-card <?php echo esc_attr( $d_key ); ?>">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                            <span style="font-weight: 800; color: <?php echo $diff_colors[$d_key]; ?>;"><?php echo $d_label; ?></span>
+                            <span class="gep-difficulty-label"><?php echo $d_label; ?></span>
                             <span style="font-weight: 800; color: #1e293b;"><?php echo $d_stat['correct']; ?> / <?php echo $d_stat['total']; ?></span>
                         </div>
                         <div style="height: 4px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
@@ -1087,12 +1099,12 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
             <!-- Score Banner -->
             <div class="gep-score-banner">
                 <div class="gep-score-cell">
-                    <span class="val" style="color:#6366f1;"><?php echo number_format( $score, 1 ); ?><small style="font-size:16px;font-weight:600;color:#94a3b8;"> /<?php echo $total_marks; ?></small></span>
+                    <span class="val gep-score-own"><?php echo number_format( $score, 1 ); ?><small style="font-size:16px;font-weight:600;color:#94a3b8;"> /<?php echo $total_marks; ?></small></span>
                     <span class="lbl"><?php echo esc_html( $strings['score'] ); ?></span>
                 </div>
                 <?php if ($has_comparable_paper) : ?>
                 <div class="gep-score-cell">
-                    <span class="val" style="color:#f59e0b;"><?php echo number_format( $topper_score, 1 ); ?><small style="font-size:16px;font-weight:600;color:#94a3b8;"> /<?php echo $total_marks; ?></small></span>
+                    <span class="val gep-score-highest"><?php echo number_format( $topper_score, 1 ); ?><small style="font-size:16px;font-weight:600;color:#94a3b8;"> /<?php echo $total_marks; ?></small></span>
                     <span class="lbl">Highest Score</span>
                 </div>
                 <?php endif; ?>
@@ -1101,7 +1113,7 @@ else                        $grade_info = array( 'label' => 'C',  'color' => '#e
                     <span class="lbl"><?php echo esc_html( $strings['percentile'] ); ?></span>
                 </div>
                 <div class="gep-score-cell">
-                    <span class="val" style="font-size:20px;color:#64748b;"><?php echo $elapsed_str; ?></span>
+                    <span class="val gep-score-time"><?php echo $elapsed_str; ?></span>
                     <span class="lbl"><?php echo esc_html( $strings['time_taken'] ); ?></span>
                 </div>
             </div>

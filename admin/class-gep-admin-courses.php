@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class GEP_Admin_Courses {
     public function handle_actions() {
-        if ( ! isset( $_GET['page'] ) || $_GET['page'] !== 'gep-courses' ) return;
+        if ( ! current_user_can( 'edit_posts' ) || ! isset( $_GET['page'] ) || $_GET['page'] !== 'gep-courses' ) return;
 
         if ( isset( $_POST['gep_course_save'] ) ) {
             $this->save_course();
@@ -20,24 +20,42 @@ class GEP_Admin_Courses {
 
         global $wpdb;
         $table = $wpdb->prefix . 'gep_courses';
+        $input = wp_unslash( $_POST );
+        $course_id = absint( $input['course_id'] ?? 0 );
+        if ( trim( $input['title'] ?? '' ) === '' || trim( $input['instructor'] ?? '' ) === '' || ! is_numeric( $input['price'] ?? '' ) || (float) $input['price'] < 0 ) {
+            add_settings_error( 'gep_courses', 'invalid_course', 'Enter a title, instructor and a price of zero or more.' );
+            return;
+        }
+        if ( $course_id && ! $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table WHERE id = %d", $course_id ) ) ) {
+            add_settings_error( 'gep_courses', 'missing_course', 'This course no longer exists. Reload the course list before saving.' );
+            return;
+        }
 
         $data = array(
-            'title'       => sanitize_text_field( $_POST['title'] ),
-            'instructor'  => sanitize_text_field( $_POST['instructor'] ),
-            'description' => wp_kses_post( $_POST['description'] ),
-            'price'       => floatval( $_POST['price'] ),
-            'thumbnail'   => esc_url_raw( $_POST['thumbnail'] ),
-            'category_id' => isset($_POST['category_id']) ? absint($_POST['category_id']) : 0,
-            'subcategory_id' => isset($_POST['subcategory_id']) ? absint($_POST['subcategory_id']) : 0,
+            'title'       => sanitize_text_field( $input['title'] ),
+            'instructor'  => sanitize_text_field( $input['instructor'] ),
+            'description' => wp_kses_post( $input['description'] ?? '' ),
+            'price'       => round( (float) $input['price'], 2 ),
+            'thumbnail'   => esc_url_raw( $input['thumbnail'] ?? '' ),
+            'category_id' => absint( $input['category_id'] ?? 0 ),
+            'subcategory_id' => absint( $input['subcategory_id'] ?? 0 ),
             // CRITICAL FIX: Was 'active' — but supercoaching.php filters WHERE status='publish'
             // Courses with status='active' were never shown on the frontend marketplace.
             'status'      => 'publish'
         );
 
-        if ( ! empty( $_POST['course_id'] ) ) {
-            $wpdb->update( $table, $data, array( 'id' => absint( $_POST['course_id'] ) ) );
+        if ( $data['subcategory_id'] && ! $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}gep_categories WHERE id = %d AND parent_id = %d", $data['subcategory_id'], $data['category_id'] ) ) ) {
+            add_settings_error( 'gep_courses', 'invalid_subcategory', 'Choose a subcategory belonging to the selected category.' );
+            return;
+        }
+        if ( $course_id ) {
+            $saved = $wpdb->update( $table, $data, array( 'id' => $course_id ) );
         } else {
-            $wpdb->insert( $table, $data );
+            $saved = $wpdb->insert( $table, $data );
+        }
+        if ( false === $saved ) {
+            add_settings_error( 'gep_courses', 'save_failed', 'The course could not be saved. Your entries are preserved below; please try again.' );
+            return;
         }
 
         wp_cache_flush(); // Ensure frontend sees the new/updated course immediately

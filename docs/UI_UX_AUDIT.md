@@ -211,3 +211,20 @@ The two screenshots and sampled video frames were inspected. Actual live phone/t
 The customer supplied the GoPath helpline contact and requested a tap-to-chat WhatsApp link. Contact Us / Help & Support now includes a prominent “Chat on WhatsApp” action for +91 89863 88960 using the international-format URL `https://wa.me/918986388960`. The email address help@gopath.in is also a clickable mail link. The existing support form remains available. Contact cards use theme tokens, visible keyboard focus, wrapping contact text and 44–48px action targets; the WhatsApp action has white text on a dark green background.
 
 This is a link/UI change. No message was sent and no WhatsApp account availability or response time was independently verified. PHP/JavaScript parsing passed locally; the existing 313-case CI suite, including empty and populated support-page rendering, runs before merge. Deployment is required for the live contact page to change. This version also includes the earlier Instructions, palette auto-scroll and theme fixes already merged into main.
+
+
+## Comprehensive follow-up — v2.0.12, 16 September 2026
+
+Live audit covered the public homepage, authenticated dashboard and all sidebar destinations, results review, notifications, pass selection, checkout coupon recovery, and all 17 portal admin pages. The authenticated browser session used the administrator's own student-facing account. This is not a claim that a separate live subscriber session, real payment settlement, email delivery, or every device was tested.
+
+Changes:
+
+- Preserve checkout and other local destinations through password and OTP login, reject external/authentication-loop destinations, and correctly unslash passwords. Enforce the existing registration consent requirement server-side.
+- Expose sign-in and account-recovery help to guests; keep personal navigation and notifications for signed-in users.
+- Preserve the existing profile photo when upload or media storage fails; validate incomplete uploads before reading their temporary file.
+- Add course editing with prefilled category/description fields, decimal prices, validation, failure feedback, and retained form values. Preserve course identity, lessons, and enrollments. Ignore stale subcategory responses and render names as text. Associate labels inside admin dialogs.
+- Count distinct published questions on test cards. Remove fabricated cohort counts and show measured per-student mean-score bands. Exclude virtual PYQ papers from orphan diagnostics.
+- Correct result pass/fail colors, score and difficulty contrast in dark mode, and the narrow-screen difficulty grid. Keep typing duration selection visible and keyboard-focusable in both themes; wrap typing controls and result tiles on small screens.
+- Allow release ZIPs to retain the existing plugin folder name, avoiding accidental parallel installations on GitHub-ZIP-based deployments.
+
+Verification covers DOM behavior and responsive CSS at 320, 390, 600, 768, 820, 1024, 1366 and 1920 pixels, isolated PHP failure scenarios, MySQL transactions/concurrency, and real disposable WordPress rendering/journeys. Responsive CSS checks are not physical-device screenshots. All destructive or transactional fixtures run on the isolated CI database; the live audit does not create purchases or alter existing exam attempts.

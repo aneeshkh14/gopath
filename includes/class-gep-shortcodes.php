@@ -147,9 +147,9 @@ class GEP_Shortcodes {
 
 	public function render_dashboard() {
 		if ( ! is_user_logged_in() ) {
-			if ( isset($_GET['view']) && $_GET['view'] === 'policies' ) {
+			if ( isset($_GET['view']) && in_array( $_GET['view'], array( 'policies', 'about', 'support' ), true ) ) {
 				ob_start();
-				include GEP_PLUGIN_DIR . 'templates/dashboard/policies.php';
+				include GEP_PLUGIN_DIR . 'templates/dashboard/' . $_GET['view'] . '.php';
 				return ob_get_clean();
 			}
 			return $this->render_login();
@@ -698,4 +698,3 @@ class GEP_Shortcodes {
 		return ob_get_clean();
 	}
 }
-

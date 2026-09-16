@@ -489,6 +489,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                     </div>
                 </div>
 
+                <?php if ( is_user_logged_in() ) : ?>
                 <a href="<?php echo $get_nav_link('purchases'); ?>" class="<?php echo $current_view === 'purchases' ? 'active' : ''; ?>">
                     <span class="gep-nav-icon">💰</span> My Purchases
                 </a>
@@ -497,6 +498,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                 <a href="<?php echo $get_nav_link('profile'); ?>" class="<?php echo $current_view === 'profile' ? 'active' : ''; ?>">
                     <span class="gep-nav-icon">👤</span> My Profile
                 </a>
+                <?php endif; ?>
                 <a href="<?php echo $get_nav_link('policies'); ?>" class="<?php echo $current_view === 'policies' ? 'active' : ''; ?>">
                     <span class="gep-nav-icon">📜</span> Legal & Policies
                 </a>
@@ -542,6 +544,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                     <a href="<?php echo esc_url( add_query_arg( 'view', 'support', (string) gep_get_url('dashboard') ) ); ?>" class="gep-header-contact-link" title="Contact Us">
                         <span class="gep-header-contact-icon">✉️</span><span class="gep-header-contact-label">Contact Us</span>
                     </a>
+                    <?php if ( is_user_logged_in() ) : ?>
                     <div class="gep-header-notification-wrapper">
                         <button type="button" id="gep-notif-trigger" class="gep-notif-bell" aria-label="Notifications" aria-expanded="false" aria-controls="gep-notif-panel">🔔</button>
                         <?php 
@@ -585,6 +588,7 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                         🔥 <?php echo isset($user_stats) ? $user_stats['streak'] : 0; ?>
                     </div>
                     <?php
+                    endif;
                     /* Light / dark switch. Students revise late at night, and the
                        portal used to decide its own complexion per route with no
                        say from them. The button only flips data-gep-theme on
@@ -596,12 +600,16 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
                         <span class="gep-theme-icon-dark" aria-hidden="true">☀️</span>
                     </button>
                     <a href="<?php echo add_query_arg('view', 'get-pass', (string) gep_get_url('dashboard')); ?>" class="gep-btn-pass">Get Pass</a>
+                    <?php if ( is_user_logged_in() ) : ?>
                     <a href="<?php echo add_query_arg('view', 'profile', (string) gep_get_url('dashboard')); ?>" class="gep-header-avatar" title="View Profile">
                         <?php 
                         $context_user = get_userdata( $context_user_id );
                         echo $context_user ? esc_html( strtoupper( substr( $context_user->display_name, 0, 1 ) ) ) : 'U'; 
                         ?>
                     </a>
+                    <?php else : ?>
+                    <a href="<?php echo esc_url( gep_get_url( 'login' ) ); ?>" class="gep-btn-pass gep-sign-in">Sign in</a>
+                    <?php endif; ?>
                 </div>
             </header>
             

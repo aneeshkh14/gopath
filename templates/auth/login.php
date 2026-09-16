@@ -47,6 +47,7 @@ if ( is_user_logged_in() ) {
         <?php else : ?>
             <form id="gep-login-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <input type="hidden" name="action" value="gep_login">
+                <input type="hidden" name="redirect_to" value="<?php echo esc_attr( GEP_Auth::login_destination( wp_unslash( $_GET['redirect_to'] ?? $_SERVER['REQUEST_URI'] ?? '' ) ) ); ?>">
                 <?php wp_nonce_field( 'gep_login', 'gep_nonce' ); ?>
                 
                 <div class="gep-form-group">

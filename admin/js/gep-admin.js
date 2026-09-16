@@ -119,7 +119,7 @@ jQuery(function($) {
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
     // Associate simple adjacent labels used across legacy admin forms.
-    $('.gep-admin-wrap label:not([for])').each(function(index) {
+    $('.gep-admin-wrap label:not([for]), .gep-modal-overlay label:not([for])').each(function(index) {
         if (this.querySelector('input, select, textarea')) return;
         var sibling=this.nextElementSibling;
         if (!sibling) return;

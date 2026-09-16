@@ -36,6 +36,7 @@
 
             <!-- Right Side: Form -->
             <div>
+                <?php if ( is_user_logged_in() ) : ?>
                 <form id="gep-support-form" class="gep-form">
                     <div class="gep-form-group" style="margin-bottom: 20px;">
                         <label for="support_subject" style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px;">Subject</label>
@@ -48,6 +49,11 @@
                     <button type="submit" class="gep-btn gep-btn-primary" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px;">Send Message</button>
                     <div id="support-status" role="status" style="margin-top: 15px; font-size: 14px; font-weight: 600; text-align: center; display: none;"></div>
                 </form>
+                <?php else : ?>
+                <h2>Need help signing in?</h2>
+                <p>Use WhatsApp chat or email to reach us. You can also sign in to send a support request from your account.</p>
+                <a class="gep-study-button" href="<?php echo esc_url( add_query_arg( 'redirect_to', add_query_arg( 'view', 'support', gep_get_url( 'dashboard' ) ), gep_get_url( 'login' ) ) ); ?>">Sign in for account support</a>
+                <?php endif; ?>
             </div>
         </div>
 
