@@ -208,7 +208,6 @@ html body {
 .gep-telemetry-card-micro,
 .gep-exam-category-card,
 .gep-cyo-card,
-.gep-marketplace-premium,
 .gep-skill-stat-item {
     background: var(--gep-c-surface) !important;
     border: 1px solid var(--gep-c-border) !important;

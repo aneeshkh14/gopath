@@ -41,7 +41,7 @@ if ($view === 'resume') {
     do_action('wp_enqueue_scripts');
     ob_start();wp_styles()->do_items();$html=ob_get_clean();
     $positions=[];
-    foreach(['gep-public-css','gep-dashboard-css','gep-auth-css','gep-theme-css','gep-layout-css','gep-profile-css','gep-learning-css'] as $handle){
+    foreach(['gep-public-css','gep-dashboard-css','gep-auth-css','gep-theme-css','gep-layout-css','dashicons','gep-profile-css','gep-learning-css'] as $handle){
         $positions[$handle]=array_search($handle,wp_styles()->done,true);
         if($positions[$handle]===false)throw new RuntimeException('Missing style: '.$handle);
     }

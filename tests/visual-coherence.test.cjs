@@ -14,7 +14,7 @@ function winner(el,property,rules){let best=null;for(const r of rules){if(!r.sel
 function rgb(s){return s.startsWith('#')?s.slice(1).match(/../g).map(v=>parseInt(v,16)):s.match(/[\d.]+/g).slice(0,3).map(Number);}
 function luminance(c){c=rgb(c).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});return c[0]*.2126+c[1]*.7152+c[2]*.0722;}
 function contrast(f,b){const a=luminance(f),c=luminance(b);return (Math.max(a,c)+.05)/(Math.min(a,c)+.05);}
-const markup=`<div id="gep-page-wrapper"><main class="gep-main-inner"><div class="gep-profile-wrapper"><div class="gep-account-card gep-account-main"><section class="gep-form-section gep-account-panel active"><div class="gep-account-fields"><div class="gep-form-group"><label>Phone number</label><input class="gep-input"></div></div><p class="gep-info-text">Language help</p></section></div><div class="gep-account-sidebar"><div class="gep-account-progress"></div><nav class="gep-profile-nav"><a>Learning goals</a><a class="active">Personal details</a></nav></div><div class="gep-account-layout"></div></div><div class="gep-learning-catalog"><header class="gep-learning-header"><p class="hero-desc-premium">Course introduction</p><div class="gep-nav-filters"><button class="filter-btn active">All programs</button></div></header><div class="gep-premium-grid"></div><a class="btn-action-elite btn-primary">Launch</a></div><div class="purchase-attempts-block"><span class="attempts-label">Attempts</span><span class="attempts-value">1 of 2</span></div><div class="gep-predictor-metrics"></div></main></div>`;
+const markup=`<div id="gep-page-wrapper"><main class="gep-main-inner"><div class="gep-profile-wrapper"><div class="gep-account-card gep-account-main"><section class="gep-form-section gep-account-panel active"><div class="gep-account-fields"><div class="gep-form-group"><label>Phone number</label><input class="gep-input"></div></div><p class="gep-info-text">Language help</p></section></div><div class="gep-account-sidebar"><div class="gep-account-progress"></div><nav class="gep-profile-nav"><a>Learning goals</a><a class="active">Personal details</a></nav></div><div class="gep-account-layout"></div></div><div class="gep-learning-catalog"><header class="gep-learning-header"><p class="hero-desc-premium">Course introduction</p><div class="gep-nav-filters"><button class="filter-btn active">All programs</button></div></header><div class="gep-premium-grid"></div><a class="btn-action-elite btn-primary">Launch</a></div><div class="purchase-attempts-block"><span class="attempts-label">Attempts</span><span class="attempts-value">1 of 2</span></div><div class="gep-rank-predictor-wrapper"><div class="gep-content-card"><div class="gep-form-group"><label>Score</label></div><div class="gep-predictor-metrics"></div><div class="gep-predictor-result"><h3>Estimate</h3></div></div></div><div class="gep-marketplace-premium"></div></main></div>`;
 for(const mode of ['light','dark'])test(`${mode} account, course and purchase labels retain contrast under legacy CSS`,t=>{
  const tokens=palette(mode);const css=(baseCss+'\n'+purchaseCss).replace(/var\((--[\w-]+)(?:,\s*[^)]*)?\)/g,(all,k)=>tokens[k]||all);
  const dom=new JSDOM(`<html data-gep-theme="${mode}"><body>${markup}</body></html>`);t.after(()=>dom.window.close());const rules=atWidth(cssom.parse(css).cssRules,1366);const el=s=>dom.window.document.querySelector(s);
@@ -25,6 +25,11 @@ for(const mode of ['light','dark'])test(`${mode} account, course and purchase la
  for(const selector of ['.attempts-label','.attempts-value'])assert.ok(contrast(winner(el(selector),'color',rules),tokens['--gep-c-surface-2'])>=4.5,selector);
  assert.equal(winner(el('.gep-account-panel'),'background',rules),'transparent','The form must not acquire a second white card from the theme.');
  assert.deepEqual(rgb(winner(el('.gep-account-main'),'background',rules)),rgb(tokens['--gep-c-surface']));
+ const surface=winner(el('.gep-content-card'),'background',rules);
+ assert.deepEqual(rgb(surface),rgb(tokens['--gep-c-surface']));
+ for(const selector of ['.gep-content-card label','.gep-predictor-result h3'])assert.ok(contrast(winner(el(selector),'color',rules),surface)>=4.5,selector);
+ assert.equal(winner(el('.gep-marketplace-premium'),'box-shadow',rules),undefined,'A layout wrapper must not acquire its own card shadow.');
+
 });
 for(const width of [320,390,600,768,820,1024,1366,1920])test(`account and learning layouts have usable rules at ${width}px`,t=>{
  const dom=new JSDOM(markup);t.after(()=>dom.window.close());const rules=atWidth(cssom.parse(baseCss).cssRules,width);const value=(s,p)=>winner(dom.window.document.querySelector(s),p,rules);
@@ -42,4 +47,13 @@ test('profile tabs support keyboard navigation while preserving unsaved form fie
  const p=await setup(html,inline('templates/dashboard/profile.php','Password Toggle'));t.after(p.close);
  p.$('[data-tab="personal"]').trigger(p.$.Event('keydown',{key:'End'}));assert.equal(p.w.document.activeElement.dataset.tab,'telemetry');assert.equal(p.$('[aria-selected="true"]').length,1);assert.equal(p.$('#tab-telemetry').hasClass('active'),true);assert.equal(p.$('.gep-account-actions').css('display'),'none');
  p.$('[data-tab="telemetry"]').trigger(p.$.Event('keydown',{key:'ArrowRight'}));assert.equal(p.w.document.activeElement.dataset.tab,'personal');assert.notEqual(p.$('.gep-account-actions').css('display'),'none');assert.equal(p.$('[name="personal"]').val(),'Unsaved');assert.deepEqual(p.errors,[]);
+});
+
+test('portal typography reset preserves icon glyph fonts',t=>{
+ const layout=read('templates/portal-layout.php');
+ const reset=layout.match(/body, html, input, select, textarea, button[^}]+}/)[0];
+ const icons=layout.match(/\.dashicons, \.dashicons-before::before[^}]+}/)[0];
+ const dom=new JSDOM('<span class="dashicons dashicons-camera"></span>');t.after(()=>dom.window.close());
+ const rules=cssom.parse(reset+'\n'+icons).cssRules;
+ assert.equal(winner(dom.window.document.querySelector('span'),'font-family',rules),'dashicons');
 });

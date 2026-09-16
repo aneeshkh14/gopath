@@ -358,8 +358,8 @@ class GEP_Loader {
                 }
             }
             wp_enqueue_style( 'gep-layout-css', GEP_PLUGIN_URL . 'public/css/gep-layout.css', array( 'gep-theme-css' ), GEP_VERSION );
-            wp_enqueue_style( 'gep-profile-css', GEP_PLUGIN_URL . 'public/css/gep-profile.css', array( 'gep-layout-css' ), GEP_VERSION );
-            wp_enqueue_style( 'gep-learning-css', GEP_PLUGIN_URL . 'public/css/gep-learning.css', array( 'gep-layout-css' ), GEP_VERSION );
+            wp_enqueue_style( 'gep-profile-css', GEP_PLUGIN_URL . 'public/css/gep-profile.css', array( 'gep-layout-css', 'dashicons' ), GEP_VERSION );
+            wp_enqueue_style( 'gep-learning-css', GEP_PLUGIN_URL . 'public/css/gep-learning.css', array( 'gep-layout-css', 'dashicons' ), GEP_VERSION );
         }
 	}
 
