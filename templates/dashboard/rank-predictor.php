@@ -40,50 +40,28 @@
                 </div>
             </div>
 
-            <button class="gep-btn gep-btn-primary gep-btn-block" id="gep-calculate-rank-btn" style="height: 60px; font-size: 18px; border-radius: 14px; cursor: pointer; border: none; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Calculate My Predicted Rank</button>
-            
-            <!-- Predicted Output Card (Hidden by Default) -->
-            <div role="status" id="gep-predictor-result" style="display: none; margin-top: 35px; padding: 30px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 20px; transition: all 0.3s ease; text-align: left;">
-                <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 900; color: #1e3a8a; display: flex; align-items: center; gap: 10px;">📊 Projected Rank Output</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                    <div style="background: #fff; border: 1px solid #dbeafe; padding: 15px; border-radius: 12px; text-align: center;">
-                        <span style="font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Estimated Percentile</span>
-                        <strong id="gep-predicted-percentile" style="font-size: 24px; font-weight: 900; color: #1e3a8a;">95.2%</strong>
-                    </div>
-                    <div style="background: #fff; border: 1px solid #dbeafe; padding: 15px; border-radius: 12px; text-align: center;">
-                        <span style="font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Predicted AIR Range</span>
-                        <strong id="gep-predicted-air" style="font-size: 24px; font-weight: 900; color: #1e3a8a;">4,500 - 6,200</strong>
-                    </div>
+            <button type="button" class="gep-btn gep-btn-primary gep-predictor-calculate" id="gep-calculate-rank-btn">Calculate estimate</button>
+
+            <div role="status" id="gep-predictor-result" class="gep-predictor-result" style="display: none;">
+                <h3>Your illustrative estimate</h3>
+                <div class="gep-predictor-metrics">
+                    <div class="gep-predictor-metric"><span>Estimated percentile</span><strong id="gep-predicted-percentile">—</strong></div>
+                    <div class="gep-predictor-metric"><span>Predicted rank range</span><strong id="gep-predicted-air">—</strong></div>
                 </div>
-                <div style="background: #fff; border: 1px solid #dbeafe; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <div>
-                        <span style="font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">Illustrative score band</span>
-                        <strong id="gep-predicted-chances" style="font-size: 14px; font-weight: 800; color: #10b981;">HIGH</strong>
-                    </div>
-                    <span id="gep-chances-badge" style="font-size: 24px;">🟢</span>
-                </div>
-                <p id="gep-predicted-note" style="margin: 0; font-size: 13px; font-weight: 600; color: #1e3a8a; line-height: 1.5; font-style: italic;"></p>
+                <div class="gep-predictor-band"><div><span>Illustrative score band</span><strong id="gep-predicted-chances">—</strong></div><span id="gep-chances-badge" aria-hidden="true"></span></div>
+                <p id="gep-predicted-note"></p>
             </div>
 
-            <div id="gep-predictor-static-note" style="margin-top: 40px; padding: 30px; background: #f8fafc; border-radius: 16px; text-align: center;">
-                <p style="color: var(--gep-text-muted); font-size: 14px; margin-bottom: 10px;">PROJECTION SUMMARY</p>
-                <p style="font-size: 13px; font-style: italic;">"Enter your average mock test score above and click calculate to compute your dynamic percentile and rank estimation using an illustrative model. This is not an official rank or selection prediction."</p>
+            <div id="gep-predictor-static-note" class="gep-predictor-note">
+                <p>Enter a mock score to see an estimate.</p>
+                <p>This is an illustrative model, not an official rank or selection prediction.</p>
             </div>
         </div>
 
         <div class="gep-predictor-features">
-            <div style="padding: 20px;">
-                <span style="font-size: 32px; display: block; margin-bottom: 10px;">📉</span>
-                <h4 style="font-size: 14px; font-weight: 800;">Real-time Analysis</h4>
-            </div>
-            <div style="padding: 20px;">
-                <span style="font-size: 32px; display: block; margin-bottom: 10px;">🏆</span>
-                <h4 style="font-size: 14px; font-weight: 800;">Top 1% Insights</h4>
-            </div>
-            <div style="padding: 20px;">
-                <span style="font-size: 32px; display: block; margin-bottom: 10px;">📊</span>
-                <h4 style="font-size: 14px; font-weight: 800;">Percentile Scoring</h4>
-            </div>
+            <div><span aria-hidden="true">📉</span><h4>Score comparison</h4></div>
+            <div><span aria-hidden="true">⚙️</span><h4>Adjustable estimate</h4></div>
+            <div><span aria-hidden="true">📊</span><h4>Percentile scoring</h4></div>
         </div>
     </div>
 </div>
@@ -158,19 +136,19 @@ document.addEventListener("DOMContentLoaded", function() {
         // Determine chances
         let chances = "LOW";
         let badge = "🔴";
-        let color = "#ef4444";
+        let color = "var(--gep-c-danger)";
         if (percentile >= 90) {
             chances = "VERY HIGH";
             badge = "🔥";
-            color = "#10b981";
+            color = "var(--gep-c-success)";
         } else if (percentile >= 75) {
             chances = "HIGH";
             badge = "🟢";
-            color = "#10b981";
+            color = "var(--gep-c-success)";
         } else if (percentile >= 50) {
             chances = "MODERATE";
             badge = "🟡";
-            color = "#f59e0b";
+            color = "var(--gep-c-warning)";
         }
         
         document.getElementById("gep-predicted-percentile").textContent = percentile.toFixed(1) + "%";

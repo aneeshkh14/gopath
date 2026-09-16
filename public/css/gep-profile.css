@@ -1,0 +1,120 @@
+/* Account settings use theme tokens throughout, with one surface per card. */
+#gep-page-wrapper .gep-profile-wrapper { max-width: 1120px; margin: 0 auto; color: var(--gep-c-text); }
+#gep-page-wrapper .gep-account-heading { margin: 0 0 24px; }
+#gep-page-wrapper .gep-account-heading h1 { margin: 4px 0 8px; font-size: clamp(25px, 2.5vw, 32px); line-height: 1.2; letter-spacing: -.7px; font-weight: 750; }
+#gep-page-wrapper .gep-account-heading p { margin: 0; color: var(--gep-c-text-muted); font-size: 14px; line-height: 1.6; }
+#gep-page-wrapper .gep-account-heading .gep-account-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1.3px; }
+#gep-page-wrapper .gep-account-card { background: var(--gep-c-surface); border: 1px solid var(--gep-c-border); border-radius: 16px; box-shadow: 0 2px 6px rgba(15,23,42,.035); }
+#gep-page-wrapper .gep-account-identity { display: flex; align-items: center; gap: 24px; padding: 28px; margin-bottom: 24px; }
+#gep-page-wrapper .gep-profile-avatar { width: 88px; height: 88px; padding: 0; border: 0; box-shadow: none; background: var(--gep-c-surface-3); flex-shrink: 0; }
+#gep-page-wrapper .gep-profile-avatar img { display: block; border: 0; box-shadow: none; width: 100%; height: 100%; border-radius: 50%; }
+#gep-page-wrapper .gep-avatar-edit { width: 36px; height: 36px; right: -2px; bottom: -2px; border: 3px solid var(--gep-c-surface); background: var(--gep-c-accent); color: var(--gep-c-accent-text); box-shadow: none; }
+#gep-page-wrapper .gep-avatar-edit .dashicons { font-size: 17px; width: 17px; height: 17px; }
+#gep-page-wrapper #gep-avatar-status { position: absolute; top: 100%; left: 0; width: 220px; max-width: 60vw; z-index: 2; background: var(--gep-c-surface); color: var(--gep-c-text); border: 1px solid var(--gep-c-border); border-radius: 8px; padding: 8px; font-size: 12px; }
+#gep-page-wrapper .gep-account-intro { flex: 1; min-width: 0; }
+#gep-page-wrapper .gep-account-name { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+#gep-page-wrapper .gep-account-name h2 { font-size: 22px; line-height: 1.3; font-weight: 750; margin: 0; }
+#gep-page-wrapper .gep-account-role { display: inline-flex; align-items: center; background: var(--gep-c-surface-3); color: var(--gep-c-text-muted); border: 1px solid var(--gep-c-border); border-radius: 6px; padding: 3px 8px; font-size: 11px; line-height: 1.5; font-weight: 600; }
+#gep-page-wrapper .gep-account-email { font-size: 14px; margin: 6px 0 10px; color: var(--gep-c-text-muted); overflow-wrap: anywhere; }
+#gep-page-wrapper .gep-account-enrollment { margin: 0; font-size: 12px; color: var(--gep-c-text-muted); }
+#gep-page-wrapper .gep-account-enrollment code { color: var(--gep-c-text); background: var(--gep-c-surface-2); padding: 3px 6px; border-radius: 4px; margin-left: 4px; font-size: 12px; }
+#gep-page-wrapper .gep-account-summary { display: flex; gap: 28px; padding-left: 28px; margin: 0; border-left: 1px solid var(--gep-c-border); }
+#gep-page-wrapper .gep-account-summary dt { font-size: 12px; color: var(--gep-c-text-muted); margin-bottom: 4px; font-weight: 500; }
+#gep-page-wrapper .gep-account-summary dd { font-size: 24px; font-weight: 750; line-height: 1.3; margin: 0; color: var(--gep-c-text); }
+#gep-page-wrapper .gep-account-summary small { font-size: 13px; font-weight: 500; color: var(--gep-c-text-muted); }
+#gep-page-wrapper .gep-account-layout { display: grid; grid-template-columns: 236px minmax(0,1fr); align-items: start; gap: 24px; }
+#gep-page-wrapper .gep-account-sidebar { min-width: 0; }
+#gep-page-wrapper .gep-account-progress { padding: 20px; margin-bottom: 16px; }
+#gep-page-wrapper .gep-account-progress-heading { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 12px; font-size: 12px; color: var(--gep-c-text); }
+#gep-page-wrapper .gep-account-progress-heading strong { font-weight: 650; }
+#gep-page-wrapper .gep-account-progress-heading > span { font-weight: 750; }
+#gep-page-wrapper .gep-account-progress p { font-size: 12px; line-height: 1.55; color: var(--gep-c-text-muted); margin: 12px 0 0; }
+#gep-page-wrapper .gep-profile-wrapper progress { display: block; width: 100%; height: 6px; border: 0; border-radius: 4px; overflow: hidden; background: var(--gep-c-surface-3); color: var(--gep-c-accent); appearance: none; }
+#gep-page-wrapper .gep-profile-wrapper progress::-webkit-progress-bar { background: var(--gep-c-surface-3); border-radius: 4px; }
+#gep-page-wrapper .gep-profile-wrapper progress::-webkit-progress-value { background: var(--gep-c-accent); border-radius: 4px; }
+#gep-page-wrapper .gep-profile-wrapper progress::-moz-progress-bar { background: var(--gep-c-accent); border-radius: 4px; }
+#gep-page-wrapper .gep-profile-nav { position: static; display: flex; flex-direction: column; gap: 4px; padding: 0; overflow: visible; }
+#gep-page-wrapper .gep-profile-nav a { min-height: 46px; padding: 11px 12px; border-radius: 9px; font-size: 13px; font-weight: 600; line-height: 1.45; gap: 10px; color: var(--gep-c-text-muted); background: transparent; border: 1px solid transparent; transform: none; box-shadow: none; white-space: normal; }
+#gep-page-wrapper .gep-profile-nav a .dashicons { width: 18px; height: 18px; font-size: 18px; flex-shrink: 0; opacity: 1; }
+#gep-page-wrapper .gep-profile-nav a:hover { color: var(--gep-c-text); background: var(--gep-c-surface-3); }
+#gep-page-wrapper .gep-profile-nav a.active { color: var(--gep-c-info); background: var(--gep-c-surface); border-color: var(--gep-c-border-strong); box-shadow: inset 3px 0 var(--gep-c-accent); }
+#gep-page-wrapper .gep-account-logout { display: flex; align-items: center; gap: 10px; min-height: 44px; color: var(--gep-c-danger); padding: 12px; margin-top: 20px; font-size: 13px; font-weight: 600; text-decoration: none; border-top: 1px solid var(--gep-c-border); }
+#gep-page-wrapper .gep-account-main { min-width: 0; padding: 28px; }
+#gep-page-wrapper .gep-account-panel { border: 0; padding: 0; margin: 0; border-radius: 0; box-shadow: none; background: transparent; animation: none; }
+#gep-page-wrapper .gep-account-section-heading { margin-bottom: 24px; }
+#gep-page-wrapper .gep-account-section-heading h2 { margin: 0 0 6px; font-size: 19px; font-weight: 700; line-height: 1.4; }
+#gep-page-wrapper .gep-account-section-heading p { margin: 0; color: var(--gep-c-text-muted); font-size: 13px; line-height: 1.6; }
+#gep-page-wrapper .gep-account-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 22px 20px; }
+#gep-page-wrapper .gep-account-field-wide { grid-column: 1 / -1; }
+#gep-page-wrapper .gep-profile-wrapper .gep-form-group { min-width: 0; margin: 0; }
+#gep-page-wrapper .gep-profile-wrapper .gep-form-group > label,
+#gep-page-wrapper .gep-account-goals legend { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin: 0 0 8px; padding: 0; font-size: 13px; line-height: 1.4; font-weight: 650; color: var(--gep-c-text); }
+#gep-page-wrapper .gep-field-hint { font-weight: 400; font-size: 11px; color: var(--gep-c-text-muted); }
+#gep-page-wrapper .gep-field-required { color: var(--gep-c-danger); }
+#gep-page-wrapper .gep-profile-wrapper .gep-input { width: 100%; height: auto; min-height: 44px; padding: 11px 12px; font-family: inherit; font-size: 14px; line-height: 1.5; border-radius: 8px; background: var(--gep-c-surface) !important; border-color: var(--gep-c-border-strong) !important; box-shadow: none; }
+#gep-page-wrapper .gep-profile-wrapper textarea.gep-input { min-height: 100px; resize: vertical; }
+#gep-page-wrapper .gep-profile-wrapper .gep-input[readonly] { background: var(--gep-c-surface-2) !important; color: var(--gep-c-text-muted) !important; }
+#gep-page-wrapper .gep-profile-wrapper .gep-input:focus { border-color: var(--gep-c-accent) !important; }
+#gep-page-wrapper .gep-profile-wrapper .gep-info-text { margin: 7px 0 0; font-size: 12px; line-height: 1.55; color: var(--gep-c-text-muted); }
+#gep-page-wrapper .gep-account-goals { min-width: 0; border: 0; padding: 0; margin: 0; }
+#gep-page-wrapper .gep-account-goal-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+#gep-page-wrapper .gep-account-goal { display: flex; align-items: center; gap: 10px; padding: 12px; min-height: 48px; border: 1px solid var(--gep-c-border-strong); border-radius: 8px; background: var(--gep-c-surface); color: var(--gep-c-text); font-size: 13px; font-weight: 500; cursor: pointer; }
+#gep-page-wrapper .gep-account-goal input { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--gep-c-accent); }
+#gep-page-wrapper .gep-account-goal:has(input:checked) { border-color: var(--gep-c-accent); box-shadow: inset 0 0 0 1px var(--gep-c-accent); }
+#gep-page-wrapper .gep-account-password { position: relative; max-width: 440px; }
+#gep-page-wrapper .gep-account-password .gep-input { padding-right: 48px; }
+#gep-page-wrapper .gep-account-password .gep-password-toggle { position: absolute; right: 2px; top: 2px; width: 42px; height: calc(100% - 4px); display: flex; align-items: center; justify-content: center; color: var(--gep-c-text-muted); background: transparent; border: 0; border-radius: 6px; cursor: pointer; opacity: 1; }
+#gep-page-wrapper .gep-account-activity { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin-bottom: 28px; }
+#gep-page-wrapper .gep-account-stat { background: var(--gep-c-surface-2); border: 1px solid var(--gep-c-border); padding: 20px; border-radius: 10px; }
+#gep-page-wrapper .gep-account-stat > span { font-size: 12px; color: var(--gep-c-text-muted); }
+#gep-page-wrapper .gep-account-stat > strong { display: block; font-size: 32px; line-height: 1.3; color: var(--gep-c-text); margin-top: 6px; }
+#gep-page-wrapper .gep-account-stat small { font-size: 16px; font-weight: 600; }
+#gep-page-wrapper .gep-account-stat p { font-size: 12px; line-height: 1.6; color: var(--gep-c-text-muted); margin: 8px 0 0; }
+#gep-page-wrapper .gep-account-subheading { margin: 0 0 18px; font-size: 14px; font-weight: 650; }
+#gep-page-wrapper .gep-account-subheading::before { display: none; }
+#gep-page-wrapper .gep-account-topics { display: grid; gap: 20px; }
+#gep-page-wrapper .gep-account-topic-label { display: flex; justify-content: space-between; gap: 14px; font-size: 13px; margin-bottom: 8px; color: var(--gep-c-text); }
+#gep-page-wrapper .gep-account-empty { padding: 24px; border: 1px dashed var(--gep-c-border-strong); border-radius: 10px; text-align: center; color: var(--gep-c-text-muted); font-size: 13px; line-height: 1.7; }
+#gep-page-wrapper .gep-account-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding-top: 24px; margin-top: 28px; border-top: 1px solid var(--gep-c-border); }
+#gep-page-wrapper .gep-account-actions .gep-info-text { margin: 0; }
+#gep-page-wrapper .gep-account-actions button[type=submit] { min-height: 44px; min-width: 140px; border-radius: 8px; font-size: 13px; font-weight: 650; background: var(--gep-c-accent) !important; color: var(--gep-c-accent-text) !important; box-shadow: none; padding: 11px 20px; }
+#gep-page-wrapper #gep-profile-msg { width: 100%; margin: 0; }
+#gep-page-wrapper #gep-profile-msg .gep-alert { margin: 0; padding: 12px 16px; font-size: 13px; border-radius: 8px; box-shadow: none; }
+#gep-page-wrapper .gep-profile-wrapper :is(a,button):focus-visible,
+#gep-page-wrapper .gep-account-goal:focus-within { outline: 2px solid var(--gep-c-accent); outline-offset: 3px; }
+@media (max-width: 1100px) {
+    #gep-page-wrapper .gep-account-summary { gap: 20px; padding-left: 20px; }
+    #gep-page-wrapper .gep-account-layout { grid-template-columns: 210px minmax(0,1fr); gap: 20px; }
+    #gep-page-wrapper .gep-account-main { padding: 24px; }
+}
+@media (max-width: 900px) {
+    #gep-page-wrapper .gep-account-layout { grid-template-columns: 1fr; }
+    #gep-page-wrapper .gep-account-sidebar { display: grid; grid-template-columns: 1fr auto; gap: 16px; }
+    #gep-page-wrapper .gep-account-progress { grid-column: 1 / -1; margin: 0; padding: 16px; }
+    #gep-page-wrapper .gep-profile-nav { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 4px; }
+    #gep-page-wrapper .gep-account-logout { align-self: start; margin: 0; padding: 12px 8px; border: 0; }
+    #gep-page-wrapper .gep-account-identity { flex-wrap: wrap; }
+    #gep-page-wrapper .gep-account-summary { width: 100%; padding: 16px 0 0; border-left: 0; border-top: 1px solid var(--gep-c-border); }
+    #gep-page-wrapper .gep-account-summary > div { flex: 1; }
+}
+@media (max-width: 600px) {
+    #gep-page-wrapper .gep-account-heading { margin-bottom: 20px; }
+    #gep-page-wrapper .gep-account-heading h1 { font-size: 25px; }
+    #gep-page-wrapper .gep-account-identity { padding: 20px; gap: 16px; }
+    #gep-page-wrapper .gep-profile-avatar { width: 64px; height: 64px; }
+    #gep-page-wrapper .gep-account-name h2 { font-size: 19px; }
+    #gep-page-wrapper .gep-account-name { gap: 6px; }
+    #gep-page-wrapper .gep-account-email { font-size: 12px; }
+    #gep-page-wrapper .gep-account-enrollment code { display: inline-block; margin: 4px 0 0; }
+    #gep-page-wrapper .gep-account-sidebar { grid-template-columns: 1fr; gap: 4px; }
+    #gep-page-wrapper .gep-account-logout { justify-self: end; padding-block: 6px; }
+    #gep-page-wrapper .gep-account-main { padding: 20px; }
+    #gep-page-wrapper .gep-account-fields, #gep-page-wrapper .gep-account-goal-grid { grid-template-columns: 1fr; gap: 18px; }
+    #gep-page-wrapper .gep-profile-wrapper .gep-input { font-size: 16px; }
+    #gep-page-wrapper .gep-account-actions { flex-direction: column; align-items: stretch; margin-top: 24px; padding-top: 20px; }
+    #gep-page-wrapper .gep-account-actions button[type=submit] { width: 100%; }
+    #gep-page-wrapper .gep-account-activity { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #gep-page-wrapper .gep-profile-wrapper * { transition: none; animation: none; }
+}

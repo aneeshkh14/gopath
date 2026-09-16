@@ -233,3 +233,17 @@ Verification covers DOM behavior and responsive CSS at 320, 390, 600, 768, 820, 
 ### Live verification follow-up — v2.0.13
 
 The v2.0.12 release passed all 343 automated checks and was installed on the test site. Live verification confirmed the course edit form, measured report counts, and both result-review themes. It also exposed a legacy `!important` text rule that still overrode the selected typing duration. Removed inline presentation attributes from those labels so the semantic selection styles control their contrast, and added two theme checks using actual selector specificity. JSDOM's simplified cascade alone did not reproduce this case, so the new checks explicitly rank matching declarations.
+
+
+## Visual coherence follow-up — v2.0.14
+
+The customer's profile screenshot showed near-white labels on a light form, large shadows, and a second white rectangle inside the main panel. The authenticated desktop audit reproduced those defects and found related color failures on purchases, PYQs, course filters, Skill Academy and the rank estimator. Sidebar destinations were inspected in light and dark themes; the pass page was also inspected in light mode.
+
+- Rebuild the profile as a clear account header, settings navigation and one form surface. All labels, help text, activity statistics and controls use the shared palette. Retain avatar upload, personal details, learning goals, password changes and statistics. Add associated tabs with arrow/Home/End navigation and preserve unsaved fields while changing sections. Show the viewed user's role correctly during administrator previews.
+- Replace oversized black course/live-class heroes with compact, theme-aware headers and consistent cards. Preserve course filtering, enrollment, launch links, schedules and recordings. Remove decorative play controls that did not play a video. Missing course thumbnails use a local icon treatment; supplied thumbnails remain and their URLs are escaped.
+- Correct purchase type badges and attempt metadata, PYQ counts/actions, Skill Academy access labels, and selected filter contrast. Use the accent's foreground/background pair in both palettes.
+- Simplify the rank estimate form and result layout, including responsive result metrics, readable status colors, and accurate illustrative-model copy.
+
+Verification adds 11 frontend checks for keyboard tab behavior, selector-specificity contrast against legacy styles, and responsive rules at 320, 390, 600, 768, 820, 1024, 1366 and 1920 pixels. Two disposable WordPress cases check actual profile tab/role markup and enrolled-course rendering; the asset-order case includes both new component stylesheets. Expected full suite: **148 frontend + 44 isolated PHP + 5 MySQL + 161 WordPress = 358 checks**. The PR records the actual CI outcome.
+
+Responsive stylesheet checks do not constitute physical-device screenshots. Live verification uses the authenticated administrator's desktop session. No real payment, message, password update, purchase or existing exam attempt is required by this visual change. The release must be installed before its appearance changes on the test site.

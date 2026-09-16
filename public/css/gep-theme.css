@@ -204,7 +204,7 @@ html body {
 .gep-policy-section,
 .gep-curated-section,
 .gep-empty-state,
-.gep-form-section,
+.gep-form-section:not(.gep-account-panel),
 .gep-telemetry-card-micro,
 .gep-exam-category-card,
 .gep-cyo-card,
@@ -942,14 +942,13 @@ html body {
 :root .count,
 :root .gep-subject-nums .s { color: var(--gep-c-text) !important; }
 
-/* A filled "active" chip needs the accent fill as well as the white label —
-   without the fill it was white text on the page. */
+/* Filled chips use the accent foreground/background pair in both themes. */
 :root .filter-btn.active,
 :root .domain-chip.active,
 :root .t-btn.active {
     background: var(--gep-c-accent) !important;
     border-color: var(--gep-c-accent) !important;
-    color: #ffffff !important;
+    color: var(--gep-c-accent-text) !important;
 }
 
 /* Deep greens and blues sized for a white card, on the dark one. */
