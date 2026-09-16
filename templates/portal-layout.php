@@ -283,6 +283,10 @@ add_filter( 'pre_get_document_title', function( $title ) use ($seo_title) {
         body, html, input, select, textarea, button, h1, h2, h3, h4, h5, h6, p, span, div, a, li, label {
             font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
         }
+        /* Icon glyphs must keep their own font instead of the text reset. */
+        .dashicons, .dashicons-before::before {
+            font-family: dashicons !important;
+        }
         #wpadminbar { display: none !important; }
         html { margin-top: 0 !important; }
         

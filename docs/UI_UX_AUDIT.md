@@ -247,3 +247,8 @@ The customer's profile screenshot showed near-white labels on a light form, larg
 Verification adds 11 frontend checks for keyboard tab behavior, selector-specificity contrast against legacy styles, and responsive rules at 320, 390, 600, 768, 820, 1024, 1366 and 1920 pixels. Two disposable WordPress cases check actual profile tab/role markup and enrolled-course rendering; the asset-order case includes both new component stylesheets. Expected full suite: **148 frontend + 44 isolated PHP + 5 MySQL + 161 WordPress = 358 checks**. The PR records the actual CI outcome.
 
 Responsive stylesheet checks do not constitute physical-device screenshots. Live verification uses the authenticated administrator's desktop session. No real payment, message, password update, purchase or existing exam attempt is required by this visual change. The release must be installed before its appearance changes on the test site.
+
+
+### Live verification refinements — v2.0.15
+
+After v2.0.14 passed all 358 checks and was installed, live screenshots confirmed the profile contrast and spacing improvements in both themes. They also exposed the portal's global `span` font reset overriding Dashicons, an unnecessary card surface/shadow on course-grid containers, and a legacy white rank-estimator card behind dark result text. Preserve the icon font, explicitly load its stylesheet dependency, remove the container from the card rule, soften learning-card shadows, and give the rank card and generic form labels semantic colors. The existing contrast tests now include the actual rank-card surface and form labels; a new check reproduces the icon-font conflict. Expected suite: **149 frontend + 44 PHP + 5 MySQL + 161 WordPress = 359 checks**.
