@@ -228,3 +228,8 @@ Changes:
 - Allow release ZIPs to retain the existing plugin folder name, avoiding accidental parallel installations on GitHub-ZIP-based deployments.
 
 Verification covers DOM behavior and responsive CSS at 320, 390, 600, 768, 820, 1024, 1366 and 1920 pixels, isolated PHP failure scenarios, MySQL transactions/concurrency, and real disposable WordPress rendering/journeys. Responsive CSS checks are not physical-device screenshots. All destructive or transactional fixtures run on the isolated CI database; the live audit does not create purchases or alter existing exam attempts.
+
+
+### Live verification follow-up — v2.0.13
+
+The v2.0.12 release passed all 343 automated checks and was installed on the test site. Live verification confirmed the course edit form, measured report counts, and both result-review themes. It also exposed a legacy `!important` text rule that still overrode the selected typing duration. Removed inline presentation attributes from those labels so the semantic selection styles control their contrast, and added two theme checks using actual selector specificity. JSDOM's simplified cascade alone did not reproduce this case, so the new checks explicitly rank matching declarations.
