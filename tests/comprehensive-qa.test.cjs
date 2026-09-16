@@ -30,3 +30,26 @@ for(const width of [320,390,600,768,820,1024,1366,1920])test(`typing and result 
  const dom=new JSDOM(`<style>${css}</style><div class="gep-typing-grid"><div class="gep-typing-panel"><div class="gep-typing-durations"><label class="gep-dur-label is-selected">One minute</label></div><div class="gep-typing-summary" style="grid-template-columns:repeat(4, 1fr)"></div><div class="gep-typing-stats"></div></div></div><div class="gep-difficulty-row"></div>`);t.after(()=>dom.window.close());const style=s=>dom.window.getComputedStyle(dom.window.document.querySelector(s));
  assert.equal(style('.gep-typing-grid').gridTemplateColumns,width<=1024?'1fr':'1.8fr 1.2fr');assert.equal(style('.gep-typing-durations').flexWrap,'wrap');assert.equal(style('.gep-typing-stats').flexWrap,'wrap');assert.equal(style('.gep-difficulty-row').gridTemplateColumns,width<=480?'1fr':'repeat(3, minmax(0, 1fr))');
 });
+const Specificity=require('@bramus/specificity').default;
+const themeCss=fs.readFileSync('public/css/gep-theme.css','utf8');
+function luminance(rgb){if(rgb.startsWith('#'))rgb='rgb('+rgb.slice(1).match(/../g).map(n=>parseInt(n,16)).join(',')+')';const c=rgb.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});return c[0]*.2126+c[1]*.7152+c[2]*.0722;}
+for(const mode of ['light','dark'])test(`${mode} selected typing duration has readable contrast under the full theme cascade`,t=>{
+ const tokens={};for(const r of cssom.parse(themeCss).cssRules){if(r.selectorText===':root'||(mode==='dark'&&r.selectorText?.includes(':root[data-gep-theme="dark"],'))){for(let i=0;i<r.style.length;i++){const k=r.style[i];if(k.startsWith('--'))tokens[k]=r.style.getPropertyValue(k);}}}
+ const css=(themeCss+'\n'+typingCss).replace(/var\((--[\w-]+)(?:,\s*[^)]*)?\)/g,(all,key)=>tokens[key]||all);
+ const template=fs.readFileSync('templates/dashboard/typing-test.php','utf8');const start=template.indexOf('<div class="gep-typing-durations"');const markup=template.slice(start,template.indexOf('</div>',start)+6).replace(/<\?php[\s\S]*?\?>/g,'Duration');
+ const dom=new JSDOM(`<html data-gep-theme="${mode}"><head><style>${css}</style></head><body><main class="gep-main-inner"><div>${markup}</div></main></body></html>`);t.after(()=>dom.window.close());
+ const el=dom.window.document.querySelector('.gep-dur-label.is-selected');
+ // JSDOM does not consistently rank complex :is/:not selectors. Resolve the
+ // actual matching color declarations by importance, specificity and order.
+ let winner=null;
+ for(const r of cssom.parse(rulesAt(cssom.parse(css).cssRules,1366)).cssRules){
+  if(!r.selectorText || !r.style.color)continue;
+  for(const weight of Specificity.calculate(r.selectorText)){
+   if(!el.matches(weight.selectorString()))continue;
+   const candidate={weight,important:r.style.getPropertyPriority('color')==='important'?1:0,color:r.style.color};
+   if(!winner || candidate.important>winner.important || (candidate.important===winner.important && Specificity.compare(candidate.weight,winner.weight)>=0))winner=candidate;
+  }
+ }
+ assert.ok(winner?.important,'Selection needs to override legacy important theme rules.');
+ const bg=dom.window.getComputedStyle(el).backgroundColor;const a=luminance(winner.color),b=luminance(bg);assert.ok((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=4.5,`${winner.color} on ${bg}`);
+});

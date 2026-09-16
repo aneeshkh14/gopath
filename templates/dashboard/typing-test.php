@@ -32,7 +32,11 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
 }
 .gep-typing-grid > * { min-width: 0; }
 .gep-typing-durations { display: flex; flex-wrap: wrap; gap: 10px; }
-.gep-typing-durations .gep-dur-label { flex: 1 1 80px !important; }
+.gep-typing-durations .gep-dur-label {
+    flex: 1 1 80px; text-align: center; border: 2px solid var(--gep-c-border-strong);
+    border-radius: 14px; padding: 12px; cursor: pointer; font-size: 14px; font-weight: 800;
+    color: var(--gep-c-text-muted); background: var(--gep-c-surface); transition: background .2s;
+}
 .gep-typing-durations .gep-dur-label.is-selected {
     background: var(--gep-c-accent) !important; color: var(--gep-c-accent-text) !important;
     border-color: var(--gep-c-accent) !important;
@@ -73,13 +77,13 @@ $attempts = $wpdb->get_results( $wpdb->prepare(
                 <div style="margin-bottom: 30px;">
                     <label style="display: block; font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;"><?php _e( 'Select Test Duration', 'gopath-exam-portal' ); ?></label>
                     <div class="gep-typing-durations" role="group" aria-label="Test duration">
-                        <label class="gep-dur-label is-selected" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
+                        <label class="gep-dur-label is-selected">
                             <input type="radio" name="gep_typing_dur" value="60" checked class="gep-visually-hidden" aria-label="<?php esc_attr_e( '1 Minute', 'gopath-exam-portal' ); ?>"> <?php _e( '1 Minute', 'gopath-exam-portal' ); ?>
                         </label>
-                        <label class="gep-dur-label" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
+                        <label class="gep-dur-label">
                             <input type="radio" name="gep_typing_dur" value="120" class="gep-visually-hidden" aria-label="<?php esc_attr_e( '2 Minutes', 'gopath-exam-portal' ); ?>"> <?php _e( '2 Minutes', 'gopath-exam-portal' ); ?>
                         </label>
-                        <label class="gep-dur-label" style="flex: 1; text-align: center; border: 2px solid #e2e8f0; border-radius: 14px; padding: 12px; cursor: pointer; font-weight: 800; color: #475569; transition: all 0.25s;">
+                        <label class="gep-dur-label">
                             <input type="radio" name="gep_typing_dur" value="300" class="gep-visually-hidden" aria-label="<?php esc_attr_e( '5 Minutes', 'gopath-exam-portal' ); ?>"> <?php _e( '5 Minutes', 'gopath-exam-portal' ); ?>
                         </label>
                     </div>
