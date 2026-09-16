@@ -61,7 +61,7 @@ if ( ! empty( $courses ) ) {
             <div style="position: relative; text-align: center; color: #fff;">
                 <div style="font-size: 54px; margin-bottom: 12px; animation: float 6s ease-in-out infinite;">🎓</div>
                 <h3 style="font-size: 28px; font-weight: 950; letter-spacing: -1px; margin: 0 0 5px; color: #fff;">Skill Academy</h3>
-                <span style="font-size: 11px; font-weight: 800; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.3); color: #a5b4fc; padding: 4px 10px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Premium Access</span>
+                <span style="font-size: 11px; font-weight: 700; background: var(--gep-c-surface-3); border: 1px solid var(--gep-c-border-strong); color: var(--gep-c-info); padding: 4px 10px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Premium Access</span>
             </div>
         </div>
     </div>

@@ -184,7 +184,7 @@ function gep_purchase_launch_url( $p ) {
     font-weight: 900;
     margin: 0 0 6px;
     letter-spacing: -0.5px;
-    color: #f1f5f9;
+    color: var(--gep-c-text);
 }
 
 /* Sits on the dark page background, where #64748b is 4.2:1. #94a3b8 is 7.8:1. */
@@ -219,14 +219,14 @@ function gep_purchase_launch_url( $p ) {
 .pill-count {
     font-size: 22px;
     font-weight: 900;
-    color: #f1f5f9;
+    color: var(--gep-c-text);
     line-height: 1;
 }
 
 .pill-label {
     font-size: 10px;
     font-weight: 800;
-    color: #64748b;
+    color: var(--gep-c-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-top: 2px;
@@ -288,9 +288,9 @@ function gep_purchase_launch_url( $p ) {
     border-radius: 20px;
 }
 
-.badge-test  { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.2); }
-.badge-series { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.2); }
-.badge-course { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+.badge-test  { background: rgba(99,102,241,0.15); color: var(--gep-c-info); border: 1px solid rgba(99,102,241,0.2); }
+.badge-series { background: rgba(168,85,247,0.15); color: var(--gep-c-info); border: 1px solid rgba(168,85,247,0.2); }
+.badge-course { background: rgba(16,185,129,0.15); color: var(--gep-c-success); border: 1px solid rgba(16,185,129,0.2); }
 
 /* Body */
 .purchase-card-body {
@@ -300,25 +300,25 @@ function gep_purchase_launch_url( $p ) {
 .purchase-title {
     font-size: 16px;
     font-weight: 800;
-    color: #f1f5f9;
+    color: var(--gep-c-text);
     margin: 0 0 8px;
     line-height: 1.4;
 }
 
 .purchase-enrolled {
     font-size: 12px;
-    color: #475569;
+    color: var(--gep-c-text-muted);
     font-weight: 600;
 }
 
 .purchase-enrolled strong {
-    color: #64748b;
+    color: var(--gep-c-text-muted);
 }
 
 /* Attempts Block */
 .purchase-attempts-block {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: var(--gep-c-surface-2);
+    border: 1px solid var(--gep-c-border);
     border-radius: 14px;
     padding: 14px 16px;
 }
@@ -333,25 +333,25 @@ function gep_purchase_launch_url( $p ) {
 .attempts-label {
     font-size: 10px;
     font-weight: 800;
-    color: #475569;
+    color: var(--gep-c-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .attempts-value {
     font-size: 12px;
-    color: #64748b;
+    color: var(--gep-c-text-muted);
     font-weight: 600;
 }
 
 .attempts-value strong {
-    color: #f1f5f9;
+    color: var(--gep-c-text);
     font-weight: 900;
     font-size: 14px;
 }
 
 .attempts-value strong.unlimited {
-    color: #34d399;
+    color: var(--gep-c-success);
     font-size: 13px;
 }
 
@@ -384,7 +384,7 @@ function gep_purchase_launch_url( $p ) {
     gap: 7px;
     font-size: 11px;
     font-weight: 700;
-    color: #475569;
+    color: var(--gep-c-text-muted);
 }
 
 .dot-muted { width: 7px; height: 7px; background: #64748b; border-radius: 50%; }
@@ -440,13 +440,13 @@ function gep_purchase_launch_url( $p ) {
 .gep-purchases-empty h3 {
     font-size: 22px;
     font-weight: 900;
-    color: #f1f5f9;
+    color: var(--gep-c-text);
     margin: 0 0 10px;
 }
 
 .gep-purchases-empty p {
     font-size: 14px;
-    color: #64748b;
+    color: var(--gep-c-text-muted);
     font-weight: 600;
     max-width: 400px;
     margin: 0 auto 30px;

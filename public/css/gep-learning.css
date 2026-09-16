@@ -1,0 +1,56 @@
+/* Course and live-class surfaces share the dashboard's light/dark palette. */
+#gep-page-wrapper .gep-learning-catalog { padding-bottom: 32px; color: var(--gep-c-text); }
+#gep-page-wrapper .gep-learning-header { padding: 28px; margin-bottom: 28px; background: var(--gep-c-surface); border: 1px solid var(--gep-c-border); border-radius: 16px; }
+#gep-page-wrapper .gep-learning-eyebrow { margin: 0 0 8px; color: var(--gep-c-info); font-size: 11px; font-weight: 700; letter-spacing: 1.2px; }
+#gep-page-wrapper .gep-learning-header h1 { font-size: clamp(26px, 2.6vw, 34px); line-height: 1.2; letter-spacing: -.8px; font-weight: 750; margin: 0 0 12px; }
+#gep-page-wrapper .gep-learning-header .hero-desc-premium { color: var(--gep-c-text-muted); font-size: 14px; line-height: 1.7; max-width: 650px; margin: 0; }
+#gep-page-wrapper .gep-learning-header .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+#gep-page-wrapper .gep-nav-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+#gep-page-wrapper .gep-nav-filters .filter-btn { min-height: 44px; padding: 10px 16px; border: 1px solid var(--gep-c-border-strong); border-radius: 8px; background: var(--gep-c-surface); color: var(--gep-c-text-muted); font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.5; cursor: pointer; box-shadow: none; }
+#gep-page-wrapper .gep-nav-filters .filter-btn:hover { background: var(--gep-c-surface-3); }
+#gep-page-wrapper .gep-course-filter-status { color: var(--gep-c-text-muted); font-size: 12px; margin: 12px 0 0; }
+#gep-page-wrapper .gep-course-filter-status:empty { display: none; }
+#gep-page-wrapper .gep-learning-catalog .gep-marketplace-premium { padding: 0; margin: 0; }
+#gep-page-wrapper .gep-learning-catalog .gep-premium-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(min(100%,280px),1fr)); gap: 20px; }
+#gep-page-wrapper .gep-learning-catalog .gep-card-elite { min-width: 0; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--gep-c-border); border-radius: 14px; background: var(--gep-c-surface); box-shadow: 0 2px 6px rgba(15,23,42,.035); }
+#gep-page-wrapper .gep-learning-catalog .gep-card-elite:hover { border-color: var(--gep-c-border-strong) !important; }
+#gep-page-wrapper .gep-learning-catalog .card-media { position: relative; height: 170px; overflow: hidden; background: var(--gep-c-surface-3); }
+#gep-page-wrapper .gep-learning-catalog .card-media > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+#gep-page-wrapper .gep-course-placeholder { display: grid; place-items: center; width: 100%; height: 100%; background: linear-gradient(135deg, var(--gep-c-surface-2), var(--gep-c-surface-3)); }
+#gep-page-wrapper .gep-course-placeholder .dashicons { width: 52px; height: 52px; font-size: 52px; color: var(--gep-c-info); }
+#gep-page-wrapper .gep-learning-catalog .tag-elite { position: absolute; top: 12px; right: 12px; background: var(--gep-c-surface); color: var(--gep-c-info); border: 1px solid var(--gep-c-border); border-radius: 6px; padding: 4px 8px; font-size: 10px; font-weight: 700; letter-spacing: .4px; }
+#gep-page-wrapper .gep-learning-catalog .card-body { display: flex; flex-direction: column; flex: 1; padding: 20px; }
+#gep-page-wrapper .gep-learning-catalog .instructor-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+#gep-page-wrapper .gep-learning-catalog .instructor-avatar { flex-shrink: 0; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: var(--gep-c-surface-3); color: var(--gep-c-text-muted); font-size: 17px; }
+#gep-page-wrapper .gep-learning-catalog .instructor-name { font-size: 12px; line-height: 1.5; font-weight: 500; overflow-wrap: anywhere; }
+#gep-page-wrapper .gep-learning-catalog :is(.card-title,.card-title-sm) { font-size: 18px; line-height: 1.5; font-weight: 700; color: var(--gep-c-text); margin: 0 0 20px; overflow-wrap: anywhere; }
+#gep-page-wrapper .gep-learning-catalog .card-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding: 16px 0 0; border-top: 1px solid var(--gep-c-border); border-radius: 0; }
+#gep-page-wrapper .gep-learning-catalog .price-elite { display: flex; align-items: baseline; gap: 3px; }
+#gep-page-wrapper .gep-learning-catalog .price-elite .currency { font-size: 14px; }
+#gep-page-wrapper .gep-learning-catalog .price-elite .amount { font-size: 24px; line-height: 1.3; font-weight: 750; }
+#gep-page-wrapper .gep-learning-catalog .btn-action-elite { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border: 1px solid transparent; border-radius: 8px; font-size: 13px; font-weight: 600; line-height: 1.5; text-decoration: none; background: var(--gep-c-accent) !important; color: var(--gep-c-accent-text) !important; box-shadow: none; }
+#gep-page-wrapper .gep-learning-header .btn-secondary { background: var(--gep-c-surface) !important; color: var(--gep-c-text) !important; border-color: var(--gep-c-border-strong); }
+#gep-page-wrapper .gep-learning-catalog .btn-action-elite:hover { filter: brightness(.96); }
+#gep-page-wrapper .gep-learning-catalog .section-title-wrap { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+#gep-page-wrapper .gep-learning-catalog .section-title { font-size: 19px; line-height: 1.4; font-weight: 700; margin: 0; }
+#gep-page-wrapper .gep-learning-catalog .line-decorator { height: 1px; flex: 1; background: var(--gep-c-border); }
+#gep-page-wrapper .gep-learning-catalog .gep-empty-state { padding: 40px 24px; background: var(--gep-c-surface); border: 1px dashed var(--gep-c-border-strong); border-radius: 14px; text-align: center; }
+#gep-page-wrapper .gep-learning-catalog .gep-empty-state .icon { font-size: 32px; margin-bottom: 12px; }
+#gep-page-wrapper .gep-learning-catalog .gep-empty-state h3 { margin: 0 0 8px; font-size: 18px; }
+#gep-page-wrapper .gep-learning-catalog .gep-empty-state p { margin: 0; font-size: 13px; line-height: 1.7; }
+#gep-page-wrapper .gep-learning-catalog .gep-class-media { height: 140px; display: grid; place-items: center; font-size: 38px; }
+#gep-page-wrapper .gep-learning-catalog .time-tag { color: var(--gep-c-info); font-size: 12px; line-height: 1.5; }
+#gep-page-wrapper .gep-learning-catalog .btn-link-action { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 12px; border: 1px solid var(--gep-c-border-strong); border-radius: 8px; color: var(--gep-c-info); background: var(--gep-c-surface-2); font-size: 12px; font-weight: 600; text-decoration: none; }
+#gep-page-wrapper .gep-learning-catalog .gep-live-now-banner { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 28px; padding: 28px; border: 1px solid var(--gep-c-border-strong); border-left: 4px solid var(--gep-c-danger); border-radius: 14px; background: var(--gep-c-surface); }
+#gep-page-wrapper .gep-learning-catalog .live-content { min-width: 0; }
+#gep-page-wrapper .gep-learning-catalog .live-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: .8px; color: var(--gep-c-danger); margin-bottom: 12px; }
+#gep-page-wrapper .gep-learning-catalog .live-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+#gep-page-wrapper .gep-learning-catalog .live-title { font-size: 24px; line-height: 1.4; margin: 0 0 8px; overflow-wrap: anywhere; }
+#gep-page-wrapper .gep-learning-catalog .live-meta { color: var(--gep-c-text-muted); font-size: 13px; line-height: 1.7; margin: 0; }
+#gep-page-wrapper .gep-learning-catalog :is(.pulse-ring,.live-bg-icon) { display: none; }
+@media (max-width: 600px) {
+    #gep-page-wrapper .gep-learning-header { padding: 20px; margin-bottom: 20px; }
+    #gep-page-wrapper .gep-learning-catalog .gep-premium-grid { grid-template-columns: 1fr; gap: 16px; }
+    #gep-page-wrapper .gep-learning-catalog .gep-live-now-banner { flex-direction: column; align-items: stretch; padding: 20px; }
+    #gep-page-wrapper .gep-learning-catalog .live-action .btn-action-elite { width: 100%; }
+}

@@ -191,12 +191,12 @@
                                         <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.01)'" onmouseout="this.style.background='transparent'">
                                             <td style="padding: 18px 24px; font-weight: 700; color: #fff;"><?php echo esc_html($paper['name']); ?></td>
                                             <td style="padding: 18px 24px; text-align: center;">
-                                                <span style="background: rgba(59,130,246,0.15); color: #60a5fa; padding: 4px 10px; border-radius: 100px; font-weight: 800; font-size: 12px;">
+                                                <span style="background: var(--gep-c-surface-3); color: var(--gep-c-info); padding: 4px 10px; border-radius: 100px; font-weight: 800; font-size: 12px;">
                                                     <?php echo $paper['count']; ?> Questions
                                                 </span>
                                             </td>
                                             <td style="padding: 18px 24px; text-align: right;">
-                                                <button type="button" class="gep-pyq-practice-btn btn-primary" data-type="year" data-target="<?php echo esc_attr($paper['name']); ?>" style="background: #3b82f6; color: #fff; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 13px; transition: all 0.3s;">
+                                                <button type="button" class="gep-pyq-practice-btn btn-primary" data-type="year" data-target="<?php echo esc_attr($paper['name']); ?>" style="background: var(--gep-c-accent); color: var(--gep-c-accent-text); border: none; padding: 10px 18px; min-height: 44px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 13px; transition: all 0.3s;">
                                                     📝 PYQ Test
                                                 </button>
                                             </td>

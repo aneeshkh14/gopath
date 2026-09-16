@@ -4,7 +4,23 @@ require_once ABSPATH.'wp-admin/includes/admin.php';
 function qa_expect($ok,$message){if(!$ok)throw new RuntimeException($message);}
 class QA_Redirect extends RuntimeException {}
 function qa_redirect($url){throw new QA_Redirect($url);}
-if (strpos($view,'course-')===0) {
+if ($view==='profile-structure') {
+    wp_set_current_user(1);$user_id=$student;
+    ob_start();include GEP_PLUGIN_DIR.'templates/dashboard/profile.php';$html=ob_get_clean();
+    qa_expect(strpos($html,'class="gep-account-role">Student</span>')!==false,'Admin preview incorrectly labels the student as an administrator.');
+    foreach(['personal','academic','security','telemetry'] as $tab) {
+        qa_expect(strpos($html,'id="profile-tab-'.$tab.'"')!==false && strpos($html,'aria-controls="tab-'.$tab.'"')!==false && strpos($html,'aria-labelledby="profile-tab-'.$tab.'"')!==false,'Profile tab and panel are not associated.');
+    }
+    qa_expect(substr_count($html,'role="tab"')===4 && substr_count($html,'role="tabpanel"')===4,'Profile sections are missing.');
+    qa_expect(strpos($html,'name="preferred_lang"')!==false && strpos($html,'name="student_goals[]"')!==false && strpos($html,'name="new_password"')!==false,'Profile redesign lost editable settings.');
+} elseif ($view==='learning-catalog') {
+    wp_set_current_user($student);
+    ob_start();include GEP_PLUGIN_DIR.'templates/dashboard/supercoaching.php';$html=ob_get_clean();
+    qa_expect(strpos($html,'<h1>SuperCoaching</h1>')!==false && strpos($html,'Fixture course')!==false,'Course catalogue lost its heading or courses.');
+    qa_expect(strpos($html,'gep-course-placeholder')!==false && strpos($html,'images.unsplash.com')===false,'Missing thumbnails should use the local visual fallback.');
+    qa_expect(strpos(html_entity_decode($html),'view=watch&id=901')!==false,'Enrolled course no longer links to its lessons.');
+    qa_expect(strpos($html,'aria-pressed="true"')!==false,'The initial course filter has no selection state.');
+} elseif (strpos($view,'course-')===0) {
     wp_set_current_user(1);
     $logic=new GEP_Admin_Courses();
     $_GET=['page'=>'gep-courses'];

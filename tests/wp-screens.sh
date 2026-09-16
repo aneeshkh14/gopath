@@ -32,8 +32,8 @@ php tests/wp-screens.php pass-concurrent pass seeded || failures=$((failures+1))
 for view in practice-lifecycle practice-retry practice-different random-resume random-validation concurrent-starts concurrent-saves submit-race admin-create-edit admin-invalid-ids admin-rollback admin-sections admin-draft admin-series payment-unavailable payment-free; do
     php tests/wp-screens.php customer "$view" seeded || failures=$((failures+1))
 done
-for view in course-edit course-invalid course-update course-missing course-permissions published-counts score-distribution practice-diagnostic guest-support guest-layout login-return registration-consent; do
+for view in profile-structure learning-catalog course-edit course-invalid course-update course-missing course-permissions published-counts score-distribution practice-diagnostic guest-support guest-layout login-return registration-consent; do
     php tests/wp-screens.php qa "$view" seeded || failures=$((failures+1))
 done
 if ((failures)); then echo "$failures WordPress rendering cases failed"; exit 1; fi
-echo '159 WordPress rendering and journey cases passed (plus fixture setup).'
+echo '161 WordPress rendering and journey cases passed (plus fixture setup).'

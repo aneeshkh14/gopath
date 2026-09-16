@@ -20,141 +20,60 @@ if ( empty( $first_name ) && ! empty( $user->display_name ) ) {
 ?>
 
 <div class="gep-profile-wrapper">
-    <div class="gep-profile-header">
+    <div class="gep-account-heading"><p class="gep-account-eyebrow">YOUR ACCOUNT</p><h1>Profile &amp; preferences</h1><p>Keep your details up to date and make GoPath work for you.</p></div>
+    <header class="gep-account-card gep-account-identity">
         <div class="gep-profile-avatar">
-            <?php echo get_avatar($user->ID, 120); ?>
-            <input type="file" id="gep-avatar-upload" style="display:none;" accept="image/*">
-            <button type="button" aria-label="Upload new profile photo" class="gep-avatar-edit" title="Upload New Photo" onclick="document.getElementById('gep-avatar-upload').click();">
-                <i class="dashicons dashicons-camera"></i>
-            </button>
+            <?php echo get_avatar( $user->ID, 96 ); ?>
+            <input type="file" id="gep-avatar-upload" hidden accept="image/jpeg,image/png,image/gif,image/webp">
+            <button type="button" class="gep-avatar-edit" aria-label="Upload new profile photo" title="Change photo" onclick="document.getElementById('gep-avatar-upload').click();"><span class="dashicons dashicons-camera" aria-hidden="true"></span></button>
         </div>
-        <div class="gep-profile-intro">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <h1 style="margin: 0; color: #fff;"><?php echo esc_html($user->display_name); ?></h1>
-                <?php if (current_user_can('manage_options')): ?>
-                    <span class="gep-tier-badge sovereign">SOVEREIGN ADMIN</span>
-                <?php else: ?>
-                    <span class="gep-tier-badge scholar">ELITE SCHOLAR</span>
-                <?php endif; ?>
-            </div>
-            <p style="margin-top: 5px; opacity: 0.8; color: #94a3b8;"><?php echo esc_html($user->user_email); ?></p>
-            <?php
-                $reg_year = date('y', strtotime($user->user_registered));
-                $enrollment_id = 'GP-' . $reg_year . '-' . str_pad($user->ID, 4, '0', STR_PAD_LEFT);
-            ?>
-            <div class="gep-neural-id" title="Your formal enrollment identity">
-                <span class="icon">🎓</span> ENROLLMENT ID: <code><?php echo esc_html($enrollment_id); ?></code>
-            </div>
-            <div class="gep-profile-badges">
-                <div class="gep-badge-item streak">
-                    <span class="icon">🔥</span>
-                    <span class="val"><?php echo $stats['streak']; ?> Day Streak</span>
-                </div>
-                <div class="gep-badge-item rank">
-                    <span class="icon">🏆</span>
-                    <span class="val">Global Rank: <?php echo is_numeric($stats['rank']) ? '#' . $stats['rank'] : 'Unranked'; ?></span>
-                </div>
-            </div>
+        <div class="gep-account-intro">
+            <div class="gep-account-name"><h2><?php echo esc_html( $user->display_name ); ?></h2><span class="gep-account-role"><?php echo user_can( $user, 'manage_options' ) ? 'Administrator' : 'Student'; ?></span></div>
+            <p class="gep-account-email"><?php echo esc_html( $user->user_email ); ?></p>
+            <?php $enrollment_id = 'GP-' . date( 'y', strtotime( $user->user_registered ) ) . '-' . str_pad( $user->ID, 4, '0', STR_PAD_LEFT ); ?>
+            <p class="gep-account-enrollment">Enrollment <code><?php echo esc_html( $enrollment_id ); ?></code></p>
         </div>
-    </div>
+        <dl class="gep-account-summary">
+            <div><dt>Study streak</dt><dd><?php echo absint( $stats['streak'] ); ?> <small><?php echo (int) $stats['streak'] === 1 ? 'day' : 'days'; ?></small></dd></div>
+            <div><dt>Tests completed</dt><dd><?php echo absint( $stats['total_attempts'] ); ?></dd></div>
+        </dl>
+    </header>
 
-    <div class="gep-profile-content">
-        <div class="gep-profile-sidebar">
-            <div class="gep-profile-completeness">
-                <div class="label-row">
-                    <span>Profile Completion</span>
-                    <span class="val"><?php echo $stats['completion']; ?>%</span>
-                </div>
-                <div class="gep-progress-bar">
-                    <div class="gep-progress-fill" style="width: <?php echo $stats['completion']; ?>%;"></div>
-                </div>
-                <p class="completeness-tip" style="color: #94a3b8;">Complete your academic details to reach 100%!</p>
+    <div class="gep-account-layout">
+        <aside class="gep-account-sidebar" aria-label="Account settings">
+            <div class="gep-account-card gep-account-progress">
+                <div class="gep-account-progress-heading"><strong>Profile completion</strong><span><?php echo absint( $stats['completion'] ); ?>%</span></div>
+                <progress max="100" value="<?php echo absint( $stats['completion'] ); ?>" aria-label="Profile completion"><?php echo absint( $stats['completion'] ); ?>%</progress>
+                <p>Add your personal and academic details to complete your profile.</p>
             </div>
-            <nav class="gep-profile-nav">
-                <a href="#personal" class="active" data-tab="personal">
-                    <span class="icon">👤</span> Personal Info
-                </a>
-                <a href="#academic" data-tab="academic">
-                    <span class="icon">🎓</span> Academic Details
-                </a>
-                <a href="#security" data-tab="security">
-                    <span class="icon">🛡️</span> Security & Password
-                </a>
-                <a href="#telemetry" data-tab="telemetry">
-                    <span class="icon">📈</span> Advanced Telemetry
-                </a>
+            <nav class="gep-profile-nav" role="tablist" aria-label="Profile sections" aria-orientation="vertical">
+                <?php foreach ( array( 'personal' => array( 'admin-users', 'Personal details' ), 'academic' => array( 'welcome-learn-more', 'Learning goals' ), 'security' => array( 'lock', 'Password & security' ), 'telemetry' => array( 'chart-bar', 'Learning activity' ) ) as $tab => $item ) : ?>
+                <a href="#<?php echo esc_attr( $tab ); ?>" id="profile-tab-<?php echo esc_attr( $tab ); ?>" data-tab="<?php echo esc_attr( $tab ); ?>" role="tab" aria-controls="tab-<?php echo esc_attr( $tab ); ?>" aria-selected="<?php echo $tab === 'personal' ? 'true' : 'false'; ?>" tabindex="<?php echo $tab === 'personal' ? '0' : '-1'; ?>" class="<?php echo $tab === 'personal' ? 'active' : ''; ?>"><span class="dashicons dashicons-<?php echo esc_attr( $item[0] ); ?>" aria-hidden="true"></span><?php echo esc_html( $item[1] ); ?></a>
+                <?php endforeach; ?>
             </nav>
+            <a href="<?php echo esc_url( wp_logout_url( gep_get_url( 'login' ) ) ); ?>" class="gep-account-logout"><span class="dashicons dashicons-exit" aria-hidden="true"></span>Sign out</a>
+        </aside>
 
-            <div class="gep-profile-sidebar-footer" style="margin-top: auto; padding-top: 30px;">
-                <a href="<?php echo wp_logout_url(gep_get_url('login')); ?>" class="gep-btn-logout-alt">
-                    <span class="dashicons dashicons-logout"></span> Logout Account
-                </a>
-            </div>
-        </div>
-
-        <div class="gep-profile-main">
+        <div class="gep-account-card gep-account-main">
             <form id="gep-profile-update-form" class="gep-profile-form">
-                <?php wp_nonce_field('gep_profile_update', 'gep_profile_nonce'); ?>
-                <?php if (isset($_GET['uid'])): ?>
-                    <input type="hidden" name="uid" value="<?php echo absint($_GET['uid']); ?>">
-                <?php endif; ?>
-                
-                <!-- Personal Section -->
-                <section id="tab-personal" class="gep-form-section active">
-                    <div class="gep-section-header-compact">
-                        <h3 style="color: #fff;">Personal Information</h3>
-                        <p style="color: #94a3b8;">Manage your public identity and contact details.</p>
-                    </div>
-                    <div class="gep-grid-2">
-                        <div class="gep-form-group">
-                            <label for="gep-profile-field-0" style="color: #fff;">First Name</label>
-                            <input id="gep-profile-field-0" type="text" name="first_name" class="gep-input" value="<?php echo esc_attr($first_name); ?>" required placeholder="e.g. Ugant">
-                        </div>
-                        <div class="gep-form-group">
-                            <label for="gep-profile-field-1" style="color: #fff;">Last Name</label>
-                            <input id="gep-profile-field-1" type="text" name="last_name" class="gep-input" value="<?php echo esc_attr($last_name); ?>" required placeholder="e.g. Kumar">
-                        </div>
-                    </div>
-                    <div class="gep-grid-2">
-                        <div class="gep-form-group">
-                            <label for="gep-profile-field-2">Phone Number</label>
-                            <input id="gep-profile-field-2" type="tel" name="phone" class="gep-input" value="<?php echo esc_attr($phone); ?>" placeholder="+91 00000 00000">
-                        </div>
-                        <div class="gep-form-group">
-                            <label for="gep-profile-field-3">Email Address</label>
-                            <div class="gep-input-readonly-wrapper">
-                                <input id="gep-profile-field-3" type="email" value="<?php echo esc_attr($user->user_email); ?>" disabled class="gep-input gep-input-readonly">
-                                <span class="gep-lock-icon">🔒</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="gep-grid-2">
-                        <div class="gep-form-group">
-                            <label for="gep-profile-field-4">Bio / Description</label>
-                            <textarea id="gep-profile-field-4" name="bio" class="gep-input" rows="3" placeholder="Tell us a bit about yourself..."><?php echo esc_textarea($bio); ?></textarea>
-                        </div>
-                        <div class="gep-form-group">
-                            <label>Preferred Language</label>
-                            <?php $pref_lang = get_user_meta($user->ID, 'gep_preferred_lang', true) ?: 'en'; ?>
-                            <select name="preferred_lang" class="gep-input">
-                                <option value="en" <?php selected($pref_lang, 'en'); ?>>English</option>
-                                <option value="hi" <?php selected($pref_lang, 'hi'); ?>>Hindi (हिन्दी)</option>
-                            </select>
-                            <small class="gep-info-text">This sets the default language for exams and instructions.</small>
-                        </div>
+                <?php wp_nonce_field( 'gep_profile_update', 'gep_profile_nonce' ); ?>
+                <?php if ( isset( $_GET['uid'] ) ) : ?><input type="hidden" name="uid" value="<?php echo absint( $_GET['uid'] ); ?>"><?php endif; ?>
+                <section id="tab-personal" class="gep-form-section gep-account-panel active" role="tabpanel" aria-labelledby="profile-tab-personal">
+                    <div class="gep-account-section-heading"><h2>Personal details</h2><p>Your name, contact information and language preferences.</p></div>
+                    <div class="gep-account-fields">
+                        <div class="gep-form-group"><label for="gep-profile-field-0">First name <span class="gep-field-required" aria-hidden="true">*</span></label><input id="gep-profile-field-0" name="first_name" class="gep-input" type="text" autocomplete="given-name" value="<?php echo esc_attr( $first_name ); ?>" required></div>
+                        <div class="gep-form-group"><label for="gep-profile-field-1">Last name</label><input id="gep-profile-field-1" name="last_name" class="gep-input" type="text" autocomplete="family-name" value="<?php echo esc_attr( $last_name ); ?>"></div>
+                        <div class="gep-form-group"><label for="gep-profile-field-2">Phone number</label><input id="gep-profile-field-2" type="tel" name="phone" autocomplete="tel" class="gep-input" value="<?php echo esc_attr( $phone ); ?>" placeholder="+91 00000 00000"></div>
+                        <div class="gep-form-group"><label for="gep-profile-field-3">Email address <span class="gep-field-hint">Read only</span></label><input id="gep-profile-field-3" type="email" value="<?php echo esc_attr( $user->user_email ); ?>" readonly class="gep-input" aria-describedby="gep-email-help"><small id="gep-email-help" class="gep-info-text">Contact support if you need to change your email.</small></div>
+                        <div class="gep-form-group gep-account-field-wide"><label for="gep-profile-field-4">About you <span class="gep-field-hint">Optional</span></label><textarea id="gep-profile-field-4" name="bio" class="gep-input" rows="3" placeholder="A little about your background or what you’re working towards…"><?php echo esc_textarea( $bio ); ?></textarea></div>
+                        <div class="gep-form-group gep-account-field-wide"><label for="gep-profile-language">Preferred language</label><?php $pref_lang = get_user_meta( $user->ID, 'gep_preferred_lang', true ) ?: 'en'; ?><select id="gep-profile-language" name="preferred_lang" class="gep-input" aria-describedby="gep-language-help"><option value="en" <?php selected( $pref_lang, 'en' ); ?>>English</option><option value="hi" <?php selected( $pref_lang, 'hi' ); ?>>Hindi (हिन्दी)</option></select><small id="gep-language-help" class="gep-info-text">Used by default for exams and instructions.</small></div>
                     </div>
                 </section>
-
-                <!-- Academic Section -->
-                <section id="tab-academic" class="gep-form-section">
-                    <div class="gep-section-header-compact">
-                        <h3>Academic Details</h3>
-                        <p>Help us personalize your learning tracks.</p>
-                    </div>
-                    <div class="gep-grid-2">
-                        <div class="gep-form-group" style="grid-column: 1 / -1;">
-                            <label>Exam Goals (Segments)</label>
-                            <?php 
+                <section id="tab-academic" class="gep-form-section gep-account-panel" role="tabpanel" aria-labelledby="profile-tab-academic">
+                    <div class="gep-account-section-heading"><h2>Learning goals</h2><p>Choose your subjects and tell us about your academic background.</p></div>
+                    <div class="gep-account-fields">
+                        <fieldset class="gep-account-field-wide gep-account-goals"><legend>Subjects you’re preparing for</legend>
+                            <?php
                                 global $wpdb;
                                 $active_cat_ids = $wpdb->get_col( "
                                     SELECT DISTINCT category_id FROM {$wpdb->prefix}gep_tests WHERE status = 'publish' AND category_id > 0
@@ -170,97 +89,33 @@ if ( empty( $first_name ) && ! empty( $user->display_name ) ) {
                                 }
                                 $student_goals = get_user_meta($user->ID, 'gep_student_goals', true);
                                 if ( !is_array($student_goals) ) $student_goals = array();
+
                             ?>
-                            <div class="gep-goals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">
-                                <?php foreach ( $categories as $cat ) : ?>
-                                <label class="gep-goal-label" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; cursor: pointer; transition: all 0.2s;">
-                                    <input type="checkbox" name="student_goals[]" value="<?php echo esc_attr($cat->id); ?>" <?php checked(in_array($cat->id, $student_goals)); ?> style="width: 18px; height: 18px; accent-color: #6366f1;">
-                                    <span style="color: #fff; font-weight: 600; font-size: 14px;"><?php echo esc_html($cat->name); ?></span>
-                                </label>
-                                <?php endforeach; ?>
+                            <div class="gep-account-goal-grid">
+                                <?php foreach ( $categories as $cat ) : ?><label class="gep-account-goal"><input type="checkbox" name="student_goals[]" value="<?php echo esc_attr( $cat->id ); ?>" <?php checked( in_array( $cat->id, $student_goals ) ); ?>><span><?php echo esc_html( $cat->name ); ?></span></label><?php endforeach; ?>
+                                <?php if ( ! $categories ) : ?><p class="gep-info-text">Subjects will appear here when courses or tests are available.</p><?php endif; ?>
                             </div>
-                            <small class="gep-info-text" style="display: block; margin-top: 10px; color: #94a3b8;">Select your target segments to personalize your dashboard. Only content from these segments will be shown.</small>
-                        </div>
-                        <div class="gep-form-group">
-                            <label for="gep-profile-field-5">Highest Qualification</label>
-                            <input id="gep-profile-field-5" type="text" name="qualification" class="gep-input" value="<?php echo esc_attr($qualification); ?>" placeholder="e.g. B.Tech, MBA, PhD">
-                        </div>
+                            <p class="gep-info-text">Your dashboard will show content from these subjects. Leave all unselected to see everything.</p>
+                        </fieldset>
+                        <div class="gep-form-group gep-account-field-wide"><label for="gep-profile-field-5">Highest qualification</label><input id="gep-profile-field-5" type="text" name="qualification" class="gep-input" value="<?php echo esc_attr( $qualification ); ?>" placeholder="For example, B.Tech or MBA"></div>
                     </div>
                 </section>
-
-                <!-- Security Section -->
-                <section id="tab-security" class="gep-form-section">
-                    <div class="gep-section-header-compact">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div>
-                                <h3>Security & Password</h3>
-                                <p>Protect your account with a strong password.</p>
-                            </div>
-                            <div class="gep-security-shield active">
-                                <span class="shield-icon">🛡️</span>
-                                <span class="shield-text">SHIELD ACTIVE</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="gep-form-group" style="max-width: 400px; position: relative;">
-                        <label for="gep-new-password">New Password</label>
-                        <div style="position: relative;">
-                            <input type="password" name="new_password" id="gep-new-password" minlength="8" autocomplete="new-password" class="gep-input" placeholder="Min. 8 characters">
-                            <button type="button" aria-label="Show password" aria-pressed="false" class="gep-password-toggle" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.6;"><i class="dashicons dashicons-visibility"></i></button>
-                        </div>
-                        <small class="gep-info-text">Leave blank to keep your current password.</small>
-                    </div>
+                <section id="tab-security" class="gep-form-section gep-account-panel" role="tabpanel" aria-labelledby="profile-tab-security">
+                    <div class="gep-account-section-heading"><h2>Password &amp; security</h2><p>Choose a unique password to keep your account secure.</p></div>
+                    <div class="gep-form-group"><label for="gep-new-password">New password</label><div class="gep-account-password"><input type="password" name="new_password" id="gep-new-password" minlength="8" autocomplete="new-password" class="gep-input" aria-describedby="gep-password-help" placeholder="At least 8 characters"><button type="button" class="gep-password-toggle" aria-label="Show password" aria-pressed="false"><i class="dashicons dashicons-visibility" aria-hidden="true"></i></button></div><small id="gep-password-help" class="gep-info-text">Leave this blank to keep your current password.</small></div>
                 </section>
-
-                <!-- Telemetry Section -->
-                <section id="tab-telemetry" class="gep-form-section">
-                    <div class="gep-section-header-compact">
-                        <h3>Advanced Telemetry</h3>
-                        <p>Analyze your cohort percentile rank and topic accuracy performance.</p>
+                <section id="tab-telemetry" class="gep-form-section gep-account-panel" role="tabpanel" aria-labelledby="profile-tab-telemetry">
+                    <div class="gep-account-section-heading"><h2>Learning activity</h2><p>Review your progress and accuracy by subject.</p></div>
+                    <div class="gep-account-activity">
+                        <div class="gep-account-stat"><span>Platform percentile</span><strong><?php echo esc_html( $stats['percentile'] ); ?><small>%</small></strong><p><?php echo $stats['total_attempts'] ? 'Based on completed tests across the platform.' : 'Complete a test to start tracking your progress.'; ?></p></div>
+                        <div class="gep-account-stat"><span>Overall rank</span><strong><?php echo is_numeric( $stats['rank'] ) ? '#' . absint( $stats['rank'] ) : '—'; ?></strong><p><?php echo absint( $stats['total_attempts'] ); ?> completed tests</p></div>
                     </div>
-                    <div class="gep-advanced-telemetry-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
-                        <!-- Percentile Gauge -->
-                        <div class="gep-glass" style="padding: 30px; border-radius: 24px; text-align: center; border: 1px solid rgba(255,255,255,0.08); background: linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(2, 6, 23, 0.9)); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);">
-                            <div style="font-size: 11px; font-weight: 800; color: #94a3b8; letter-spacing: 1.5px; margin-bottom: 25px;">GLOBAL PERCENTILE</div>
-                            <div style="position: relative; width: 160px; height: 160px; margin: 0 auto; border-radius: 50%; background: conic-gradient(#0ea5e9 <?php echo $stats['percentile']; ?>%, #1e293b <?php echo $stats['percentile']; ?>%); box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);">
-                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 140px; background: #020617; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);">
-                                    <span style="font-size: 42px; font-weight: 900; color: #fff; line-height: 1; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(14,165,233,0.3);"><?php echo $stats['percentile']; ?></span>
-                                    <span style="font-size: 14px; color: #38bdf8; font-weight: 800; letter-spacing: 0.5px;">%ile</span>
-                                </div>
-                            </div>
-                            <p style="margin: 25px 0 0; font-size: 13px; color: #94a3b8; line-height: 1.6;">You are ahead of <strong style="color: #fff;"><?php echo $stats['percentile']; ?>%</strong> of candidates across the platform.</p>
-                        </div>
-                        <!-- Topic Radar -->
-                        <div class="gep-glass" style="padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); background: linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(2, 6, 23, 0.9)); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);">
-                            <div style="font-size: 11px; font-weight: 800; color: #94a3b8; letter-spacing: 1.5px; margin-bottom: 25px;">TOPIC MASTERY (ACCURACY)</div>
-                            <div style="display: flex; flex-direction: column; gap: 15px;">
-                                <?php if ( ! empty($stats['topic_performance']) ) : ?>
-                                    <?php foreach($stats['topic_performance'] as $topic) : ?>
-                                    <div>
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; font-weight: 600;">
-                                            <span style="color: #fff;"><?php echo esc_html($topic['topic']); ?></span>
-                                            <span style="color: <?php echo $topic['accuracy'] > 75 ? '#10b981' : ($topic['accuracy'] > 50 ? '#eab308' : '#ef4444'); ?>;"><?php echo $topic['accuracy']; ?>%</span>
-                                        </div>
-                                        <div style="height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden;">
-                                            <div style="height: 100%; width: <?php echo $topic['accuracy']; ?>%; background: <?php echo $topic['accuracy'] > 75 ? 'linear-gradient(90deg, #059669, #10b981)' : ($topic['accuracy'] > 50 ? 'linear-gradient(90deg, #ca8a04, #eab308)' : 'linear-gradient(90deg, #dc2626, #ef4444)'); ?>; border-radius: 4px;"></div>
-                                        </div>
-                                    </div>
-                                    <?php endforeach; ?>
-                                <?php else : ?>
-                                    <div style="text-align: center; color: #94a3b8; font-size: 14px; padding: 40px 0;">No topic performance data available. Complete an exam to view analysis.</div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
+                    <h3 class="gep-account-subheading">Subject accuracy</h3>
+                    <?php if ( ! empty( $stats['topic_performance'] ) ) : ?>
+                    <div class="gep-account-topics"><?php foreach ( $stats['topic_performance'] as $topic ) : ?><div><div class="gep-account-topic-label"><span><?php echo esc_html( $topic['topic'] ); ?></span><strong><?php echo esc_html( $topic['accuracy'] ); ?>%</strong></div><progress max="100" value="<?php echo esc_attr( $topic['accuracy'] ); ?>" aria-label="<?php echo esc_attr( $topic['topic'] . ' accuracy' ); ?>"><?php echo esc_html( $topic['accuracy'] ); ?>%</progress></div><?php endforeach; ?></div>
+                    <?php else : ?><p class="gep-account-empty">Complete an exam to see your accuracy for each subject.</p><?php endif; ?>
                 </section>
-
-                <div class="gep-form-actions">
-                    <button type="submit" class="gep-btn gep-btn-primary gep-btn-lg">
-                        <span class="gep-btn-text">Save All Changes</span>
-                        <span class="gep-spinner" style="display:none;"></span>
-                    </button>
-                    <div id="gep-profile-msg" role="status" style="margin-top: 15px; display: none;"></div>
-                </div>
+                <div class="gep-account-actions"><p class="gep-info-text">Changes apply to your GoPath account.</p><button type="submit" class="gep-btn gep-btn-primary"><span class="gep-btn-text">Save changes</span><span class="gep-spinner" style="display:none"></span></button><div id="gep-profile-msg" role="status" style="display:none"></div></div>
             </form>
         </div>
     </div>
@@ -288,12 +143,23 @@ jQuery(document).ready(function($) {
         var tabId = $(this).data('tab');
         
         // Update nav
-        $('.gep-profile-nav a').removeClass('active');
-        $(this).addClass('active');
+        $('.gep-profile-nav a').removeClass('active').attr({'aria-selected':'false',tabindex:'-1'});
+        $(this).addClass('active').attr({'aria-selected':'true',tabindex:'0'});
         
         // Update sections
         $('.gep-form-section').removeClass('active');
         $('#tab-' + tabId).addClass('active');
+        $('.gep-account-actions').toggle(tabId !== 'telemetry');
+    });
+
+    $('.gep-profile-nav a').on('keydown', function(e) {
+        var tabs = $('.gep-profile-nav a'), index = tabs.index(this), next;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (index + 1) % tabs.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (index - 1 + tabs.length) % tabs.length;
+        else if (e.key === 'Home') next = 0;
+        else if (e.key === 'End') next = tabs.length - 1;
+        else return;
+        e.preventDefault(); tabs.eq(next).trigger('click').trigger('focus');
     });
 
     document.getElementById('gep-profile-update-form').addEventListener('invalid', function(e) {
@@ -311,7 +177,7 @@ jQuery(document).ready(function($) {
 
         if (btn.prop('disabled')) return;
         btn.prop('disabled', true);
-        btnText.text('Saving Changes...');
+        btnText.text('Saving…');
         spinner.show();
         msgBox.hide();
 
@@ -330,13 +196,13 @@ jQuery(document).ready(function($) {
                 } else {
                     msgBox.empty().append($('<div class="gep-alert gep-alert-danger">').text(response && typeof response.data === 'string' ? response.data : response && response.data && response.data.message || 'Failed to update profile.')).fadeIn();
                     btn.prop('disabled', false);
-                    btnText.text('Save All Changes');
+                    btnText.text('Save changes');
                 }
             },
             error: function() {
                 msgBox.html('<div class="gep-alert gep-alert-danger">A server error occurred. Please try again.</div>').fadeIn();
                 btn.prop('disabled', false);
-                btnText.text('Save All Changes');
+                btnText.text('Save changes');
             },
             complete: function() {
                 spinner.hide();
