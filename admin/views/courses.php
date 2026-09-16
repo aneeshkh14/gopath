@@ -200,7 +200,7 @@ jQuery(document).ready(function($) {
         var subDropdown = $('#gep_course_subcategory_id');
         var submit = $('#gep-course-form button[type="submit"]');
         subDropdown.empty().append($('<option>').val('0').text('Select Subcategory'));
-        if (!catId || catId === '0') { submit.prop('disabled', false); return; }
+        if (!catId || catId === '0') { subDropdown.prop('disabled', false); submit.prop('disabled', false); return; }
         subDropdown.prop('disabled', true);
         submit.prop('disabled', true);
         $.post(ajaxurl, {
