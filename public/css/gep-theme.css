@@ -957,11 +957,9 @@ html body {
 :root[data-gep-theme="dark"] [style*="color: #1e40af"],
 :root[data-gep-theme="dark"] [style*="color: #4f46e5"] { color: var(--gep-c-info) !important; }
 
-/* Checkout cards that are still sheets of white under the dark theme. */
+/* Paint checkout cards, not the header, grid or secondary-column wrappers. */
 :root[data-gep-theme="dark"] .gep-checkout-card,
-:root[data-gep-theme="dark"] .gep-checkout-content > div,
-:root[data-gep-theme="dark"] .order-details-card,
-:root[data-gep-theme="dark"] .gep-checkout-grid > div {
+:root[data-gep-theme="dark"] .order-details-card {
     background-color: var(--gep-c-surface) !important;
     border-color: var(--gep-c-border) !important;
 }

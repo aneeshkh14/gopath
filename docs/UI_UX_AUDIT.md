@@ -252,3 +252,13 @@ Responsive stylesheet checks do not constitute physical-device screenshots. Live
 ### Live verification refinements — v2.0.15
 
 After v2.0.14 passed all 358 checks and was installed, live screenshots confirmed the profile contrast and spacing improvements in both themes. They also exposed the portal's global `span` font reset overriding Dashicons, an unnecessary card surface/shadow on course-grid containers, and a legacy white rank-estimator card behind dark result text. Preserve the icon font, explicitly load its stylesheet dependency, remove the container from the card rule, soften learning-card shadows, and give the rank card and generic form labels semantic colors. The existing contrast tests now include the actual rank-card surface and form labels; a new check reproduces the icon-font conflict. Expected suite: **149 frontend + 44 PHP + 5 MySQL + 161 WordPress = 359 checks**.
+
+### Checkout theme correction — v2.0.16
+
+The reported course-checkout screenshot was reproduced while signed in. Translucent white information cards retained dark-theme pale text, measuring only 1.14:1 contrast. Broad dark-theme selectors also painted the header, grid and secondary-column wrappers, while the heading, total and payment button used hardcoded colors.
+
+- Use shared surface/text/accent pairs throughout the actual `gep-sovereign-checkout-wrap` template. Remove background painting from layout wrappers and replace the oversized hero and card spacing with the portal's compact layout.
+- Make the total, coupon label/placeholder/status, payment action and attempt packages readable in both themes. Preserve payment IDs, tier values, coupon behavior and verification/recovery logic. Group attempt choices with a fieldset and legend.
+- Keep the order summary before secondary information on small screens. Allow grid columns, long titles and coupon inputs to shrink; wrap totals/footer content and stack coupon controls on phones. Controls have at least 44px touch targets.
+
+Ten new frontend checks use actual template elements, the portal styles and selector specificity, including shorthand/longhand background precedence and translucent background compositing. They check both palettes, selected tiers, placeholder contrast and responsive rules at 320, 390, 600, 768, 820, 1024, 1366 and 1920 pixels. Local validation: **159 frontend checks passed** and PHP/JavaScript syntax parsed successfully. Expected full CI: **159 frontend + 44 PHP + 5 MySQL + 161 WordPress = 369 checks**; the PR records the actual result. Responsive rule checks are not physical-device testing. Live verification does not complete a payment.

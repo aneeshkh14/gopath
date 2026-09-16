@@ -11,13 +11,11 @@ $checkout_price = !empty($item->is_free) ? 0 : $item->price;
 ?>
 
 <div class="gep-sovereign-checkout-wrap">
-    <div class="checkout-glow-bg"></div>
-    
     <div class="gep-checkout-container">
         <div class="gep-checkout-content">
             <div class="gep-checkout-header">
                 <div class="header-badge">SECURE CHECKOUT</div>
-                <h1>Complete Your <span class="gep-text-gradient-primary">Enrollment</span></h1>
+                <h1>Complete your <span>enrollment</span></h1>
                 <p>Review your selection and payment details before enrolling.</p>
                 <?php if ($item_type === 'pass') : ?><p>Renewing an active pass? Your remaining time is kept, and the new duration is added after it.</p><?php endif; ?>
             </div>
@@ -26,7 +24,7 @@ $checkout_price = !empty($item->is_free) ? 0 : $item->price;
                 <!-- Order Summary Card -->
                 <div class="gep-checkout-card order-details-card">
                     <div class="card-header">
-                        <h3>Order Summary</h3>
+                        <h2>Order Summary</h2>
                         <span class="item-count">1 Item</span>
                     </div>
                     
@@ -34,7 +32,7 @@ $checkout_price = !empty($item->is_free) ? 0 : $item->price;
                         <div class="item-icon"><?php echo $item_type === 'course' ? '🎓' : '📝'; ?></div>
                         <div class="item-info">
                             <span class="item-type"><?php echo strtoupper($item_type); ?></span>
-                            <h4 class="item-title"><?php echo esc_html($item->title); ?></h4>
+                            <h3 class="item-title"><?php echo esc_html($item->title); ?></h3>
                         </div>
                     </div>
 
@@ -43,20 +41,20 @@ $checkout_price = !empty($item->is_free) ? 0 : $item->price;
                             $trans = !empty($item->translated_data) ? json_decode($item->translated_data, true) : array();
                             $attempt_pricing = isset($trans['attempt_pricing']) ? $trans['attempt_pricing'] : array();
                         ?>
-                            <div class="gep-checkout-pricing-tiers" style="margin-bottom: 25px;">
-                                <h4 style="margin: 0 0 12px; font-size: 14px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px;">Select Attempts Package</h4>
-                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <fieldset class="gep-checkout-pricing-tiers">
+                                <legend>Select attempts package</legend>
+                                <div class="gep-checkout-tiers">
                                     <?php foreach ( $attempt_pricing as $idx => $tier ) : ?>
-                                        <label class="gep-tier-label-wrap" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; cursor: pointer; transition: all 0.3s; font-weight: 700; color: #334155;">
-                                            <div style="display: flex; align-items: center; gap: 12px;">
-                                                <input type="radio" name="selected_attempts_tier" value="<?php echo esc_attr($tier['attempts']); ?>" data-price="<?php echo esc_attr($tier['price']); ?>" <?php checked($idx, 0); ?> style="accent-color: #2563eb; width: 18px; height: 18px;">
-                                                <span style="font-size: 15px; font-weight: 800; color: #0f172a;"><?php echo esc_html($tier['attempts']); ?> <?php echo $tier['attempts'] == 1 ? 'Attempt' : 'Attempts'; ?></span>
-                                            </div>
-                                            <span style="font-size: 18px; font-weight: 950; color: #2563eb;">₹<?php echo number_format($tier['price'], 2); ?></span>
+                                        <label class="gep-tier-label-wrap">
+                                            <span class="gep-tier-choice">
+                                                <input type="radio" name="selected_attempts_tier" value="<?php echo esc_attr($tier['attempts']); ?>" data-price="<?php echo esc_attr($tier['price']); ?>" <?php checked($idx, 0); ?>>
+                                                <span><?php echo esc_html($tier['attempts']); ?> <?php echo $tier['attempts'] == 1 ? 'Attempt' : 'Attempts'; ?></span>
+                                            </span>
+                                            <span class="gep-tier-price">₹<?php echo number_format($tier['price'], 2); ?></span>
                                         </label>
                                     <?php endforeach; ?>
                                 </div>
-                            </div>
+                            </fieldset>
                         <?php else : ?>
                             <div class="summary-row">
                                 <span class="label">Original Price</span>
@@ -65,8 +63,9 @@ $checkout_price = !empty($item->is_free) ? 0 : $item->price;
                         <?php endif; ?>
                         
                         <div class="gep-coupon-section-modern">
+                            <label class="gep-coupon-label" for="gep-coupon-code">Coupon code <span>(optional)</span></label>
                             <div class="input-wrap">
-                                <input type="text" id="gep-coupon-code" aria-label="Coupon code" aria-describedby="gep-coupon-status" placeholder="HAVE A COUPON?">
+                                <input type="text" id="gep-coupon-code" aria-label="Coupon code" aria-describedby="gep-coupon-status" placeholder="Enter coupon code" autocomplete="off" autocapitalize="characters" spellcheck="false">
                                 <button type="button" id="gep-apply-coupon">APPLY</button>
                             </div>
                             <div id="gep-coupon-status" role="status" aria-live="polite"></div>
@@ -109,21 +108,21 @@ $checkout_price = !empty($item->is_free) ? 0 : $item->price;
                     <div class="info-item-glass">
                         <div class="info-icon">⚡</div>
                         <div class="info-text">
-                            <h5>Instant Access</h5>
-                            <p>Get immediate access to all content after payment.</p>
+                            <h2>Instant Access</h2>
+                            <p>Your selection becomes available once payment is confirmed.</p>
                         </div>
                     </div>
                     <div class="info-item-glass">
                         <div class="info-icon">💎</div>
                         <div class="info-text">
-                            <h5>Review Your Selection</h5>
+                            <h2>Review Your Selection</h2>
                             <p>Check the selected item and price before completing payment.</p>
                         </div>
                     </div>
                     <div class="info-item-glass">
                         <div class="info-icon">🤝</div>
                         <div class="info-text">
-                            <h5>Help &amp; Support</h5>
+                            <h2>Help &amp; Support</h2>
                             <p>Use the dashboard support form for questions about your purchase.</p>
                         </div>
                     </div>
@@ -134,359 +133,253 @@ $checkout_price = !empty($item->is_free) ? 0 : $item->price;
 </div>
 
 <style>
+/* Keep checkout surfaces and text on the same palette in both themes. */
 .gep-sovereign-checkout-wrap {
-    position: relative;
-    background: var(--gep-c-surface-2);
-    min-height: 100vh;
-    padding: 80px 20px;
-    overflow: hidden;
-    font-family: 'Inter', sans-serif;
+    padding: 8px 0 24px;
+    color: var(--gep-c-text);
+    background: transparent;
 }
-
-.checkout-glow-bg {
-    position: absolute;
-    top: -20%;
-    right: -10%;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(37, 99, 235, 0.05) 0%, transparent 70%);
-    filter: blur(80px);
-    z-index: 1;
-}
-
-.gep-checkout-container {
-    position: relative;
-    z-index: 5;
+.gep-sovereign-checkout-wrap .gep-checkout-container {
     max-width: 1100px;
     margin: 0 auto;
 }
-
-.gep-checkout-header {
-    text-align: center;
-    margin-bottom: 60px;
-}
-
-.header-badge {
-    display: inline-block;
-    padding: 6px 14px;
-    background: #e0f2fe;
-    color: #0369a1;
-    border-radius: 50px;
+.gep-sovereign-checkout-wrap .gep-checkout-header { margin-bottom: 28px; }
+.gep-sovereign-checkout-wrap .header-badge {
+    display: inline-flex;
+    padding: 5px 10px;
+    margin-bottom: 12px;
+    background: var(--gep-c-surface-3);
+    color: var(--gep-c-info);
+    border: 1px solid var(--gep-c-border-strong);
+    border-radius: 6px;
     font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    margin-bottom: 20px;
+    font-weight: 700;
+    letter-spacing: .8px;
 }
-
-.gep-checkout-header h1 {
-    font-size: 48px;
-    font-weight: 950;
+.gep-sovereign-checkout-wrap .gep-checkout-header h1 {
+    margin: 0 0 10px;
     color: var(--gep-c-text);
-    letter-spacing: -2px;
-    margin-bottom: 15px;
+    font-size: clamp(26px, 3vw, 34px);
+    font-weight: 750;
+    letter-spacing: -.7px;
+    line-height: 1.25;
 }
-
-.gep-checkout-header p {
+.gep-sovereign-checkout-wrap .gep-checkout-header h1 span { color: var(--gep-c-info); }
+.gep-sovereign-checkout-wrap .gep-checkout-header p {
+    margin: 6px 0 0;
     color: var(--gep-c-text-muted);
-    font-size: 18px;
-    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.6;
 }
-
-.gep-checkout-grid {
+.gep-sovereign-checkout-wrap .gep-checkout-grid {
     display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-    gap: 40px;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 24px;
     align-items: start;
 }
-
-.gep-checkout-card {
+.gep-sovereign-checkout-wrap .gep-checkout-grid > div,
+.gep-sovereign-checkout-wrap .item-info,
+.gep-sovereign-checkout-wrap .info-text { min-width: 0; }
+.gep-sovereign-checkout-wrap .gep-checkout-card,
+.gep-sovereign-checkout-wrap .info-item-glass {
     background: var(--gep-c-surface);
-    border-radius: 32px;
-    border: 1px solid rgba(0,0,0,0.05);
-    padding: 40px;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.03);
+    border: 1px solid var(--gep-c-border-strong);
+    border-radius: 16px;
 }
-
-.card-header {
+.gep-sovereign-checkout-wrap .gep-checkout-card { padding: 28px; }
+.gep-sovereign-checkout-wrap .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    gap: 12px;
+    margin-bottom: 24px;
 }
-
-.card-header h3 {
-    font-size: 20px;
-    font-weight: 800;
+.gep-sovereign-checkout-wrap .card-header h2 {
+    margin: 0;
     color: var(--gep-c-text);
-}
-
-.item-count {
-    font-size: 12px;
+    font-size: 20px;
     font-weight: 700;
+}
+.gep-sovereign-checkout-wrap .item-count {
+    flex-shrink: 0;
+    padding: 4px 8px;
     background: var(--gep-c-surface-3);
-    padding: 4px 10px;
-    border-radius: 8px;
     color: var(--gep-c-text-muted);
+    border-radius: 6px;
+    font-size: 12px;
 }
-
-.item-preview {
+.gep-sovereign-checkout-wrap .item-preview {
     display: flex;
-    gap: 20px;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 18px;
     background: var(--gep-c-surface-2);
-    padding: 20px;
-    border-radius: 20px;
-    margin-bottom: 30px;
+    border-radius: 12px;
 }
-
-.item-icon {
-    width: 60px;
-    height: 60px;
-    background: var(--gep-c-surface);
-    border-radius: 16px;
+.gep-sovereign-checkout-wrap .item-icon,
+.gep-sovereign-checkout-wrap .info-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 30px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    background: var(--gep-c-surface-3);
+    border-radius: 10px;
+    font-size: 22px;
 }
-
-.item-info .item-type {
-    font-size: 10px;
-    font-weight: 900;
+.gep-sovereign-checkout-wrap .item-type {
     color: var(--gep-c-text-muted);
-    letter-spacing: 1px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .8px;
 }
-
-.item-info .item-title {
-    font-size: 18px;
-    font-weight: 800;
+.gep-sovereign-checkout-wrap .item-title {
+    margin: 5px 0 0;
     color: var(--gep-c-text);
-    margin-top: 4px;
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
 }
-
-.gep-order-summary .summary-row {
+.gep-sovereign-checkout-wrap .summary-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
-    font-size: 15px;
-    font-weight: 600;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px 16px;
     color: var(--gep-c-text-muted);
+    font-size: 14px;
 }
-
-.summary-divider {
+.gep-sovereign-checkout-wrap .summary-divider {
     height: 1px;
-    background: var(--gep-c-surface-3);
-    margin: 25px 0;
+    margin: 24px 0;
+    background: var(--gep-c-border-strong);
 }
-
-.summary-row.total {
-    align-items: center;
-}
-
-.summary-row.total .label {
-    font-size: 18px;
-    font-weight: 800;
+.gep-sovereign-checkout-wrap .summary-row.total .label {
     color: var(--gep-c-text);
+    font-size: 16px;
+    font-weight: 650;
 }
-
-.final-price-wrap {
+.gep-sovereign-checkout-wrap .final-price-wrap {
     display: flex;
     align-items: baseline;
     gap: 2px;
-}
-
-.final-price-wrap .currency {
-    font-size: 18px;
-    font-weight: 800;
-    color: #2563eb;
-}
-
-.final-price-wrap .value {
-    font-size: 32px;
-    font-weight: 950;
-    color: #2563eb;
-    letter-spacing: -1px;
-}
-
-.gep-coupon-section-modern {
-    margin: 25px 0;
-}
-
-.gep-coupon-section-modern .input-wrap {
-    display: flex;
-    background: var(--gep-c-surface-3);
-    padding: 6px;
-    border-radius: 16px;
-    border: 1px solid transparent;
-    transition: all 0.3s;
-}
-
-.gep-coupon-section-modern .input-wrap:focus-within {
-    background: var(--gep-c-surface);
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-}
-
-.gep-coupon-section-modern input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    padding: 10px 15px;
-    font-weight: 700;
-    font-size: 13px;
     color: var(--gep-c-text);
-    outline: none !important;
+    font-variant-numeric: tabular-nums;
 }
-
-.gep-coupon-section-modern button {
-    background: #0f172a;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.gep-coupon-section-modern button:hover {
-    background: #1e293b;
-}
-
-#gep-coupon-status {
-    font-size: 12px;
-    font-weight: 700;
-    margin-top: 10px;
-    padding-left: 10px;
-}
-
-.btn-pay-sovereign {
-    width: 100%;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    color: #fff;
-    border: none;
-    padding: 20px;
-    border-radius: 20px;
-    font-size: 18px;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-}
-
-.btn-pay-sovereign:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 30px 60px rgba(0,0,0,0.2);
-}
-
-.btn-pay-sovereign:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.secure-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 30px;
-    padding-top: 25px;
-    border-top: 1px dashed var(--gep-c-border);
-}
-
-.secure-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    color: #10b981;
-}
-
-.payment-methods {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--gep-c-text-muted);
-}
-
-.checkout-info-column {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.info-item-glass {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    padding: 25px;
-    border-radius: 24px;
-    display: flex;
-    gap: 20px;
-    transition: transform 0.3s;
-}
-
-.info-item-glass:hover {
-    transform: translateX(10px);
-}
-
-.info-icon {
-    width: 44px;
-    height: 44px;
-    background: var(--gep-c-surface);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    flex-shrink: 0;
-}
-
-.info-text h5 {
-    font-size: 16px;
-    font-weight: 800;
+.gep-sovereign-checkout-wrap .final-price-wrap .currency { font-size: 18px; font-weight: 650; }
+.gep-sovereign-checkout-wrap .final-price-wrap .value { font-size: 30px; font-weight: 750; letter-spacing: -.6px; }
+.gep-sovereign-checkout-wrap .gep-checkout-pricing-tiers { min-width: 0; margin: 0 0 24px; padding: 0; border: 0; }
+.gep-sovereign-checkout-wrap .gep-checkout-pricing-tiers legend,
+.gep-sovereign-checkout-wrap .gep-coupon-label {
+    display: block;
+    margin: 0 0 10px;
+    padding: 0;
     color: var(--gep-c-text);
-    margin-bottom: 4px;
-}
-
-.info-text p {
     font-size: 14px;
-    color: var(--gep-c-text-muted);
-    line-height: 1.4;
-    margin: 0;
+    font-weight: 600;
 }
-
+.gep-sovereign-checkout-wrap .gep-coupon-label span { color: var(--gep-c-text-muted); font-weight: 400; }
+.gep-sovereign-checkout-wrap .gep-checkout-tiers { display: flex; flex-direction: column; gap: 10px; }
+.gep-sovereign-checkout-wrap .gep-tier-label-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    min-height: 48px;
+    padding: 14px;
+    background: var(--gep-c-surface-2);
+    border: 2px solid var(--gep-c-border-strong);
+    border-radius: 10px;
+    cursor: pointer;
+}
+.gep-sovereign-checkout-wrap .gep-tier-choice { display: flex; align-items: center; gap: 10px; color: var(--gep-c-text); font-size: 14px; font-weight: 600; }
+.gep-sovereign-checkout-wrap .gep-tier-choice input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; accent-color: var(--gep-c-accent); }
+.gep-sovereign-checkout-wrap .gep-tier-price { color: var(--gep-c-info); font-size: 16px; font-weight: 700; }
+.gep-sovereign-checkout-wrap .gep-coupon-section-modern { margin: 24px 0; }
+.gep-sovereign-checkout-wrap .input-wrap { display: flex; gap: 10px; }
+.gep-sovereign-checkout-wrap #gep-coupon-code {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 12px;
+    background: var(--gep-c-field);
+    color: var(--gep-c-field-text);
+    border: 1px solid var(--gep-c-field-border);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 16px;
+}
+.gep-sovereign-checkout-wrap #gep-coupon-code::placeholder { color: var(--gep-c-text-muted); opacity: 1; }
+.gep-sovereign-checkout-wrap #gep-apply-coupon {
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 10px 18px;
+    background: var(--gep-c-surface-3);
+    color: var(--gep-c-text);
+    border: 1px solid var(--gep-c-border-strong);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.gep-sovereign-checkout-wrap #gep-coupon-status { margin-top: 10px; color: var(--gep-c-text-muted); font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.gep-sovereign-checkout-wrap #gep-coupon-status:empty { display: none; }
+.gep-sovereign-checkout-wrap #gep-pay-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--gep-c-accent);
+    color: var(--gep-c-accent-text);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.5;
+    cursor: pointer;
+}
+.gep-sovereign-checkout-wrap #gep-pay-button:not(:disabled):hover { border-color: var(--gep-c-accent-text); }
+.gep-sovereign-checkout-wrap #gep-apply-coupon:not(:disabled):hover { border-color: var(--gep-c-accent); }
+.gep-sovereign-checkout-wrap button:disabled { cursor: not-allowed; }
+.gep-sovereign-checkout-wrap .secure-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--gep-c-border-strong);
+}
+.gep-sovereign-checkout-wrap .secure-badge { display: flex; align-items: center; gap: 6px; color: var(--gep-c-success); font-size: 12px; font-weight: 600; }
+.gep-sovereign-checkout-wrap .payment-methods { color: var(--gep-c-text-muted); font-size: 12px; }
+.gep-sovereign-checkout-wrap .checkout-info-column { display: flex; flex-direction: column; gap: 16px; }
+.gep-sovereign-checkout-wrap .info-item-glass { display: flex; align-items: flex-start; gap: 16px; padding: 22px; }
+.gep-sovereign-checkout-wrap .info-text h2 { margin: 0 0 6px; color: var(--gep-c-text); font-size: 16px; font-weight: 650; line-height: 1.4; }
+.gep-sovereign-checkout-wrap .info-text p { margin: 0; color: var(--gep-c-text-muted); font-size: 14px; line-height: 1.6; }
 @media (max-width: 992px) {
-    .gep-checkout-grid { grid-template-columns: 1fr; }
-    .checkout-info-column { order: -1; flex-direction: row; flex-wrap: wrap; }
-    .info-item-glass { flex: 1; min-width: 250px; }
+    .gep-sovereign-checkout-wrap .gep-checkout-grid { grid-template-columns: minmax(0, 1fr); }
 }
-
-@media (max-width: 768px) {
-    .gep-checkout-header h1 { font-size: 36px; }
-    .gep-checkout-card { padding: 25px; }
-    .header-badge { font-size: 10px; }
+@media (max-width: 600px) {
+    .gep-sovereign-checkout-wrap { padding-top: 0; }
+    .gep-sovereign-checkout-wrap .gep-checkout-header { margin-bottom: 22px; }
+    .gep-sovereign-checkout-wrap .gep-checkout-card { padding: 20px; }
+    .gep-sovereign-checkout-wrap .info-item-glass { padding: 18px; }
+    .gep-sovereign-checkout-wrap .item-preview { padding: 14px; gap: 12px; }
+    .gep-sovereign-checkout-wrap .item-title { font-size: 15px; }
 }
-
 @media (max-width: 480px) {
-    .gep-checkout-header h1 { font-size: 26px; letter-spacing: -1px; }
-    .gep-checkout-header p { font-size: 15px; }
-    .gep-checkout-card { padding: 20px 15px; border-radius: 20px; }
-    .card-header h3 { font-size: 18px; }
-    .item-preview { gap: 12px; padding: 15px; }
-    .item-icon { width: 48px; height: 48px; font-size: 24px; }
-    .item-info .item-title { font-size: 15px; }
-    .final-price-wrap .value { font-size: 28px; }
-    .gep-coupon-section-modern .input-wrap { flex-direction: column; gap: 8px; background: transparent; padding: 0; }
-    .gep-coupon-section-modern input { background: var(--gep-c-surface-3); border-radius: 12px; width: 100%; border: 1.5px solid transparent; }
-    .gep-coupon-section-modern input:focus { background: var(--gep-c-surface); border-color: #2563eb; }
-    .gep-coupon-section-modern button { width: 100%; height: 44px; border-radius: 12px; }
-    .btn-pay-sovereign { padding: 15px; font-size: 16px; border-radius: 14px; }
-    .secure-footer { flex-direction: column; gap: 12px; text-align: center; }
+    .gep-sovereign-checkout-wrap .gep-coupon-section-modern .input-wrap { flex-direction: column; }
+    .gep-sovereign-checkout-wrap #gep-coupon-code { width: 100%; }
+    .gep-sovereign-checkout-wrap .card-header h2 { font-size: 18px; }
+    .gep-sovereign-checkout-wrap .final-price-wrap .value { font-size: 26px; }
 }
 </style>
